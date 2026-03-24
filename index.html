@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SSC — Instruments for Complexity</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --charcoal: #1c1c1a;
+      --cream: #f2ede6;
+      --terracotta: #c0573a;
+      --forest: #3a5c44;
+      --teal: #2e6b6b;
+      --muted: #8a8478;
+      --border: #3a3832;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--charcoal);
+      color: var(--cream);
+      font-family: 'Source Serif 4', serif;
+      font-weight: 300;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* NOISE TEXTURE OVERLAY */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.6;
+    }
+
+    /* HEADER */
+    header {
+      position: relative;
+      z-index: 1;
+      padding: 3rem 4rem 0;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .header-top {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+    }
+
+    .logo {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .logo span {
+      color: var(--terracotta);
+    }
+
+    .site-link {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      text-decoration: none;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+
+    .site-link:hover {
+      color: var(--cream);
+      border-color: var(--cream);
+    }
+
+    .hero {
+      padding-bottom: 3rem;
+      max-width: 720px;
+    }
+
+    .hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.8rem, 6vw, 5rem);
+      font-weight: 900;
+      line-height: 1.0;
+      letter-spacing: -0.02em;
+      margin-bottom: 1.25rem;
+    }
+
+    .hero h1 em {
+      font-style: italic;
+      color: var(--terracotta);
+    }
+
+    .hero p {
+      font-size: 1.05rem;
+      line-height: 1.75;
+      color: #c8c2b8;
+      max-width: 560px;
+    }
+
+    /* THICK RULE ACCENT */
+    .rule {
+      display: inline-block;
+      width: 48px;
+      height: 4px;
+      background: var(--terracotta);
+      margin-bottom: 1.5rem;
+    }
+
+    /* MAIN GRID */
+    main {
+      position: relative;
+      z-index: 1;
+      padding: 4rem 4rem 6rem;
+    }
+
+    .section-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 2.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 2px;
+      margin-bottom: 6rem;
+    }
+
+    .tool-card {
+      position: relative;
+      background: #242420;
+      padding: 2.25rem 2.25rem 2rem;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      transition: background 0.2s;
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .tool-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 3px;
+      height: 0;
+      background: var(--terracotta);
+      transition: height 0.3s ease;
+    }
+
+    .tool-card:hover {
+      background: #2a2a26;
+    }
+
+    .tool-card:hover::before {
+      height: 100%;
+    }
+
+    .tool-number {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      color: var(--muted);
+      margin-bottom: 1.25rem;
+    }
+
+    .tool-tag {
+      display: inline-block;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0.2em 0.6em;
+      border: 1px solid currentColor;
+      margin-bottom: 1rem;
+    }
+
+    .tool-tag.dynamics   { color: var(--terracotta); }
+    .tool-tag.networks   { color: var(--teal); }
+    .tool-tag.agents     { color: var(--forest); }
+    .tool-tag.governance { color: #9b7e4a; }
+
+    .tool-card h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.35rem;
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 0.75rem;
+      letter-spacing: -0.01em;
+    }
+
+    .tool-card p {
+      font-size: 0.88rem;
+      line-height: 1.65;
+      color: #a09890;
+      flex: 1;
+      margin-bottom: 1.75rem;
+    }
+
+    .tool-cta {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--cream);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      opacity: 0;
+      transform: translateX(-4px);
+      transition: opacity 0.2s, transform 0.2s;
+    }
+
+    .tool-card:hover .tool-cta {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .tool-cta::after {
+      content: '→';
+    }
+
+    /* CONTEXT NOTE */
+    .context-note {
+      border-top: 1px solid var(--border);
+      padding-top: 3rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+    }
+
+    .context-note h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-style: italic;
+      margin-bottom: 0.75rem;
+    }
+
+    .context-note p {
+      font-size: 0.88rem;
+      line-height: 1.7;
+      color: #a09890;
+    }
+
+    .context-note a {
+      color: var(--terracotta);
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.2s;
+    }
+
+    .context-note a:hover {
+      border-color: var(--terracotta);
+    }
+
+    /* FOOTER */
+    footer {
+      position: relative;
+      z-index: 1;
+      border-top: 2px solid var(--border);
+      padding: 2rem 4rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    footer p {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+    }
+
+    footer a {
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    footer a:hover { color: var(--cream); }
+
+    /* ANIMATIONS */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero h1    { animation: fadeUp 0.6s ease both; }
+    .hero p     { animation: fadeUp 0.6s 0.15s ease both; }
+    .tool-card  { animation: fadeUp 0.5s ease both; }
+    .tool-card:nth-child(1) { animation-delay: 0.1s; }
+    .tool-card:nth-child(2) { animation-delay: 0.18s; }
+    .tool-card:nth-child(3) { animation-delay: 0.26s; }
+    .tool-card:nth-child(4) { animation-delay: 0.34s; }
+    .tool-card:nth-child(5) { animation-delay: 0.42s; }
+    .tool-card:nth-child(6) { animation-delay: 0.50s; }
+
+    @media (max-width: 700px) {
+      header, main, footer { padding-left: 1.5rem; padding-right: 1.5rem; }
+      .context-note { grid-template-columns: 1fr; gap: 2rem; }
+      .header-top { flex-direction: column; gap: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-top">
+      <div class="logo"><span>SSC</span> — School of Systems &amp; Complexity</div>
+      <a href="https://systemsandcomplexity.school" class="site-link" target="_blank">systemsandcomplexity.school ↗</a>
+    </div>
+    <div class="hero">
+      <div class="rule"></div>
+      <h1>Instruments<br>for <em>Complexity</em></h1>
+      <p>Interactive tools for practitioners working in complex environments. Each instrument is a thinking aid — not a model of the world, but a model for exploring it.</p>
+    </div>
+  </header>
+
+  <main>
+    <div class="section-label">Tools &amp; Simulations</div>
+
+    <div class="tools-grid">
+
+      <a class="tool-card" href="https://pportela1980.github.io/pendulum/" target="_blank">
+        <div class="tool-number">01</div>
+        <div class="tool-tag dynamics">Dynamics</div>
+        <h2>The Pendulum Simulator</h2>
+        <p>From predictable swing to deterministic chaos. A single pendulum and a double pendulum — the same physics, a completely different world.</p>
+        <div class="tool-cta">Open tool</div>
+      </a>
+
+      <a class="tool-card" href="https://pportela1980.github.io/network-simulator/" target="_blank">
+        <div class="tool-number">02</div>
+        <div class="tool-tag networks">Networks</div>
+        <h2>Network Science Simulator</h2>
+        <p>Topology, diffusion, centrality, weak ties, and cascades. Five lenses on how structure shapes what can spread, stick, or collapse.</p>
+        <div class="tool-cta">Open tool</div>
+      </a>
+
+      <a class="tool-card" href="https://pportela1980.github.io/schelling/" target="_blank">
+        <div class="tool-number">03</div>
+        <div class="tool-tag agents">Agent-Based</div>
+        <h2>Schelling Segregation</h2>
+        <p>Thomas Schelling's classic model: individually mild preferences aggregating into sharp collective separation. Local tolerance, global pattern.</p>
+        <div class="tool-cta">Open tool</div>
+      </a>
+
+      <a class="tool-card" href="https://pportela1980.github.io/triangles/" target="_blank">
+        <div class="tool-number">04</div>
+        <div class="tool-tag agents">Agent-Based</div>
+        <h2>Equilateral Triangles Model</h2>
+        <p>Agents following simple geometric rules. Watch how local interactions build emergent global structure — order from the bottom up.</p>
+        <div class="tool-cta">Open tool</div>
+      </a>
+
+      <a class="tool-card" href="https://pportela1980.github.io/polarisation/" target="_blank">
+        <div class="tool-number">05</div>
+        <div class="tool-tag dynamics">Dynamics</div>
+        <h2>Polarisation Dynamics</h2>
+        <p>Opinion landscapes, echo chambers, attraction-repulsion forces, and interventions. Four tabs on how social systems pull apart — and what might hold them.</p>
+        <div class="tool-cta">Open tool</div>
+      </a>
+
+      <a class="tool-card" href="https://pportela1980.github.io/governance-patterns/" target="_blank">
+        <div class="tool-number">06</div>
+        <div class="tool-tag governance">Governance</div>
+        <h2>Governance Pattern Library</h2>
+        <p>45 patterns across five themes. Navigable by relationship — click a cross-reference and follow the logic. A practitioner's vocabulary for structural design.</p>
+        <div class="tool-cta">Open tool</div>
+      </a>
+
+    </div>
+
+    <div class="context-note">
+      <div>
+        <h3>How to use these tools</h3>
+        <p>Each tool is self-contained and runs in your browser — no installation, no account. They are designed for facilitation and reflection, not prediction. The point is not to find the right answer but to make assumptions visible.</p>
+      </div>
+      <div>
+        <h3>About SSC</h3>
+        <p>The School of Systems and Complexity trains practitioners to think and act in complex environments. We work across governance, peacebuilding, and organisational change. <a href="https://systemsandcomplexity.school" target="_blank">Learn more →</a></p>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>© School of Systems &amp; Complexity</p>
+    <p><a href="https://systemsandcomplexity.school" target="_blank">systemsandcomplexity.school</a></p>
+  </footer>
+
+</body>
+</html>
