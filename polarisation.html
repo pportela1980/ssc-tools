@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>The Tipping Point — SSC</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#F5F0E8;
+  --surface:#EDE8DC;
+  --surface2:#E4DDD0;
+  --border:rgba(44,40,32,0.12);
+  --border-mid:rgba(44,40,32,0.22);
+  --text:#2C2820;
+  --muted:#888070;
+  --accent:#8C3A1E;
+  --mono:'DM Mono',monospace;
+  --serif:'DM Serif Display',serif;
+  /* zone colours — warmer in light theme */
+  --zone-bridge:rgba(60,140,90,0.10);
+  --zone-tense:rgba(180,140,30,0.10);
+  --zone-frozen:rgba(60,90,160,0.08);
+  --zone-polar:rgba(180,50,30,0.10);
+  --col-D:#8C3A1E;
+  --col-T:#2A6B6B;
+  --col-dot:#2C2820;
+}
+html,body{background:var(--bg);color:var(--text);font-family:var(--mono);min-height:100vh;overflow-x:hidden;}
+body{display:flex;flex-direction:column;align-items:center;padding:2.5rem 1.5rem 3rem;}
+
+/* header */
+header{width:100%;max-width:960px;margin-bottom:2rem;border-bottom:1px solid var(--border);padding-bottom:1.75rem;}
+.lbl{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem;}
+h1{font-family:var(--serif);font-size:clamp(1.8rem,4vw,2.8rem);font-weight:400;line-height:1.1;margin-bottom:.4rem;}
+h1 em{font-style:italic;color:var(--accent);}
+.sub{font-size:12.5px;color:var(--muted);line-height:1.75;max-width:58ch;}
+
+/* main layout */
+.app{width:100%;max-width:960px;display:grid;grid-template-rows:auto auto auto auto;gap:0;}
+
+/* zone label bar */
+.zone-bar{
+  padding:.7rem 1.2rem;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-bottom:none;
+  border-radius:6px 6px 0 0;
+  display:flex;align-items:center;gap:1rem;
+  font-size:11px;letter-spacing:.07em;
+}
+.zone-indicator{
+  display:flex;align-items:center;gap:.5rem;
+}
+.zone-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;transition:background .4s;}
+.zone-name{font-weight:500;color:var(--text);transition:color .4s;}
+.zone-desc{color:var(--muted);font-size:11px;}
+.zone-spacer{flex:1;}
+.zone-step{color:var(--muted);font-size:10px;letter-spacing:.05em;}
+
+/* canvas area */
+.canvas-row{
+  display:grid;
+  grid-template-columns:1fr 200px;
+  border:1px solid var(--border);
+  border-bottom:none;
+  background:var(--surface);
+}
+canvas#phase{display:block;width:100%;background:#EDE8DC;cursor:crosshair;}
+canvas#phase{border-right:1px solid var(--border);}
+.ts-panel{
+  display:flex;flex-direction:column;
+  padding:1rem;
+  gap:.8rem;
+  background:var(--surface2);
+}
+.ts-block{display:flex;flex-direction:column;gap:.3rem;}
+.ts-label{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
+.ts-val{font-size:22px;font-weight:500;font-family:var(--mono);}
+canvas.sparkline{display:block;width:100%;height:48px;border-radius:3px;background:#E4DDD0;}
+.ts-legend{font-size:9px;color:var(--muted);letter-spacing:.05em;}
+
+/* controls */
+.controls{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-top:none;
+  padding:.7rem 1.2rem;
+  display:flex;flex-direction:column;gap:.5rem;
+}
+.ctrl-top{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+.ctrl-bot{display:flex;flex-wrap:wrap;gap:10px;align-items:center;}
+
+.btn{
+  padding:5px 14px;font-family:var(--mono);font-size:11px;
+  letter-spacing:.07em;text-transform:uppercase;
+  background:transparent;border:1px solid var(--border-mid);
+  border-radius:4px;cursor:pointer;color:var(--muted);
+  white-space:nowrap;transition:border-color .12s,color .12s,background .12s;
+}
+.btn:hover{border-color:var(--accent);color:var(--accent);}
+.btn.go{border-color:var(--accent);color:var(--accent);}
+.btn.dialogue{border-color:#3C8C5A;color:#3C8C5A;}
+.btn.dialogue:hover{background:rgba(60,140,90,.08);}
+.btn.trust{border-color:#2A6B6B;color:#2A6B6B;}
+.btn.trust:hover{background:rgba(42,107,107,.08);}
+.btn.structural{border-color:#8C3A1E;color:#8C3A1E;}
+.btn.structural:hover{background:rgba(140,58,30,.08);}
+.btn.disabled{opacity:.35;cursor:not-allowed;pointer-events:none;}
+
+.sg{display:flex;align-items:center;gap:7px;flex:1;min-width:140px;}
+.sl{font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);white-space:nowrap;}
+.sv{font-size:10px;font-weight:500;min-width:36px;color:var(--accent);text-align:right;white-space:nowrap;}
+input[type=range]{-webkit-appearance:none;appearance:none;flex:1;height:2px;background:var(--border-mid);border-radius:2px;outline:none;cursor:pointer;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:var(--accent);cursor:pointer;}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:var(--accent);border:none;cursor:pointer;}
+
+/* explainer */
+.explainer{
+  border:1px solid var(--border);
+  border-top:none;
+  border-radius:0 0 6px 6px;
+  background:var(--surface);
+  padding:1.5rem 1.2rem;
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:1.2rem;
+}
+@media(max-width:620px){.explainer{grid-template-columns:1fr;}.canvas-row{grid-template-columns:1fr;}}
+.eb{border-left:1px solid var(--border-mid);padding-left:.9rem;}
+.eb h4{font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.4rem;}
+.eb p{font-size:12px;line-height:1.75;color:var(--muted);}
+.eb p strong{color:var(--text);font-weight:500;}
+
+/* intervention flash */
+@keyframes flash{0%{opacity:1;}100%{opacity:0;}}
+.flash-msg{
+  position:fixed;top:1.5rem;left:50%;transform:translateX(-50%);
+  background:var(--surface);border:1px solid var(--border-mid);
+  color:var(--text);
+  padding:.5rem 1.2rem;border-radius:4px;font-size:11px;letter-spacing:.06em;
+  pointer-events:none;opacity:0;
+  z-index:100;
+}
+
+footer{margin-top:2rem;font-size:10px;letter-spacing:.08em;color:var(--muted);text-align:center;}
+footer a{color:var(--muted);text-decoration:underline;text-underline-offset:3px;}
+
+/* tab nav */
+.tab-nav{width:100%;max-width:960px;display:flex;border-bottom:1px solid var(--border);margin-bottom:0;}
+.tab-nav-btn{
+  padding:10px 18px;font-family:var(--mono);font-size:11px;font-weight:500;
+  letter-spacing:.08em;text-transform:uppercase;background:transparent;
+  border:none;border-bottom:2px solid transparent;cursor:pointer;
+  color:var(--muted);margin-bottom:-1px;transition:color .15s,border-color .15s;
+}
+.tab-nav-btn:hover{color:var(--text);}
+.tab-nav-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
+.tab-content{display:none;width:100%;max-width:960px;}
+.tab-content.active{display:block;}
+
+/* guide panel */
+.guide{border:1px solid var(--border);border-radius:6px;background:var(--surface);overflow:hidden;}
+.guide-section{padding:1.8rem 2rem;border-bottom:1px solid var(--border);}
+.guide-section:last-child{border-bottom:none;}
+.guide-section h2{font-family:var(--serif);font-size:1.4rem;font-weight:400;margin-bottom:1rem;color:var(--text);}
+.guide-section h2 em{font-style:italic;color:var(--accent);}
+.guide-section h3{font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.6rem;margin-top:1.4rem;}
+.guide-section h3:first-of-type{margin-top:0;}
+.guide-section p{font-size:13px;line-height:1.85;color:var(--muted);margin-bottom:.8rem;max-width:72ch;}
+.guide-section p:last-child{margin-bottom:0;}
+.guide-section p strong{color:var(--text);font-weight:500;}
+.guide-section p em{font-style:italic;color:var(--accent);}
+.guide-cols{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:.5rem;}
+@media(max-width:580px){.guide-cols{grid-template-columns:1fr;}}
+.guide-col{border-left:2px solid var(--border-mid);padding-left:1rem;}
+.guide-col h4{font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.5rem;}
+.guide-col p{font-size:12.5px;line-height:1.8;color:var(--muted);}
+.guide-col p strong{color:var(--text);}
+.zone-table{width:100%;border-collapse:collapse;margin-top:.6rem;font-size:12px;}
+.zone-table th{text-align:left;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:.4rem .8rem;border-bottom:1px solid var(--border);}
+.zone-table td{padding:.55rem .8rem;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.6;color:var(--muted);}
+.zone-table td:first-child{font-weight:500;white-space:nowrap;}
+.zone-table tr:last-child td{border-bottom:none;}
+.zone-pill{display:inline-block;padding:1px 8px;border-radius:3px;font-size:10px;letter-spacing:.06em;}
+.step-list{list-style:none;counter-reset:steps;margin-top:.5rem;}
+.step-list li{counter-increment:steps;display:flex;gap:.8rem;margin-bottom:.9rem;font-size:12.5px;line-height:1.75;color:var(--muted);}
+.step-list li::before{content:counter(steps);display:flex;align-items:center;justify-content:center;width:20px;height:20px;min-width:20px;border-radius:50%;background:var(--surface2);border:1px solid var(--border-mid);font-size:10px;color:var(--accent);font-weight:500;margin-top:2px;}
+.step-list li strong{color:var(--text);}
+.ref-list{list-style:none;margin-top:.4rem;}
+.ref-list li{font-size:11.5px;line-height:1.7;color:var(--muted);padding:.3rem 0;border-bottom:1px solid var(--border);}
+.ref-list li:last-child{border-bottom:none;}
+.ref-list li em{color:var(--accent);font-style:italic;}
+</style>
+</head>
+<body>
+
+<header>
+  <p class="lbl">Phase space · Opinion dynamics · Trust co-evolution</p>
+  <h1>The <em>Tipping Point</em></h1>
+  <p class="sub">The same intervention — dialogue, trust-building, structural reform — produces opposite effects depending on when it is applied. This simulation makes that visible.</p>
+</header>
+
+<div class="tab-nav">
+  <button class="tab-nav-btn active" onclick="switchTab('sim',this)">Simulation</button>
+  <button class="tab-nav-btn" onclick="switchTab('guide',this)">Science &amp; Guide</button>
+</div>
+
+<div id="tab-sim" class="tab-content active">
+<div class="app">
+
+  <div class="zone-bar">
+    <div class="zone-indicator">
+      <div class="zone-dot" id="zone-dot"></div>
+      <span class="zone-name" id="zone-name">—</span>
+    </div>
+    <span class="zone-desc" id="zone-desc">Press Start to begin</span>
+    <div class="zone-spacer"></div>
+    <span class="zone-step" id="zone-step">step 0</span>
+  </div>
+
+  <div class="canvas-row">
+    <canvas id="phase" height="460"></canvas>
+    <div class="ts-panel">
+      <div class="ts-block">
+        <span class="ts-label" style="color:var(--col-D)">Opinion Distance</span>
+        <span class="ts-val" id="val-D" style="color:var(--col-D)">—</span>
+        <canvas class="sparkline" id="sp-D"></canvas>
+        <span class="ts-legend">0 = same · 1 = max apart</span>
+      </div>
+      <div style="height:1px;background:var(--border);flex-shrink:0;"></div>
+      <div class="ts-block">
+        <span class="ts-label" style="color:var(--col-T)">Inter-group Trust</span>
+        <span class="ts-val" id="val-T" style="color:var(--col-T)">—</span>
+        <canvas class="sparkline" id="sp-T"></canvas>
+        <span class="ts-legend">0 = none · 1 = complete</span>
+      </div>
+      <div style="height:1px;background:var(--border);flex-shrink:0;"></div>
+      <div class="ts-block">
+        <span class="ts-label">Contact rate</span>
+        <span class="ts-val" id="val-C" style="color:var(--muted);font-size:18px;">—</span>
+        <span class="ts-legend">cross-camp interactions/step</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="ctrl-top">
+      <button class="btn go" id="btn-start" onclick="toggleRun()">Start</button>
+      <button class="btn" onclick="resetSim()">Reset</button>
+      <span style="width:1px;height:20px;background:var(--border-mid);display:inline-block;margin:0 4px;"></span>
+      <button class="btn dialogue" onclick="intervene('dialogue')">Dialogue programme</button>
+      <button class="btn trust" onclick="intervene('trust')">Trust building</button>
+      <button class="btn structural" onclick="intervene('structural')">Structural reform</button>
+    </div>
+    <div class="ctrl-bot">
+      <div class="sg">
+        <span class="sl">Openness (ε)</span>
+        <input type="range" min="0.05" max="0.6" value="0.25" step="0.01" id="sl-eps" oninput="onEps(this.value)"/>
+        <span class="sv" id="v-eps">0.25</span>
+      </div>
+      <div class="sg">
+        <span class="sl">Trust decay</span>
+        <input type="range" min="0.001" max="0.02" value="0.006" step="0.001" id="sl-decay" oninput="onDecay(this.value)"/>
+        <span class="sv" id="v-decay">0.006</span>
+      </div>
+      <div class="sg">
+        <span class="sl">Speed</span>
+        <input type="range" min="1" max="12" value="3" step="1" id="sl-spd" oninput="onSpd(this.value)"/>
+        <span class="sv" id="v-spd">3×</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="explainer">
+    <div class="eb">
+      <h4>The phase space</h4>
+      <p>X-axis: how far apart the two camps' opinions are. Y-axis: how much trust exists between them. The moving dot is your system. The coloured zones are attractors — stable states the system tends toward. <strong>The dashed curve is the tipping point boundary.</strong> Above it: dialogue is possible. Below it: the same dialogue backfires.</p>
+    </div>
+    <div class="eb">
+      <h4>The three interventions</h4>
+      <p><strong>Dialogue</strong> — works above the tipping line. Reduces distance, builds trust. Below the line: camps are too far apart, forced contact reduces trust further. <strong>Trust building</strong> — community events, shared projects. Raises trust regardless of opinions. The gentler, slower path. <strong>Structural reform</strong> — institutional change. Short-term disruption, potentially long-term shift. High risk, high reward.</p>
+    </div>
+    <div class="eb">
+      <h4>The lesson for policy</h4>
+      <p>Let the system run to polarisation, then try the interventions. <strong>The trajectory tells you what's possible, not your intentions.</strong> The same resources, the same programme, the same good faith — opposite outcomes depending on where the system is when you act. Timing is not tactical. It is structural.</p>
+    </div>
+  </div>
+
+</div><!-- end .app -->
+</div><!-- end #tab-sim -->
+
+<div id="tab-guide" class="tab-content">
+<div class="guide">
+
+  <div class="guide-section">
+    <p class="lbl">What this is</p>
+    <h2>A phase space model of <em>polarisation and trust</em></h2>
+    <p>This simulation models a society moving through two interacting dimensions: how far apart the dominant opinion camps are, and how much trust exists between them. It is not a prediction. It is a tool for thinking — a way of making visible the dynamics that are usually only felt after the fact.</p>
+    <p>The central argument is simple: <strong>the same intervention produces opposite effects depending on where the system is when you apply it.</strong> Dialogue programmes that work in one context destroy trust in another. Structural reforms that succeed when conditions are right make things worse when they are not. The simulation makes this visible by tracking the system's trajectory through a phase space divided into distinct zones.</p>
+  </div>
+
+  <div class="guide-section">
+    <h2>The <em>science</em> behind the model</h2>
+
+    <h3>Opinion dynamics — the Deffuant model</h3>
+    <p>The underlying opinion dynamics follow the <strong>Deffuant bounded confidence model</strong> (Deffuant et al., 2000). Agents hold opinions on a continuous spectrum from −1 to +1. At each step, two agents are selected at random. If their opinions differ by less than a confidence threshold ε (openness), they move toward each other. If they differ by more, nothing happens — they are too different to influence each other.</p>
+    <p>This single rule produces three qualitatively different outcomes depending on ε: <strong>consensus</strong> (high ε), <strong>bipolarisation</strong> (medium ε — two stable camps), and <strong>fragmentation</strong> (low ε — many isolated clusters). The transition between these regimes is abrupt. A small decrease in openness can flip the entire system. The model uses <em>D</em> — the mean distance between the two emerging camp centroids — as its primary output.</p>
+
+    <h3>Trust co-evolution</h3>
+    <p>The second variable, <strong>inter-group trust T</strong>, is added based on empirical sociology and the adaptive network literature (Holme &amp; Newman, 2006). Trust grows when cross-camp contact happens, and decays when it stops. But the decay rate depends on D. When opinions are close, lack of contact has little effect. When opinions are far apart and contact has broken down, trust decays rapidly — and hostile contact accelerates the decay further.</p>
+    <p>This creates a <strong>bifurcation structure</strong>: above the tipping line, trust and contact reinforce each other and the system resists perturbation. Below the tipping line, distance and distrust reinforce each other and the system accelerates toward maximum polarisation regardless of what you do to opinion distance alone.</p>
+
+    <h3>The tipping point curve</h3>
+    <p>The boundary between the two basins is the curve <em>T_critical = 0.52 − 0.35·D</em>. At low opinion distance, quite low trust is still sufficient to remain bridgeable. At high distance, substantially higher trust is required. The curve captures the empirical finding that <strong>trust is what determines whether distance is bridgeable</strong> — not distance alone.</p>
+
+    <div class="guide-cols" style="margin-top:1.2rem;">
+      <div class="guide-col">
+        <h4>Above the tipping line</h4>
+        <p>The system is in a stable basin. Trust gravitates toward a natural resting level (~0.55) when cross-camp contact is occurring. Distance may be high but the social infrastructure for dialogue still exists. <strong>Interventions work here.</strong></p>
+      </div>
+      <div class="guide-col">
+        <h4>Below the tipping line</h4>
+        <p>A second basin dominates, with a strong attractor at maximum distance and zero trust. Trust decays proportional to D² — catastrophic at high distance. Cross-camp contact here is hostile contact: it accelerates trust loss. <strong>Dialogue backfires here.</strong></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="guide-section">
+    <h2>The four <em>zones</em></h2>
+    <table class="zone-table">
+      <tr><th>Zone</th><th>What it means</th><th>What works</th><th>What doesn't</th></tr>
+      <tr>
+        <td><span class="zone-pill" style="background:rgba(60,140,90,0.15);color:#3C8C5A;">Bridgeable</span></td>
+        <td>Low distance, sufficient trust. The window of opportunity is open.</td>
+        <td>Dialogue, structural reform, trust-building — all effective. Invest now.</td>
+        <td>Nothing backfires, but delay is costly.</td>
+      </tr>
+      <tr>
+        <td><span class="zone-pill" style="background:rgba(180,140,30,0.15);color:#8C7A1E;">Tense</span></td>
+        <td>High distance but trust still holds. Crossing the tipping line is the risk.</td>
+        <td>Trust-building to hold the line. Careful structural reform.</td>
+        <td>Confrontational dialogue formats risk dropping trust below the line.</td>
+      </tr>
+      <tr>
+        <td><span class="zone-pill" style="background:rgba(60,90,160,0.12);color:#3C5AA0;">Frozen</span></td>
+        <td>Low distance, low trust. Apathy or suppression — people have stopped engaging.</td>
+        <td>Low-stakes shared activity. Reduce perceived threat before raising contact.</td>
+        <td>Premature dialogue can feel threatening. Reform may be passively resisted.</td>
+      </tr>
+      <tr>
+        <td><span class="zone-pill" style="background:rgba(140,58,30,0.12);color:#8C3A1E;">Polarised</span></td>
+        <td>High distance, low trust. The strong attractor is pulling toward maximum polarisation.</td>
+        <td>Trust-building only — slowly. Do not attempt dialogue. Wait for windows.</td>
+        <td>Dialogue actively worsens the situation. Structural reform faces high resistance.</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="guide-section">
+    <h2>How to <em>use</em> the simulation</h2>
+    <h3>Suggested sequence</h3>
+    <ol class="step-list">
+      <li><strong>Start in the bridgeable zone.</strong> Click upper-left of the phase space (low D, high T). Press Start. The system stays stable. Try Dialogue — the dot moves up and left. Baseline: when conditions are good, interventions work.</li>
+      <li><strong>Lower openness and watch the drift.</strong> Reset. Set ε to 0.15. Click to place the starting point in the tense zone. Watch the trajectory arc toward the tipping line and cross it. Notice the qualitative change in dynamics at that moment.</li>
+      <li><strong>Try dialogue after the crossing.</strong> Pause once the dot is below the tipping line. Press Dialogue. Watch: trust drops further, distance barely moves. The intervention backfires.</li>
+      <li><strong>Try trust-building instead.</strong> Reset to the same polarised position. Let it drift. Pause. Press Trust building — it raises T even below the tipping line. Applied repeatedly, it can lift the dot back above the line and unlock the system.</li>
+      <li><strong>Try structural reform.</strong> Above the line: sharply reduces D with minor trust cost. Below: resistance is high and trust takes a serious hit. Ask: what would this look like as a real policy in your context?</li>
+      <li><strong>Vary trust decay.</strong> High decay models hostile media, disinformation, or elite polarisation. Low decay models stable institutions and social cohesion. Same openness, same starting position — very different trajectories.</li>
+    </ol>
+
+    <h3>Discussion questions</h3>
+    <div class="guide-cols">
+      <div class="guide-col">
+        <h4>For the system you work in</h4>
+        <p>Where on the phase space would you locate your current context? What is your evidence for the trust level you're estimating? What is driving the trust decay rate? What intervention are you currently funding, and what zone does it assume you're in?</p>
+      </div>
+      <div class="guide-col">
+        <h4>On timing and sequencing</h4>
+        <p>If dialogue backfires below the tipping line, what has to happen before dialogue becomes safe? Is trust-building possible without any contact? When do external shocks — crises, shared threats — create windows by temporarily raising trust?</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="guide-section">
+    <h2>What this model does <em>not</em> show</h2>
+    <p><strong>No elites.</strong> Elite polarisation — the strategic use of divisive rhetoric for political gain — is one of the strongest real-world drivers. It is absent here. In practice, elite behaviour shapes the trust decay rate and the effective confidence threshold of the population.</p>
+    <p><strong>No media or algorithms.</strong> Social media amplification and algorithmic recommendation affect contact rate and opinion salience. The trust decay slider is a rough proxy, not a model of platform dynamics.</p>
+    <p><strong>One-dimensional opinion space.</strong> Real political opinion is multidimensional. Cross-cutting cleavages on multiple dimensions can prevent polarisation that a single-axis model predicts. Treat D as a summary, not a full description.</p>
+    <p><strong>Symmetric camps.</strong> Both camps are treated identically. Real polarisation is often asymmetric — one camp may be more internally cohesive, more extreme, or more effectively coordinated. These asymmetries matter for intervention design.</p>
+    <p>These are features, not bugs. The model works by stripping away complexity to make one dynamic legible. Use it to develop intuitions — then complicate those intuitions with the specifics of your context.</p>
+  </div>
+
+  <div class="guide-section">
+    <h2>Scientific <em>references</em></h2>
+    <ul class="ref-list">
+      <li>Deffuant, G., Neau, D., Amblard, F., &amp; Weisbuch, G. (2000). Mixing beliefs among interacting agents. <em>Advances in Complex Systems, 3</em>(1–4), 87–98.</li>
+      <li>Hegselmann, R., &amp; Krause, U. (2002). Opinion dynamics and bounded confidence. <em>Journal of Artificial Societies and Social Simulation, 5</em>(3).</li>
+      <li>Holme, P., &amp; Newman, M. E. J. (2006). Nonequilibrium phase transition in the coevolution of networks and opinions. <em>Physical Review E, 74</em>(5).</li>
+      <li>Axelrod, R. (1997). The dissemination of culture. <em>Journal of Conflict Resolution, 41</em>(2), 203–226.</li>
+      <li>Bramson, A. et al. (2017). Understanding polarization: Meanings, measures, and model evaluation. <em>Philosophy of Science, 84</em>(1).</li>
+      <li>Voelkel, J. G. et al. (2024). Megastudy identifying effective interventions to strengthen Americans' democratic attitudes. <em>Nature Human Behaviour</em>.</li>
+    </ul>
+  </div>
+
+</div><!-- end .guide -->
+</div><!-- end #tab-guide -->
+
+<div class="flash-msg" id="flash"></div>
+
+<footer>School of Systems &amp; Complexity · <a href="https://systemsandcomplexity.school" target="_blank">systemsandcomplexity.school</a> · Based on Deffuant et al. (2000) and Axelrod trust dynamics</footer>
+
+<script>
+// ─── constants ────────────────────────────────────────────────
+const TAU = Math.PI * 2;
+const N_AGENTS = 80;
+const HISTORY_LEN = 300;
+const TRAJ_LEN = 600;
+
+// ─── state ────────────────────────────────────────────────────
+let agents = [];
+let D = 0, T = 0, contactRate = 0;
+let histD = [], histT = [];
+let trajectory = []; // [{d,t}] phase space trail
+let step = 0;
+let running = false;
+let animId = null;
+let eps = 0.25, trustDecay = 0.006, spd = 3;
+
+// canvas refs
+let phaseCtx, phaseW, phaseH;
+let spDCtx, spTCtx;
+
+// ─── setup ────────────────────────────────────────────────────
+function initSim() {
+  cancelAnimationFrame(animId);
+  running = false;
+  setBtnState(false);
+
+  // agents: uniform random opinions
+  agents = Array.from({length: N_AGENTS}, () => ({
+    op: Math.random() * 2 - 1, // -1..1
+    camp: 0 // assigned after first split
+  }));
+
+  D = computeD();
+  T = 0.65; // start with moderate trust
+  contactRate = 0;
+  histD = [D]; histT = [T];
+  trajectory = [{d: D, t: T}];
+  step = 0;
+
+  setupCanvases();
+  render();
+  updateStats();
+}
+
+function setupCanvases() {
+  // phase canvas
+  const pc = document.getElementById('phase');
+  phaseW = pc.parentElement.offsetWidth - 200;
+  const dpr = devicePixelRatio || 1;
+  pc.width = phaseW * dpr; pc.height = 460 * dpr;
+  pc.style.width = phaseW + 'px'; pc.style.height = '460px';
+  phaseCtx = pc.getContext('2d');
+  phaseCtx.scale(dpr, dpr);
+
+  // sparklines
+  const setupSp = (id) => {
+    const c = document.getElementById(id);
+    const w = c.parentElement.offsetWidth;
+    c.width = w * dpr; c.height = 48 * dpr;
+    c.style.width = w + 'px'; c.style.height = '48px';
+    const ctx = c.getContext('2d'); ctx.scale(dpr, dpr);
+    return ctx;
+  };
+  spDCtx = setupSp('sp-D');
+  spTCtx = setupSp('sp-T');
+}
+
+// ─── model ────────────────────────────────────────────────────
+function computeD() {
+  // sort agents by opinion, split in half, measure mean distance
+  const sorted = [...agents].map(a => a.op).sort((a,b) => a-b);
+  const mid = Math.floor(sorted.length / 2);
+  const lMean = sorted.slice(0, mid).reduce((s,v) => s+v, 0) / mid;
+  const rMean = sorted.slice(mid).reduce((s,v) => s+v, 0) / (sorted.length - mid);
+  return Math.max(0, Math.min(1, (rMean - lMean) / 2));
+}
+
+function step_sim() {
+  const INTERACT = N_AGENTS * 2;
+  let crossCamp = 0, totalInteract = 0;
+
+  // assign camps by current median
+  const sorted_ops = agents.map(a => a.op).sort((a,b) => a-b);
+  const med = sorted_ops[Math.floor(N_AGENTS/2)];
+  for (const ag of agents) ag.camp = ag.op < med ? -1 : 1;
+
+  for (let k = 0; k < INTERACT; k++) {
+    const i = Math.floor(Math.random() * N_AGENTS);
+    const j = Math.floor(Math.random() * N_AGENTS);
+    if (i === j) continue;
+    const diff = agents[j].op - agents[i].op;
+    if (Math.abs(diff) < eps) {
+      agents[i].op = clamp(agents[i].op + diff * 0.5, -1, 1);
+      agents[j].op = clamp(agents[j].op - diff * 0.5, -1, 1);
+      totalInteract++;
+      if (agents[i].camp !== agents[j].camp) crossCamp++;
+    }
+  }
+
+  contactRate = totalInteract > 0 ? crossCamp / totalInteract : 0;
+
+  // ── TRUST DYNAMICS (corrected) ────────────────────────────
+  //
+  // Key insight: trust has TWO regimes separated by the tipping line.
+  //
+  // ABOVE tipping line (bridgeable/tense):
+  //   Trust has a natural resting level ~0.55 that it gravitates toward.
+  //   Cross-camp contact pulls it UP toward that level.
+  //   Absence of contact lets it drift down SLOWLY — but only when D is high.
+  //   When D is low (similar opinions), absence of contact barely matters.
+  //
+  // BELOW tipping line (frozen/polarised):
+  //   Trust decays faster, scaled by D² so it's catastrophic at high distance.
+  //   Cross-camp contact at this distance doesn't rebuild trust — it's hostile
+  //   contact, which can actually reduce trust (reflected in gain formula).
+  //
+  // This gives the bifurcation structure: above the line the system is stable,
+  // below it there's a strong attractor pulling toward (D=max, T=0).
+
+  const tipT = tippingT(D);
+  const aboveTipping = T > tipT;
+
+  if (aboveTipping) {
+    // ── above tipping: stable basin ──
+    // Trust converges toward a natural resting level (0.55)
+    // driven by contact; slips slowly when D is high and contact drops
+    const restingT = 0.55;
+    const pullUp = contactRate * (restingT - T) * 0.04;
+    // decay only bites when D is substantial AND contact has dried up
+    const pullDown = (1 - contactRate) * trustDecay * D * D * 0.4;
+    T = clamp(T + pullUp - pullDown, 0, 1);
+  } else {
+    // ── below tipping: polarised basin ──
+    // Decay is now D²-scaled — mild at low distance, severe at high distance
+    // Contact at this range is hostile contact: gain is small or negative
+    const hostileContactEffect = contactRate * (D > 0.5 ? -0.005 : 0.008);
+    const decay = trustDecay * D * D * 2.5;
+    T = clamp(T + hostileContactEffect - decay, 0, 1);
+  }
+
+  D = computeD();
+
+  step++;
+  histD.push(D); if (histD.length > HISTORY_LEN) histD.shift();
+  histT.push(T); if (histT.length > HISTORY_LEN) histT.shift();
+  trajectory.push({d: D, t: T});
+  if (trajectory.length > TRAJ_LEN) trajectory.shift();
+}
+
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+// ─── zone classification ──────────────────────────────────────
+function getZone(d, t) {
+  const tipT = tippingT(d);
+  const aboveTipping = t > tipT;
+  if (aboveTipping && d < 0.45) return 'bridgeable';
+  if (aboveTipping && d >= 0.45) return 'tense';
+  if (!aboveTipping && d < 0.42) return 'frozen';
+  return 'polarised';
+}
+
+function tippingT(d) {
+  // tipping curve: trust needed to stay bridgeable increases with distance
+  return 0.52 - 0.35 * d;
+}
+
+const ZONE_META = {
+  bridgeable: { name: 'Bridgeable', desc: 'Dialogue works — distance is low, trust is sufficient', dot: '#3C8C5A', col: '#3C8C5A' },
+  tense:      { name: 'Tense but workable', desc: 'High distance, but trust holds — intervention possible', dot: '#8C7A1E', col: '#8C7A1E' },
+  frozen:     { name: 'Frozen', desc: 'Low distance, low trust — apathy or suppression', dot: '#3C5AA0', col: '#3C5AA0' },
+  polarised:  { name: 'Polarised — locked in', desc: 'Dialogue now backfires. Trust-building is the only path', dot: '#8C3A1E', col: '#8C3A1E' },
+};
+
+// ─── interventions ────────────────────────────────────────────
+function intervene(type) {
+  const aboveTipping = T > tippingT(D);
+  let msg = '';
+
+  if (type === 'dialogue') {
+    if (aboveTipping) {
+      // Works: force genuine cross-camp Deffuant interactions
+      // Find agents near the centre of each camp and pull them together
+      const sorted = [...agents].sort((a,b) => a.op - b.op);
+      const mid = Math.floor(sorted.length / 2);
+      const leftAgents  = sorted.slice(0, mid).sort((a,b) => b.op - a.op);  // closest to centre first
+      const rightAgents = sorted.slice(mid).sort((a,b) => a.op - b.op);     // closest to centre first
+      // Run 30 forced cross-camp interactions between the most moderate agents
+      const nForced = Math.min(30, mid);
+      for (let k = 0; k < nForced; k++) {
+        const L = leftAgents[k % leftAgents.length];
+        const R = rightAgents[k % rightAgents.length];
+        const diff = R.op - L.op;
+        // Force interaction regardless of confidence — this is a facilitated dialogue
+        L.op = clamp(L.op + diff * 0.4, -1, 1);
+        R.op = clamp(R.op - diff * 0.4, -1, 1);
+      }
+      T = clamp(T + 0.08, 0, 1);
+      msg = 'Dialogue ↗ — moderates from both camps brought together. Distance drops, trust rises.';
+    } else {
+      // Backfires: camps too entrenched. Forced contact triggers defensive reactions.
+      // Opinions harden slightly (backfire effect), trust drops.
+      const sorted = [...agents].sort((a,b) => a.op - b.op);
+      const mid = Math.floor(sorted.length / 2);
+      // Hardening: agents at extremes become more extreme
+      for (const ag of sorted.slice(0, Math.floor(mid * 0.4))) {
+        ag.op = clamp(ag.op - 0.04, -1, 1);
+      }
+      for (const ag of sorted.slice(mid + Math.floor(mid * 0.6))) {
+        ag.op = clamp(ag.op + 0.04, -1, 1);
+      }
+      T = clamp(T - 0.09, 0, 1);
+      msg = 'Dialogue ↙ — camps too entrenched. Contact triggers backfire. Distance grows, trust falls.';
+    }
+  } else if (type === 'trust') {
+    if (aboveTipping) {
+      T = clamp(T + 0.15, 0, 1);
+      msg = 'Trust building ↗ — effective. Holds the system above the tipping line.';
+    } else {
+      T = clamp(T + 0.08, 0, 1);
+      msg = 'Trust building → — slow below the tipping line. Sustained effort can unlock the system.';
+    }
+  } else if (type === 'structural') {
+    if (aboveTipping) {
+      // Strong D effect — institutional mixing works when trust is there
+      const sorted = [...agents].sort((a,b) => a.op - b.op);
+      const mid = Math.floor(sorted.length / 2);
+      // Pull agents toward centre proportionally
+      for (const ag of agents) { ag.op = clamp(ag.op * 0.68, -1, 1); }
+      T = clamp(T - 0.05, 0, 1); // short-term disruption from change
+      msg = 'Structural reform ↗ — distance drops sharply. Brief trust disruption from institutional change.';
+    } else {
+      // Weaker D effect — resistance high when trust is low
+      for (const ag of agents) { ag.op = clamp(ag.op * 0.90, -1, 1); }
+      T = clamp(T - 0.11, 0, 1);
+      msg = 'Structural reform ↙ — strong resistance. May worsen before improving. Watch for trust recovery.';
+    }
+  }
+
+  D = computeD();
+  trajectory.push({d: D, t: T, intervention: type});
+  histD.push(D); histT.push(T);
+  flash(msg);
+  render(); updateStats();
+}
+
+// ─── click to place starting point ───────────────────────────
+function handlePhaseClick(e) {
+  if (running) return; // only when paused
+  const canvas = document.getElementById('phase');
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = phaseW / rect.width;
+  const scaleY = 460 / rect.height;
+  const mx = (e.clientX - rect.left) * scaleX;
+  const my = (e.clientY - rect.top) * scaleY;
+
+  // convert pixel to D,T
+  const x0 = PAD.l, x1 = phaseW - PAD.r, y0 = PAD.t, y1 = 460 - PAD.b;
+  const newD = clamp((mx - x0) / (x1 - x0), 0, 1);
+  const newT = clamp(1 - (my - y0) / (y1 - y0), 0, 1);
+
+  // set D and T, reshape agents to match D
+  D = newD; T = newT;
+  // reshape agents: create two camps separated by D
+  const lMean = -D;
+  const rMean = D;
+  const spread = 0.08;
+  agents = Array.from({length: N_AGENTS}, (_, i) => ({
+    op: clamp(i < N_AGENTS/2
+      ? lMean + (Math.random() - 0.5) * spread
+      : rMean + (Math.random() - 0.5) * spread,
+      -1, 1),
+    camp: i < N_AGENTS/2 ? -1 : 1
+  }));
+
+  histD = [D]; histT = [T];
+  trajectory = [{d: D, t: T}];
+  step = 0; contactRate = 0;
+  render(); updateStats();
+  flash('Starting position set — press Start to run from here');
+}
+
+// ─── rendering ────────────────────────────────────────────────
+const PAD = {l: 52, r: 20, t: 20, b: 48};
+
+function dToX(d) { return PAD.l + d * (phaseW - PAD.l - PAD.r); }
+function tToY(t) { return PAD.t + (1-t) * (460 - PAD.t - PAD.b); }
+
+function render() {
+  renderPhase();
+  renderSparkline(spDCtx, histD, '#e07a5f');
+  renderSparkline(spTCtx, histT, '#6fa3d0');
+}
+
+function renderPhase() {
+  const ctx = phaseCtx;
+  const W = phaseW, H = 460;
+  ctx.clearRect(0, 0, W, H);
+
+  const x0 = PAD.l, x1 = W - PAD.r, y0 = PAD.t, y1 = H - PAD.b;
+  const cW = x1 - x0, cH = y1 - y0;
+
+  // ── zone fills ──
+  // draw zones by filling above/below tipping curve
+  // bridgeable: d<0.45, above tipping
+  // tense: d>=0.45, above tipping
+  // frozen: d<0.42, below tipping
+  // polarised: d>=0.42, below tipping
+
+  // fill entire canvas with zone colours first, then clip tipping curve
+  // Easier: sample each pixel column
+  const steps = 120;
+  for (let xi = 0; xi < steps; xi++) {
+    const d = xi / steps;
+    const x = dToX(d);
+    const nextX = dToX((xi+1)/steps);
+    const tipY = tToY(tippingT(d));
+
+    // above tipping region
+    const aboveCol = d < 0.45 ? 'rgba(60,140,90,0.10)' : 'rgba(180,140,30,0.09)';
+    ctx.fillStyle = aboveCol;
+    ctx.fillRect(x, y0, nextX - x, Math.max(0, tipY - y0));
+
+    // below tipping region
+    const belowCol = d < 0.42 ? 'rgba(60,90,160,0.08)' : 'rgba(180,50,30,0.11)';
+    ctx.fillStyle = belowCol;
+    ctx.fillRect(x, tipY, nextX - x, y1 - tipY);
+  }
+
+  // ── zone labels ──
+  ctx.font = "10px 'DM Mono',monospace";
+  ctx.letterSpacing = '0.06em';
+  const zlabels = [
+    {x: x0+8, y: y0+18, text: 'BRIDGEABLE', col: '#3C8C5A'},
+    {x: x0+cW*0.58, y: y0+18, text: 'TENSE', col: '#8C7A1E'},
+    {x: x0+8, y: y1-10, text: 'FROZEN', col: '#3C5AA0'},
+    {x: x0+cW*0.52, y: y1-10, text: 'POLARISED', col: '#8C3A1E'},
+  ];
+  for (const zl of zlabels) {
+    ctx.fillStyle = zl.col + 'aa';
+    ctx.textAlign = 'left';
+    ctx.fillText(zl.text, zl.x, zl.y);
+  }
+
+  // ── tipping curve ──
+  ctx.beginPath();
+  ctx.setLineDash([5, 4]);
+  ctx.strokeStyle = 'rgba(140,58,30,0.45)';
+  ctx.lineWidth = 1.5;
+  for (let xi = 0; xi <= 100; xi++) {
+    const d = xi / 100;
+    const t = tippingT(d);
+    const x = dToX(d), y = tToY(t);
+    xi === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // tipping label
+  ctx.fillStyle = 'rgba(140,58,30,0.55)';
+  ctx.font = "9px 'DM Mono',monospace";
+  ctx.textAlign = 'left';
+  ctx.fillText('← tipping point boundary →', dToX(0.18), tToY(tippingT(0.18)) - 6);
+
+  // ── axes ──
+  ctx.strokeStyle = 'rgba(44,40,32,0.2)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(x0, y0); ctx.lineTo(x0, y1); ctx.lineTo(x1, y1);
+  ctx.stroke();
+
+  // axis labels
+  ctx.fillStyle = 'rgba(100,90,80,0.8)';
+  ctx.font = "10px 'DM Mono',monospace";
+  ctx.textAlign = 'center';
+  ctx.fillText('opinion distance →', x0 + cW/2, y1 + 34);
+  ctx.save();
+  ctx.translate(x0 - 36, y0 + cH/2);
+  ctx.rotate(-Math.PI/2);
+  ctx.fillText('← inter-group trust', 0, 0);
+  ctx.restore();
+
+  // axis ticks
+  ctx.fillStyle = 'rgba(100,90,80,0.6)';
+  ctx.font = "9px 'DM Mono',monospace";
+  [0, 0.25, 0.5, 0.75, 1].forEach(v => {
+    const x = dToX(v);
+    ctx.textAlign = 'center';
+    ctx.fillText(v.toFixed(2), x, y1 + 14);
+    ctx.beginPath();
+    ctx.strokeStyle = 'rgba(44,40,32,0.07)';
+    ctx.moveTo(x, y0); ctx.lineTo(x, y1);
+    ctx.stroke();
+  });
+  [0, 0.25, 0.5, 0.75, 1].forEach(v => {
+    const y = tToY(v);
+    ctx.textAlign = 'right';
+    ctx.fillText(v.toFixed(2), x0 - 6, y + 3);
+    ctx.beginPath();
+    ctx.strokeStyle = 'rgba(44,40,32,0.07)';
+    ctx.moveTo(x0, y); ctx.lineTo(x1, y);
+    ctx.stroke();
+  });
+
+  // ── trajectory ──
+  if (trajectory.length > 1) {
+    for (let i = 1; i < trajectory.length; i++) {
+      const prev = trajectory[i-1];
+      const curr = trajectory[i];
+      const age = (i / trajectory.length);
+      const alpha = Math.pow(age, 1.5) * 0.7;
+      ctx.beginPath();
+      ctx.strokeStyle = `rgba(44,40,32,${alpha})`;
+      ctx.lineWidth = 1.5;
+      ctx.moveTo(dToX(prev.d), tToY(prev.t));
+      ctx.lineTo(dToX(curr.d), tToY(curr.t));
+      ctx.stroke();
+
+      // intervention markers
+      if (curr.intervention) {
+        const iCol = curr.intervention === 'dialogue' ? '#3C8C5A'
+                   : curr.intervention === 'trust' ? '#2A6B6B' : '#8C3A1E';
+        ctx.beginPath();
+        ctx.arc(dToX(curr.d), tToY(curr.t), 5, 0, TAU);
+        ctx.fillStyle = iCol;
+        ctx.fill();
+      }
+    }
+  }
+
+  // ── current dot ──
+  const cx = dToX(D), cy = tToY(T);
+  const zone = getZone(D, T);
+  const dotCol = ZONE_META[zone].col;
+
+  // outer pulse ring
+  ctx.beginPath();
+  ctx.arc(cx, cy, 12, 0, TAU);
+  ctx.fillStyle = dotCol + '22';
+  ctx.fill();
+
+  // dot
+  ctx.beginPath();
+  ctx.arc(cx, cy, 7, 0, TAU);
+  ctx.fillStyle = dotCol;
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(44,40,32,0.5)';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  // step label
+  ctx.fillStyle = 'rgba(100,90,80,0.5)';
+  ctx.font = "10px 'DM Mono',monospace";
+  ctx.textAlign = 'left';
+  ctx.fillText('step ' + step, x0 + 4, y1 - 4);
+
+  // hint when paused
+  if (!running) {
+    ctx.fillStyle = 'rgba(140,58,30,0.45)';
+    ctx.textAlign = 'right';
+    ctx.fillText('click anywhere to set starting position', x1 - 4, y1 - 4);
+  }
+}
+
+function renderSparkline(ctx, hist, col) {
+  const c = ctx.canvas;
+  const W = c.width / (devicePixelRatio||1);
+  const H = c.height / (devicePixelRatio||1);
+  ctx.clearRect(0, 0, W, H);
+  if (hist.length < 2) return;
+
+  ctx.beginPath();
+  for (let i = 0; i < hist.length; i++) {
+    const x = i / (HISTORY_LEN - 1) * W;
+    const y = (1 - hist[i]) * H;
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  }
+  ctx.strokeStyle = col;
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  // fill under curve
+  ctx.lineTo(hist.length/(HISTORY_LEN-1)*W, H);
+  ctx.lineTo(0, H);
+  ctx.closePath();
+  ctx.fillStyle = col + '22';
+  ctx.fill();
+}
+
+// ─── stats bar ────────────────────────────────────────────────
+function updateStats() {
+  document.getElementById('val-D').textContent = D.toFixed(3);
+  document.getElementById('val-T').textContent = T.toFixed(3);
+  document.getElementById('val-C').textContent = (contactRate * 100).toFixed(1) + '%';
+  document.getElementById('zone-step').textContent = 'step ' + step;
+
+  const zone = getZone(D, T);
+  const meta = ZONE_META[zone];
+  document.getElementById('zone-dot').style.background = meta.dot;
+  document.getElementById('zone-name').textContent = meta.name;
+  document.getElementById('zone-name').style.color = meta.col;
+  document.getElementById('zone-desc').textContent = meta.desc;
+}
+
+// ─── run loop ─────────────────────────────────────────────────
+function loop() {
+  if (running) {
+    for (let i = 0; i < spd; i++) step_sim();
+  }
+  render(); updateStats();
+  animId = requestAnimationFrame(loop);
+}
+
+function toggleRun() {
+  running = !running;
+  setBtnState(running);
+  if (running && !animId) { animId = requestAnimationFrame(loop); }
+}
+
+function setBtnState(on) {
+  const btn = document.getElementById('btn-start');
+  btn.textContent = on ? 'Pause' : 'Start';
+  btn.classList.toggle('go', !on);
+}
+
+function resetSim() {
+  running = false; setBtnState(false);
+  cancelAnimationFrame(animId); animId = null;
+  initSim();
+}
+
+// ─── slider handlers ──────────────────────────────────────────
+function onEps(v) { eps = parseFloat(v); document.getElementById('v-eps').textContent = parseFloat(v).toFixed(2); }
+function onDecay(v) { trustDecay = parseFloat(v); document.getElementById('v-decay').textContent = parseFloat(v).toFixed(3); }
+function onSpd(v) { spd = parseInt(v); document.getElementById('v-spd').textContent = v + '×'; }
+
+// ─── flash message ────────────────────────────────────────────
+function flash(msg) {
+  const el = document.getElementById('flash');
+  el.textContent = msg;
+  el.style.animation = 'none';
+  el.offsetHeight; // reflow
+  el.style.opacity = '1';
+  el.style.animation = 'flash 2.5s ease-out forwards';
+}
+
+// ─── tab switching ────────────────────────────────────────────
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ─── boot ─────────────────────────────────────────────────────
+window.addEventListener('resize', () => { setupCanvases(); render(); });
+initSim();
+animId = requestAnimationFrame(loop);
+// click to set starting position (only when paused)
+document.getElementById('phase').addEventListener('click', handlePhaseClick);
+</script>
+</body>
+</html>
