@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Attractors and Chaos — SSC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;1,8..60,300&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#1a1a18;--surface:#242422;--surface2:#2e2e2b;--border:#3a3a36;
+  --cream:#F1EFE8;--cream-dim:#b4b2a9;--cream-muted:#6b6b66;
+  --terra:#D85A30;--teal-bright:#1D9E75;--amber:#c97d1a;--red:#c0392b;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--cream);font-family:'Source Serif 4',Georgia,serif;font-weight:300;line-height:1.7;min-height:100vh;}
+header{background:var(--bg);border-bottom:1px solid var(--border);padding:1.5rem 4rem 0;}
+.header-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;}
+.logo{font-family:'IBM Plex Mono',monospace;font-size:0.65rem;letter-spacing:0.14em;color:var(--cream-dim);text-transform:uppercase;}
+.logo span{color:var(--terra);}
+.site-link{font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.08em;color:var(--cream-muted);text-decoration:none;}
+.site-link:hover{color:var(--cream);}
+.hbadge{font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.12em;color:var(--terra);text-transform:uppercase;margin-bottom:0.75rem;}
+.hbadge::before{content:'';display:inline-block;width:18px;height:1.5px;background:var(--terra);vertical-align:middle;margin-right:8px;}
+.hero-title{font-family:'Playfair Display',Georgia,serif;font-size:clamp(2rem,4vw,3rem);font-weight:700;line-height:1.1;color:var(--cream);margin-bottom:0.75rem;}
+.hero-title em{font-style:italic;color:var(--cream-dim);}
+.hero-sub{font-size:0.95rem;font-style:italic;color:var(--cream-dim);max-width:600px;padding-bottom:1.5rem;}
+.tab-bar{display:flex;border-top:1px solid var(--border);}
+.tab-btn{font-family:'IBM Plex Mono',monospace;font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;padding:0.75rem 1.5rem;background:transparent;border:none;border-bottom:2px solid transparent;color:var(--cream-muted);cursor:pointer;transition:all 0.15s;}
+.tab-btn:hover{color:var(--cream);}
+.tab-btn.active{color:var(--terra);border-bottom-color:var(--terra);}
+main{padding:2.5rem 4rem;max-width:1100px;margin:0 auto;}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+.slabel{font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.18em;color:var(--cream-muted);text-transform:uppercase;margin-bottom:1.25rem;}
+.sim-layout{display:grid;grid-template-columns:220px 1fr;gap:1.5rem;margin-bottom:2rem;}
+.sc-label{font-family:'IBM Plex Mono',monospace;font-size:0.58rem;letter-spacing:0.14em;color:var(--cream-muted);text-transform:uppercase;margin-bottom:0.75rem;}
+.sc-btn{width:100%;text-align:left;background:var(--surface);border:1px solid var(--border);border-left:3px solid transparent;padding:0.7rem 0.85rem;margin-bottom:6px;cursor:pointer;transition:all 0.15s;display:block;}
+.sc-btn:hover{border-left-color:var(--cream-muted);background:var(--surface2);}
+.sc-btn.active{border-left-color:var(--terra);background:var(--surface2);}
+.sc-name{font-family:'IBM Plex Mono',monospace;font-size:0.68rem;font-weight:500;letter-spacing:0.06em;color:var(--cream);display:block;margin-bottom:2px;}
+.sc-desc{font-size:0.75rem;color:var(--cream-muted);display:block;line-height:1.4;font-style:italic;}
+.sc-btn.active .sc-desc{color:var(--cream-dim);}
+.sim-card{background:var(--surface);border:1px solid var(--border);padding:1.5rem;}
+.canvas-wrap{position:relative;width:100%;margin-bottom:1.25rem;}
+#lorenzCanvas{width:100%;display:block;background:#111110;}
+.state-badge{position:absolute;top:10px;right:10px;font-family:'IBM Plex Mono',monospace;font-size:0.58rem;letter-spacing:0.1em;text-transform:uppercase;padding:3px 10px;border:1px solid currentColor;}
+.metrics{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--border);margin-bottom:1.25rem;}
+.metric{background:var(--surface);padding:0.6rem 0.85rem;}
+.metric-label{font-family:'IBM Plex Mono',monospace;font-size:0.55rem;letter-spacing:0.1em;color:var(--cream-muted);text-transform:uppercase;margin-bottom:3px;}
+.metric-val{font-family:'IBM Plex Mono',monospace;font-size:1.1rem;font-weight:500;color:var(--cream);}
+.ctrls{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.1rem;margin-bottom:1.25rem;}
+.cl{font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.08em;color:var(--cream-dim);text-transform:uppercase;margin-bottom:5px;display:flex;justify-content:space-between;}
+.cv{color:var(--terra);}
+input[type=range]{width:100%;appearance:none;height:2px;background:var(--border);outline:none;cursor:pointer;}
+input[type=range]::-webkit-slider-thumb{appearance:none;width:13px;height:13px;background:var(--terra);cursor:pointer;}
+input[type=range]::-moz-range-thumb{width:13px;height:13px;background:var(--terra);border:none;cursor:pointer;}
+.state-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:1.25rem;}
+.sbox{background:var(--surface2);border:1px solid var(--border);border-left:3px solid transparent;padding:0.65rem 0.85rem;transition:all 0.35s;}
+.sbox.ss{border-left-color:var(--teal-bright);background:rgba(15,110,86,0.12);}
+.sbox.st{border-left-color:var(--amber);background:rgba(201,125,26,0.12);}
+.sbox.sc{border-left-color:var(--red);background:rgba(192,57,43,0.15);}
+.sbl{font-family:'IBM Plex Mono',monospace;font-size:0.57rem;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:3px;color:var(--cream-muted);}
+.sbox.ss .sbl{color:var(--teal-bright);}
+.sbox.st .sbl{color:var(--amber);}
+.sbox.sc .sbl{color:var(--red);}
+.sbt{font-size:0.77rem;color:var(--cream-dim);line-height:1.5;}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;}
+button{font-family:'IBM Plex Mono',monospace;font-size:0.65rem;letter-spacing:0.07em;padding:6px 14px;background:transparent;border:1px solid var(--border);color:var(--cream-dim);cursor:pointer;transition:all 0.15s;text-transform:lowercase;}
+button:hover{background:var(--terra);border-color:var(--terra);color:var(--cream);}
+button.primary{border-color:var(--terra);color:var(--terra);}
+button.primary:hover{background:var(--terra);color:var(--cream);}
+.cnote{display:grid;grid-template-columns:1fr 1fr;gap:2.5rem;padding-top:1.5rem;border-top:1px solid var(--border);}
+.cnote h4{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--cream);margin-bottom:0.5rem;}
+.cnote p{font-size:0.85rem;color:var(--cream-dim);line-height:1.8;}
+.pt{width:100%;border-collapse:collapse;font-size:0.82rem;margin-top:0.4rem;}
+.pt td{padding:5px 0;border-bottom:1px solid var(--border);vertical-align:top;color:var(--cream-dim);}
+.pt td:first-child{font-family:'IBM Plex Mono',monospace;font-size:0.68rem;color:var(--terra);width:32px;padding-right:10px;}
+.ssec{margin-bottom:2.5rem;padding-bottom:2.5rem;border-bottom:1px solid var(--border);}
+.ssec:last-child{border-bottom:none;}
+.ssec h3{font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:700;color:var(--cream);margin-bottom:0.7rem;}
+.ssec h3 em{font-style:italic;color:var(--cream-dim);}
+.ssec p{font-size:0.88rem;color:var(--cream-dim);line-height:1.85;margin-bottom:0.7rem;}
+.ssec p strong{color:var(--cream);font-weight:400;}
+.eq{background:var(--surface);border-left:3px solid var(--terra);padding:0.9rem 1.1rem;margin:0.9rem 0;font-family:'IBM Plex Mono',monospace;font-size:0.78rem;color:var(--cream-dim);line-height:2.1;}
+.eq span{color:var(--terra);}
+.hbox{background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--amber);padding:0.9rem 1.1rem;margin-top:0.9rem;}
+.hbox p{font-size:0.83rem;color:var(--cream-dim);font-style:italic;margin:0;}
+.hlabel{font-family:'IBM Plex Mono',monospace;font-size:0.56rem;letter-spacing:0.12em;color:var(--amber);text-transform:uppercase;margin-bottom:5px;}
+.about-box{background:var(--surface);border-top:1px solid var(--border);padding:2.5rem 4rem;}
+.about-box h2{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:var(--cream);margin-bottom:0.7rem;}
+.about-box h2 em{font-style:italic;color:var(--cream-dim);}
+.about-box p{font-size:0.88rem;color:var(--cream-dim);max-width:600px;line-height:1.8;}
+.about-box a{color:var(--terra);text-decoration:none;}
+.about-box a:hover{text-decoration:underline;}
+footer{background:var(--bg);border-top:1px solid var(--border);padding:1.5rem 4rem;display:flex;justify-content:space-between;align-items:center;}
+footer p{font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.08em;color:var(--cream-muted);}
+footer a{color:var(--cream-muted);text-decoration:none;}
+footer a:hover{color:var(--cream);}
+@media(max-width:750px){
+  header,main,footer,.about-box{padding-left:1.25rem;padding-right:1.25rem;}
+  .sim-layout,.ctrls,.state-row,.metrics,.cnote{grid-template-columns:1fr;}
+  .header-top{flex-direction:column;gap:0.5rem;}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <div class="logo"><span>SSC</span> — School of Systems &amp; Complexity</div>
+    <a href="https://systemsandcomplexity.school" class="site-link" target="_blank">systemsandcomplexity.school ↗</a>
+  </div>
+  <div class="hbadge">Simulation Lab</div>
+  <h1 class="hero-title">Attractors and <em>Chaos</em></h1>
+  <p class="hero-sub">Many natural and social systems do not behave the way we expect. Small changes trigger large consequences. Stability gives way to disorder — suddenly, not gradually. This simulation makes that structure visible.</p>
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('sim',this)">Simulator</button>
+    <button class="tab-btn" onclick="switchTab('science',this)">The Science</button>
+  </div>
+</header>
+
+<main>
+
+<div class="tab-panel active" id="tab-sim">
+  <div class="slabel">Interactive simulation</div>
+  <div class="sim-layout">
+
+    <div>
+      <div class="sc-label">Scenarios</div>
+      <button class="sc-btn" onclick="loadScenario(0,this)">
+        <span class="sc-name">Stable equilibrium</span>
+        <span class="sc-desc">All trajectories converge to a fixed point. The system self-corrects from any starting position.</span>
+      </button>
+      <button class="sc-btn" onclick="loadScenario(1,this)">
+        <span class="sc-name">Spiral convergence</span>
+        <span class="sc-desc">The system spirals slowly toward a stable orbit. Not at rest — but bounded and predictable.</span>
+      </button>
+      <button class="sc-btn active" onclick="loadScenario(2,this)">
+        <span class="sc-name">Edge of chaos</span>
+        <span class="sc-desc">Near the bifurcation threshold. Wide, irregular orbits. The system is absorbing pressure — for now.</span>
+      </button>
+      <button class="sc-btn" onclick="loadScenario(3,this)">
+        <span class="sc-name">Full bifurcation</span>
+        <span class="sc-desc">Classic Lorenz chaos. The trajectory jumps unpredictably between two lobes. Never repeats.</span>
+      </button>
+      <button class="sc-btn" onclick="loadScenario(4,this)">
+        <span class="sc-name">High damping</span>
+        <span class="sc-desc">Same pressure as full chaos — but high resilience. The system converges. Damping wins.</span>
+      </button>
+      <div style="margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--border);">
+        <div class="sc-label">Parameters</div>
+        <div style="font-size:0.78rem;color:var(--cream-muted);line-height:1.6;font-style:italic;">Change parameters while running to watch the trajectory shift in real time.</div>
+      </div>
+    </div>
+
+    <div class="sim-card">
+      <div class="metrics">
+        <div class="metric"><div class="metric-label">a — response rate</div><div class="metric-val" id="disp-a">10.0</div></div>
+        <div class="metric"><div class="metric-label">b — pressure</div><div class="metric-val" id="disp-b">15.0</div></div>
+        <div class="metric"><div class="metric-label">c — damping</div><div class="metric-val" id="disp-c">2.7</div></div>
+      </div>
+      <div class="canvas-wrap">
+        <canvas id="lorenzCanvas"></canvas>
+        <div class="state-badge" id="state-badge" style="color:#1D9E75;">stable</div>
+      </div>
+      <div class="ctrls">
+        <div>
+          <div class="cl">a <span style="color:var(--cream-muted);font-size:0.55rem;">[1–20]</span><span class="cv" id="lbl-a">10.0</span></div>
+          <input type="range" min="1" max="20" value="10" step="0.5" id="sl-a" oninput="onSlider()"/>
+        </div>
+        <div>
+          <div class="cl">b <span style="color:var(--cream-muted);font-size:0.55rem;">[1–35]</span><span class="cv" id="lbl-b">15.0</span></div>
+          <input type="range" min="1" max="35" value="15" step="0.5" id="sl-b" oninput="onSlider()"/>
+        </div>
+        <div>
+          <div class="cl">c <span style="color:var(--cream-muted);font-size:0.55rem;">[0.5–15]</span><span class="cv" id="lbl-c">2.7</span></div>
+          <input type="range" min="0.5" max="15" value="2.67" step="0.1" id="sl-c" oninput="onSlider()"/>
+        </div>
+      </div>
+      <div class="state-row">
+        <div class="sbox" id="box-stable">
+          <div class="sbl">stable</div>
+          <div class="sbt">The system orbits a fixed attractor. Bounded, predictable. Your dashboards look fine.</div>
+        </div>
+        <div class="sbox" id="box-tension">
+          <div class="sbl">under tension</div>
+          <div class="sbt">The orbit is widening. Pressure is building. The threshold is near — and invisible in any single metric.</div>
+        </div>
+        <div class="sbox" id="box-chaos">
+          <div class="sbl">chaotic</div>
+          <div class="sbt">Tipping point crossed. The trajectory will never repeat. This is not a crisis — it is a regime change.</div>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="primary" onclick="resetSim()">restart</button>
+        <button onclick="pushToEdge()">minimal perturbation →</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="cnote">
+    <div>
+      <h4>What you are seeing</h4>
+      <p>The Lorenz system produces qualitatively different behaviours depending on parameter values. The scenarios on the left are pre-set configurations demonstrating five distinct regimes — from stable convergence to full chaos. Load them in sequence, then use the sliders to explore the boundaries between regimes.</p>
+      <p style="margin-top:0.6rem;">The key observation: the transition between regimes is not gradual. The system looks stable — until it doesn't. The threshold is not visible in any single parameter reading.</p>
+    </div>
+    <div>
+      <h4>The parameters</h4>
+      <table class="pt">
+        <tr><td>a</td><td>Rate of internal response — how quickly the system reacts to imbalances between its variables</td></tr>
+        <tr><td>b</td><td>Intensity of external pressure — the critical parameter. Contains the bifurcation point</td></tr>
+        <tr><td>c</td><td>Damping — the system's capacity to dissipate energy and resist departure from equilibrium. Must reach ~8–10 to overcome chaos at b=28</td></tr>
+      </table>
+      <p style="margin-top:0.75rem;font-size:0.75rem;color:var(--cream-muted);font-style:italic;">Parameters are intentionally abstract. The structure of the behaviour is the message — not the specific metaphor applied to it.</p>
+    </div>
+  </div>
+</div>
+
+<div class="tab-panel" id="tab-science">
+
+  <div class="ssec">
+    <h3>The Lorenz System</h3>
+    <p>In 1963, meteorologist Edward Lorenz was studying atmospheric convection — the rolling circulation of fluid heated from below. He derived the simplest possible equations that could describe this phenomenon:</p>
+    <div class="eq">
+      <span>dx/dt</span> = a · (y − x)<br>
+      <span>dy/dt</span> = x · (b − z) − y<br>
+      <span>dz/dt</span> = x · y − c · z
+    </div>
+    <p>Three variables. Three equations. Entirely deterministic. And yet, for certain parameter values, the system produces behaviour that is <strong>sensitive to initial conditions, non-periodic, and unpredictable over time</strong>. This was one of the foundational discoveries of chaos theory.</p>
+    <p>The critical bifurcation occurs at approximately <strong>b ≈ 24.74</strong> (with a = 10, c = 8/3). Below this value, all trajectories eventually settle. Above it, chaos is the only attractor.</p>
+  </div>
+
+  <div class="ssec">
+    <h3>Five Behavioural <em>Regimes</em></h3>
+    <p><strong>1. Stable equilibrium (b = 8).</strong> All trajectories converge to one of two fixed points. The system has a global point attractor. This is the assumption embedded in most linear planning frameworks: systems return to equilibrium after perturbation.</p>
+    <p><strong>2. Spiral convergence (b = 16).</strong> The fixed points are losing stability, but the system still converges — slowly, through a widening spiral that eventually settles. The system is not at rest, but it is bounded. A useful analogy for organisations under moderate pressure: oscillating, but not yet escaping.</p>
+    <p><strong>3. Edge of chaos (b = 24).</strong> Near the bifurcation threshold. Orbits are wide and irregular. The system has not yet crossed into full chaos, but the attractor is becoming strange. Small perturbations have disproportionate consequences.</p>
+    <p><strong>4. Full bifurcation (b = 28).</strong> The classic Lorenz attractor. Trajectories jump unpredictably between two lobes, never repeating. Long-term prediction is structurally impossible. This is the butterfly effect.</p>
+    <p><strong>5. High damping (b = 28, c = 10).</strong> The same external pressure as full chaos — but with high damping. The system converges. This is the key contrast: with c = 2.67, b = 28 produces chaos. With c = 10, the same pressure produces convergence. <strong>Resilience is not just a delay — at sufficient levels, it changes the regime entirely.</strong> But the threshold in c is high. Moderate resilience (c = 5) is not enough. This is the uncomfortable message: half-measures in resilience-building may delay collapse without preventing it.</p>
+  </div>
+
+  <div class="ssec">
+    <h3>Bifurcations and <em>Tipping Points</em></h3>
+    <p>A bifurcation is a qualitative change in the structure of a system's behaviour as a parameter crosses a critical value. The change is not gradual — it is discontinuous. Below the threshold, the system behaves one way. Above it, it behaves in a fundamentally different way.</p>
+    <p>This is structurally different from linear degradation. In a linear system, doubling the pressure doubles the response. Near a bifurcation, a small additional increment of pressure shifts the system into an entirely different regime. <strong>The response is disproportionate to the cause.</strong></p>
+    <p>The bifurcation threshold is not visible in any single variable. The system looks stable until it isn't. This is not a failure of measurement sophistication. It is a structural property of non-linear systems.</p>
+  </div>
+
+  <div class="ssec">
+    <h3>Sensitivity to <em>Initial Conditions</em></h3>
+    <p>In the chaotic regime, two trajectories that start arbitrarily close together diverge exponentially. After a short time, they are completely uncorrelated. This is the <strong>butterfly effect</strong> — not a metaphor, but a mathematical property.</p>
+    <p>The practical implication is a hard limit on prediction: beyond a certain horizon, forecast is meaningless not because we lack information, but because the structure of the system makes it <strong>structurally impossible</strong>. Deterministic does not mean predictable. The equations fully determine what will happen — but sensitivity to initial conditions means that any measurement error compounds exponentially.</p>
+  </div>
+
+  <div class="ssec">
+    <h3>Applications and <em>Honest Limits</em></h3>
+    <p>The Lorenz equations were derived for atmospheric convection. They have been applied with rigour to lasers, chemical reactions, electrical circuits, and population dynamics. Applications to social and organisational systems are more contested — suggestive but not empirically robust.</p>
+    <div class="hbox">
+      <div class="hlabel">A note on intellectual honesty</div>
+      <p>This simulator is not a model of your organisation. It is a model of a <strong>class of behaviours</strong> — tipping points, bifurcations, disproportionate responses, sensitivity to initial conditions — that are well-documented in complex systems and plausible in organisational contexts. The equations are the vehicle. The behaviour they produce is the argument. We use this model to make a structural claim visible, not to make predictions about specific systems.</p>
+    </div>
+  </div>
+
+  <div class="ssec">
+    <h3>An Interpretive <em>Example</em></h3>
+    <p>The parameters a, b, c are intentionally abstract. But it helps to anchor them in a concrete system. One plausible reading is a <strong>governance system under pressure</strong> — where the three state variables are:</p>
+    <div class="eq">
+      <span>x</span> — institutional legitimacy<br>
+      <span>y</span> — social pressure (demands, expectations, mobilisation)<br>
+      <span>z</span> — capacity to respond (resources, coherence, mandate)
+    </div>
+    <p>Read through this lens, the equations say something recognisable:</p>
+    <p><strong>dx/dt = a(y − x)</strong> — Legitimacy adjusts toward the level of social pressure. When pressure exceeds current legitimacy, the institution is forced to adapt or lose ground. The parameter a controls how quickly this happens — a slow bureaucracy or a responsive one.</p>
+    <p><strong>dy/dt = x(b − z) − y</strong> — Social pressure grows when legitimacy is high but response capacity is low: people believe change is possible but it isn't happening. It dissipates naturally over time (−y). The parameter b is structural pressure from outside — crisis, economic shock, climate disruption. It is the parameter the institution cannot control.</p>
+    <p><strong>dz/dt = xy − cz</strong> — Response capacity builds when there is both legitimacy and pressure simultaneously — when the institution has mandate and reason to act. It erodes naturally (−cz). The parameter c is institutional resilience: memory, culture, the capacity to absorb tension without fragmenting.</p>
+    <p>Under this reading, the five scenarios describe recognisable governance situations. A stable democracy with moderate external pressure (scenario 1). A system absorbing rising demands but still converging (scenario 2). A system near its institutional limits (scenario 3). Chronic instability — oscillating between crisis and partial recovery, never settling (scenario 4). And a system with the same structural pressure as scenario 4, but deep enough institutional resilience to hold (scenario 5).</p>
+    <div class="hbox">
+      <div class="hlabel">What this example is and isn't</div>
+      <p>This is one possible interpretation of the abstract variables — not a validated model of governance dynamics. The equations were not derived from governance theory. We are borrowing the <strong>structure of the behaviour</strong>, not claiming that governance systems follow Lorenz dynamics in a strict sense. The value is in the questions it prompts: where is your system in this phase space? What is your b? How high does your c need to be?</p>
+    </div>
+  </div>
+
+  <div class="ssec">
+    <h3>Further <em>Reading</em></h3>
+    <p><strong>Lorenz, E.N. (1963).</strong> Deterministic nonperiodic flow. <em>Journal of Atmospheric Sciences</em>, 20(2), 130–141. — The original paper.</p>
+    <p><strong>Strogatz, S. (2015).</strong> <em>Nonlinear Dynamics and Chaos.</em> Westview Press. — The standard graduate text. Chapters 9–10 cover the Lorenz system and the full bifurcation sequence.</p>
+    <p><strong>Gleick, J. (1987).</strong> <em>Chaos: Making a New Science.</em> Penguin. — The accessible account of the discovery of chaos theory.</p>
+    <p><strong>Meadows, D. (2008).</strong> <em>Thinking in Systems.</em> Chelsea Green. — Best practitioner introduction to feedback, tipping points, and non-linear behaviour in social and ecological systems.</p>
+    <p><strong>Bateson, G. (1972).</strong> <em>Steps to an Ecology of Mind.</em> University of Chicago Press. — The philosophical foundation for applying systems thinking to human behaviour and organisations.</p>
+  </div>
+
+</div>
+</main>
+
+<div class="about-box">
+  <h2>School of Systems &amp; <em>Complexity</em></h2>
+  <p>These simulations are produced by the School of Systems and Complexity (SSC) — a practitioner school working at the intersection of systems thinking, complexity science, and organisational change. We build education, advisory practice, and community of practice programmes for those navigating environments where structure, emergence, and power intersect.</p>
+  <p style="margin-top:0.75rem;"><a href="https://systemsandcomplexity.school" target="_blank">Visit systemsandcomplexity.school ↗</a></p>
+</div>
+
+<footer>
+  <p>© School of Systems &amp; Complexity</p>
+  <p><a href="https://systemsandcomplexity.school" target="_blank">systemsandcomplexity.school</a></p>
+</footer>
+
+<script>
+const SCENARIOS=[
+  {a:5,  b:8,  c:2.67, trail:600},
+  {a:10, b:16, c:2.67, trail:300},
+  {a:10, b:24, c:2.67, trail:700},
+  {a:10, b:28, c:2.67, trail:800},
+  {a:10, b:28, c:10.0, trail:600}
+];
+
+const canvas=document.getElementById('lorenzCanvas');
+const ctx=canvas.getContext('2d');
+
+function resize(){
+  const w=canvas.parentElement.getBoundingClientRect().width;
+  canvas.width=Math.floor(w);canvas.height=Math.floor(w*0.56);
+}
+resize();
+window.addEventListener('resize',()=>{resize();initState();});
+
+let a,b,c,x,y,z,trail=[],animId=null;
+let TRAIL=800;const DT=0.008;
+
+function readSliders(){
+  a=parseFloat(document.getElementById('sl-a').value);
+  b=parseFloat(document.getElementById('sl-b').value);
+  c=parseFloat(document.getElementById('sl-c').value);
+  ['a','b','c'].forEach(p=>{
+    const v=p==='a'?a:p==='b'?b:c;
+    document.getElementById('lbl-'+p).textContent=v.toFixed(1);
+    document.getElementById('disp-'+p).textContent=v.toFixed(1);
+  });
+}
+
+function setSliders(sa,sb,sc){
+  document.getElementById('sl-a').value=sa;
+  document.getElementById('sl-b').value=sb;
+  document.getElementById('sl-c').value=sc;
+  readSliders();
+}
+
+function initState(){x=0.1;y=0.0;z=0.0;trail=[];}
+
+function step(){
+  const dx=a*(y-x),dy=x*(b-z)-y,dz=x*y-c*z;
+  x+=dx*DT;y+=dy*DT;z+=dz*DT;
+  trail.push([x,z]);
+  if(trail.length>TRAIL)trail.shift();
+}
+
+function project(px,pz){
+  const cx=canvas.width/2,cy=canvas.height/2;
+  const sx=canvas.width/80,sy=canvas.height/60;
+  return[cx+px*sx,cy-(pz-25)*sy];
+}
+
+function systemState(){
+  if(trail.length<120)return'stable';
+  let mnX=1e9,mxX=-1e9,mnZ=1e9,mxZ=-1e9;
+  for(let i=trail.length-120;i<trail.length;i++){
+    if(trail[i][0]<mnX)mnX=trail[i][0];if(trail[i][0]>mxX)mxX=trail[i][0];
+    if(trail[i][1]<mnZ)mnZ=trail[i][1];if(trail[i][1]>mxZ)mxZ=trail[i][1];
+  }
+  const sp=(mxX-mnX)+(mxZ-mnZ);
+  if(sp<12)return'stable';
+  if(sp<42)return'tension';
+  return'chaos';
+}
+
+function updateUI(state){
+  const badge=document.getElementById('state-badge');
+  const colors={stable:'#1D9E75',tension:'#c97d1a',chaos:'#c0392b'};
+  const labels={stable:'stable',tension:'under tension',chaos:'chaotic'};
+  const cls={stable:'ss',tension:'st',chaos:'sc'};
+  badge.textContent=labels[state];badge.style.color=colors[state];
+  ['stable','tension','chaos'].forEach(s=>{
+    const el=document.getElementById('box-'+s);
+    el.classList.remove('ss','st','sc');
+    if(s===state)el.classList.add(cls[s]);
+  });
+}
+
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle='#111110';ctx.fillRect(0,0,canvas.width,canvas.height);
+  const state=systemState();
+  const cm={stable:'rgba(29,158,117,',tension:'rgba(201,125,26,',chaos:'rgba(216,90,48,'};
+  const col=cm[state];
+  if(trail.length>1){
+    for(let i=1;i<trail.length;i++){
+      const alpha=(i/trail.length)*0.85;
+      const[x1,y1]=project(trail[i-1][0],trail[i-1][1]);
+      const[x2,y2]=project(trail[i][0],trail[i][1]);
+      ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);
+      ctx.strokeStyle=col+alpha+')';ctx.lineWidth=1.2;ctx.stroke();
+    }
+  }
+  if(trail.length>0){
+    const[px,py]=project(trail[trail.length-1][0],trail[trail.length-1][1]);
+    const dc={stable:'#1D9E75',tension:'#c97d1a',chaos:'#D85A30'};
+    ctx.beginPath();ctx.arc(px,py,4.5,0,Math.PI*2);ctx.fillStyle=dc[state];ctx.fill();
+  }
+  updateUI(state);
+}
+
+function loop(){for(let i=0;i<4;i++)step();draw();animId=requestAnimationFrame(loop);}
+
+function onSlider(){
+  if(animId)cancelAnimationFrame(animId);
+  readSliders();initState();loop();
+}
+
+function resetSim(){
+  if(animId)cancelAnimationFrame(animId);
+  readSliders();initState();loop();
+}
+
+function pushToEdge(){
+  const sl=document.getElementById('sl-b');
+  const cur=parseFloat(sl.value);
+  const next=Math.min(35,cur+8);
+  sl.value=next;b=next;
+  document.getElementById('lbl-b').textContent=next.toFixed(1);
+  document.getElementById('disp-b').textContent=next.toFixed(1);
+}
+
+function loadScenario(idx,btn){
+  document.querySelectorAll('.sc-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const s=SCENARIOS[idx];
+  TRAIL=s.trail;
+  if(animId)cancelAnimationFrame(animId);
+  setSliders(s.a,s.b,s.c);
+  initState();loop();
+}
+
+function switchTab(name,btn){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  btn.classList.add('active');
+}
+
+setSliders(10,15,2.67);
+document.querySelectorAll('.sc-btn')[2].classList.add('active');
+initState();loop();
+</script>
+</body>
+</html>
