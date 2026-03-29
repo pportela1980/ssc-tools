@@ -1,0 +1,638 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#1a1a18;--bg2:#222220;--bg3:#2e2e2c;--cream:#F1EFE8;--muted:#8a8880;--border:#3a3a38;--te:#D85A30;--loop:#ff4488}
+body{background:var(--bg);color:var(--cream);font-family:'IBM Plex Mono',monospace}
+#wrap{background:var(--bg);border-radius:10px;overflow:hidden}
+.topbar{padding:13px 20px;border-bottom:1px solid var(--border);display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.wm{font-size:10px;font-weight:500;letter-spacing:.18em;color:var(--te);text-transform:uppercase}
+.dt{font-size:10px;color:var(--muted)}
+.tabs{display:flex;border-bottom:1px solid var(--border);background:var(--bg2);overflow-x:auto}
+.tab{font-size:10px;letter-spacing:.07em;padding:10px 16px;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;transition:all .15s;font-family:'IBM Plex Mono',monospace;white-space:nowrap;flex-shrink:0}
+.tab:hover{color:var(--cream)}
+.tab.active{color:var(--cream);border-bottom-color:var(--te)}
+.panel{display:none}
+.panel.active{display:block}
+
+/* HERO */
+.hero{padding:22px 24px 18px;border-bottom:1px solid var(--border)}
+.hero-label{font-size:9px;letter-spacing:.18em;color:var(--te);text-transform:uppercase;margin-bottom:10px;font-weight:500}
+.h1{font-size:17px;font-weight:500;color:var(--cream);line-height:1.3;margin-bottom:14px}
+.h1 em{color:var(--te);font-style:normal}
+.framing{font-size:11px;line-height:1.85;color:#b8b6b0;font-family:'IBM Plex Mono',monospace;max-width:660px;border-left:2px solid var(--te);padding-left:14px}
+.framing em{color:var(--cream);font-style:normal}
+
+/* CONTROLS */
+.cb{padding:7px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:5px;flex-wrap:wrap;background:var(--bg2)}
+.cl{font-size:9px;color:var(--muted);letter-spacing:.1em;margin-right:2px}
+.btn{font-size:9px;letter-spacing:.05em;padding:3px 9px;border:.5px solid var(--border);border-radius:20px;background:transparent;color:var(--muted);cursor:pointer;transition:all .15s;font-family:'IBM Plex Mono',monospace}
+.btn:hover{border-color:var(--cream);color:var(--cream)}
+.btn.active{background:var(--te);color:var(--cream);border-color:var(--te)}
+.btn.loop-btn{border-color:var(--loop);color:var(--loop)}
+.btn.loop-btn.active{background:var(--loop);color:var(--cream);border-color:var(--loop)}
+.size-toggle{display:flex;align-items:center;gap:6px;margin-left:auto;font-size:9px;color:var(--muted);border:.5px solid var(--border);border-radius:20px;padding:3px 10px;cursor:pointer;transition:all .15s;flex-shrink:0}
+.size-toggle:hover{border-color:var(--cream);color:var(--cream)}
+.size-toggle.cent{border-color:#c8a840;color:#c8a840}
+#cw{position:relative;width:100%;background:var(--bg)}
+svg#net{display:block;width:100%}
+#tt{position:absolute;pointer-events:none;background:#2a2a28;color:var(--cream);font-size:11px;font-family:'IBM Plex Mono',monospace;padding:10px 13px;border-radius:8px;max-width:240px;line-height:1.55;z-index:100;display:none;border:.5px solid #4a4a48}
+#tt .tn{font-size:11px;font-weight:500;color:var(--cream);display:block;margin-bottom:3px}
+#tt .tt2{font-size:9px;color:var(--muted);display:block;margin-bottom:4px}
+#tt .tp{font-size:10px;color:#EFC97A;display:block;margin-bottom:4px}
+#tt .ti{font-size:10px;color:#b0aea8;line-height:1.5}
+#tt .tc{font-size:9px;color:#c8a840;display:block;margin-top:4px}
+#tt .tl{font-size:9px;color:var(--loop);display:block;margin-top:3px;font-weight:500}
+.lw{padding:10px 20px 12px;border-top:1px solid var(--border);display:flex;flex-wrap:wrap;gap:7px 16px;background:var(--bg2)}
+.leg{display:flex;align-items:center;gap:5px;font-size:9px;color:var(--muted)}
+.ld{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.ls2{width:16px;height:1.5px;flex-shrink:0}
+.ld2{width:16px;height:0;border-top:1.5px dashed #4a4a48;flex-shrink:0}
+.ll{width:16px;height:0;border-top:2px solid var(--loop);flex-shrink:0}
+
+/* REFS */
+.refs-inner{padding:20px 24px;max-height:660px;overflow-y:auto}
+.refs-inner::-webkit-scrollbar{width:4px}
+.refs-inner::-webkit-scrollbar-thumb{background:var(--border)}
+.rsec{margin-bottom:24px}
+.rsec-title{font-size:9px;font-weight:500;letter-spacing:.14em;color:var(--te);text-transform:uppercase;margin-bottom:10px;padding-bottom:5px;border-bottom:.5px solid var(--border)}
+.ritem{margin-bottom:11px;padding-left:10px;border-left:2px solid var(--border)}
+.ritem-label{font-size:10px;font-weight:500;color:var(--cream);margin-bottom:2px}
+.ritem-src{font-size:9px;color:var(--muted);margin-bottom:2px}
+.ritem-note{font-size:9px;color:#8a8880;line-height:1.5;font-style:italic}
+.prob-table{width:100%;border-collapse:collapse;font-size:9px;margin-top:6px}
+.prob-table th{text-align:left;color:var(--muted);font-weight:500;padding:5px 7px;border-bottom:.5px solid var(--border);letter-spacing:.06em}
+.prob-table td{padding:5px 7px;border-bottom:.5px solid #252523;color:#b0aea8;vertical-align:top;line-height:1.5}
+.prob-table tr:hover td{background:var(--bg2)}
+.pct{color:#EFC97A;font-weight:500}
+.conf{color:#5aaa6a;font-weight:500}
+.loop-row td{color:#ffaac8}
+.method-note{background:var(--bg2);border:.5px solid var(--border);border-radius:6px;padding:12px 14px;font-size:9px;color:#9a9890;line-height:1.7;margin-bottom:18px}
+
+/* IMPLICATIONS */
+.impl-inner{padding:22px 24px;max-height:660px;overflow-y:auto}
+.impl-inner::-webkit-scrollbar{width:4px}
+.impl-inner::-webkit-scrollbar-thumb{background:var(--border)}
+.impl-lede{font-size:12px;line-height:1.8;color:#c8c6c0;margin-bottom:22px;font-family:'IBM Plex Mono',monospace;max-width:640px;border-left:3px solid var(--te);padding-left:14px}
+.impl-lede em{color:var(--te);font-style:normal}
+.loop-callout{background:#1e1218;border:.5px solid var(--loop);border-radius:8px;padding:14px 16px;margin-bottom:24px}
+.loop-callout-title{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--loop);font-weight:500;margin-bottom:8px}
+.loop-callout-text{font-size:10px;line-height:1.75;color:#d8a0b8;font-family:'IBM Plex Mono',monospace}
+.loop-callout-text em{color:#ff88bb;font-style:normal}
+.loop-chain{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin-top:10px;font-size:9px;font-family:'IBM Plex Mono',monospace}
+.lc-node{background:#2e1820;border:.5px solid var(--loop);border-radius:4px;padding:3px 7px;color:#ff88bb}
+.lc-arrow{color:var(--loop);opacity:0.6}
+.persona{margin-bottom:22px;border:.5px solid var(--border);border-radius:8px;overflow:hidden}
+.persona-head{padding:12px 16px;background:var(--bg2);display:flex;align-items:baseline;gap:12px;border-bottom:.5px solid var(--border);flex-wrap:wrap}
+.persona-tag{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--te);font-weight:500}
+.persona-title{font-size:12px;font-weight:500;color:var(--cream)}
+.persona-body{padding:14px 16px}
+.persona-story{font-size:10px;line-height:1.75;color:#b0aea8;margin-bottom:12px;font-family:'IBM Plex Mono',monospace}
+.persona-story strong{color:var(--cream);font-weight:500}
+.impl-items{display:flex;flex-direction:column;gap:7px}
+.impl-item{display:flex;gap:9px;align-items:flex-start}
+.impl-bullet{width:16px;height:16px;border-radius:50%;background:var(--bg3);border:.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:8px;color:var(--te);flex-shrink:0;margin-top:1px;font-weight:500}
+.impl-text{font-size:10px;line-height:1.65;color:#a0a098;font-family:'IBM Plex Mono',monospace}
+.impl-text strong{color:#d0cec8;font-weight:500}
+.closing{margin-top:24px;padding:14px 16px;background:var(--bg2);border-radius:8px;border:.5px solid var(--border)}
+.closing-title{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--te);margin-bottom:8px;font-weight:500}
+.closing-text{font-size:10px;line-height:1.75;color:#b0aea8;font-family:'IBM Plex Mono',monospace}
+.closing-text em{color:var(--cream);font-style:normal}
+footer{padding:10px 20px;border-top:1px solid var(--border);font-size:9px;color:var(--muted);display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px}
+footer a{color:var(--te);text-decoration:none}
+</style>
+
+<div id="wrap">
+<div class="topbar">
+  <span class="wm">School of Systems &amp; Complexity</span>
+  <span class="dt">tools.systemsandcomplexity.school · March 2026</span>
+</div>
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('network',this)">Network map</div>
+  <div class="tab" onclick="switchTab('refs',this)">References &amp; methodology</div>
+  <div class="tab" onclick="switchTab('impl',this)">What this means for you</div>
+</div>
+
+<!-- TAB 1: NETWORK -->
+<div id="network-panel" class="panel active">
+  <div class="hero">
+    <div class="hero-label">SSC Simulation Lab · Live case · March 2026</div>
+    <div class="h1">The <em>Strait of Hormuz</em> closure —<br>a cascade network</div>
+    <div class="framing">
+      A disruption is not an event. It is a signal entering a system — and what matters is not the signal itself but the <em>topology it travels through</em>. This map applies network science and systems dynamics to a live geopolitical crisis, making visible the second and third-order consequences that arrive late, look like something else, and are structurally determined long before anyone notices them. The percentages are not forecasts. They are honest statements about what we know, what we are inferring, and <em>where expertise runs out</em>.
+    </div>
+  </div>
+  <div class="cb">
+    <span class="cl">Filter →</span>
+    <button class="btn active" onclick="ft('all',this)">All</button>
+    <button class="btn" onclick="ft('energy',this)">Energy</button>
+    <button class="btn" onclick="ft('food',this)">Food</button>
+    <button class="btn" onclick="ft('tech',this)">Technology</button>
+    <button class="btn" onclick="ft('finance',this)">Finance</button>
+    <button class="btn" onclick="ft('geo',this)">Geopolitics</button>
+    <button class="btn" onclick="ft('health',this)">Health</button>
+    <button class="btn" onclick="ft('dollar',this)">Dollar</button>
+    <button class="btn loop-btn active" id="loopBtn" onclick="toggleLoop(this)">loop</button>
+    <div class="size-toggle" id="sizeToggle" onclick="toggleSize()"><span id="sizeLabel">size: impact</span></div>
+  </div>
+  <div id="cw"><svg id="net"></svg><div id="tt"></div></div>
+  <div class="lw">
+    <div class="leg"><div class="ld" style="background:#D85A30"></div>Central event</div>
+    <div class="leg"><div class="ld" style="background:#cc3366"></div>Geopolitical coupling</div>
+    <div class="leg"><div class="ld" style="background:#e8733a"></div>Energy</div>
+    <div class="leg"><div class="ld" style="background:#5aaa6a"></div>Food</div>
+    <div class="leg"><div class="ld" style="background:#5a9fd4"></div>Technology</div>
+    <div class="leg"><div class="ld" style="background:#a080d8"></div>Finance</div>
+    <div class="leg"><div class="ld" style="background:#d48a40"></div>Geopolitics</div>
+    <div class="leg"><div class="ld" style="background:#40b8b8"></div>Health</div>
+    <div class="leg"><div class="ld" style="background:#c8a840"></div>Dollar system</div>
+    <div class="leg" style="margin-left:6px"><div class="ls2" style="background:#888880"></div>Confirmed</div>
+    <div class="leg"><div class="ld2"></div>Probable</div>
+    <div class="leg"><div class="ll"></div>Reinforcing loop</div>
+  </div>
+</div>
+
+<!-- TAB 2: REFS -->
+<div id="refs-panel" class="panel">
+  <div class="refs-inner">
+    <div class="method-note">
+      <strong style="color:var(--cream);display:block;margin-bottom:5px">Probability methodology</strong>
+      Probabilities are structured expert judgements, not statistical forecasts. They are derived from: (1) confirmed real-time data as of late March 2026; (2) supply chain lag models from cited institutional sources; (3) historical analogues — 1973 oil shock, 2021 Suez blockage, 2022 Ukraine gas crisis; (4) network position — nodes with more confirmed upstream causes receive higher base probabilities. All probabilities should be read as: "given the strait remains closed for 2–4 weeks, what is the probability this consequence manifests within the stated time horizon?" Dollar system nodes use a 5–10 year window. The reinforcing loop reflects a structural coupling between concurrent geopolitical disruptions — each node in the loop carries its own probability, but the loop as a whole activates when even partial energy re-dependency occurs.
+    </div>
+    <div class="rsec">
+      <div class="rsec-title">Primary sources — live crisis reporting</div>
+      <div class="ritem"><div class="ritem-label">2026 Strait of Hormuz Crisis — Wikipedia</div><div class="ritem-src">en.wikipedia.org/wiki/2026_Strait_of_Hormuz_crisis</div><div class="ritem-note">Real-time incident log: tanker strikes, IRGC declarations, force majeure invocations. Basis for all confirmed (100%) nodes.</div></div>
+      <div class="ritem"><div class="ritem-label">EIA — Hormuz critical chokepoint (2024–2026)</div><div class="ritem-src">eia.gov/todayinenergy</div><div class="ritem-note">20M bbl/day; 84% of crude to Asian markets; 20% of global LNG. Basis for energy node sizing and confirmed status.</div></div>
+      <div class="ritem"><div class="ritem-label">IEA — Strait of Hormuz oil security brief</div><div class="ritem-src">iea.org</div><div class="ritem-note">93% of Qatar's LNG through strait. 19% of global LNG trade. Basis for European gas crunch (85%).</div></div>
+      <div class="ritem"><div class="ritem-label">Al Jazeera — Iran closure is an international crisis, March 25 2026</div><div class="ritem-src">aljazeera.com</div><div class="ritem-note">Iraq cut 3.3M→900K bbl/day confirmed. Force majeure: QatarEnergy, Shell, Kuwait Petroleum, Bapco.</div></div>
+      <div class="ritem"><div class="ritem-label">Reuters — Gulf importers race to reroute, March 16 2026</div><div class="ritem-src">reuters.com</div><div class="ritem-note">70% of Gulf food through Hormuz. French apple case (€900K surcharge). Basis for gulf food node.</div></div>
+      <div class="ritem"><div class="ritem-label">Al Jazeera — Pakistan secures Iran deal for 20 ships, March 28 2026</div><div class="ritem-src">aljazeera.com</div><div class="ritem-note">Independent bilateral navigation deal. Evidence for Gulf alliance fractures and geopolitical coupling pathway.</div></div>
+    </div>
+    <div class="rsec">
+      <div class="rsec-title">Supply chain &amp; commodity cascade</div>
+      <div class="ritem"><div class="ritem-label">Carnegie Endowment — Fertilizer not getting through, March 2026</div><div class="ritem-src">carnegieendowment.org</div><div class="ritem-note">Confirms irreducible 6-month harvest lag. "Weeks farmers do not have." Basis for agri_input → food_prices chain.</div></div>
+      <div class="ritem"><div class="ritem-label">Fortune — Iran war cripples Asia's fertilizer and helium, March 23 2026</div><div class="ritem-src">fortune.com</div><div class="ritem-note">"Up to 15% of goods through Hormuz are non-energy." SE Asia agriculture data. FAO quote on fertilizer as social shock.</div></div>
+      <div class="ritem"><div class="ritem-label">Inkstick — Strait closure hits every economy</div><div class="ritem-src">inkstickmedia.com</div><div class="ritem-note">Polypropylene +6% in one day; methanol futures +10%; 1/3 of global helium removed. Basis for helium collapse (100%).</div></div>
+      <div class="ritem"><div class="ritem-label">CNBC — Hormuz closure as tipping point, March 11 2026</div><div class="ritem-src">cnbc.com</div><div class="ritem-note">Traffix/Geskey: "initial ocean impact 10–14 days, real pressure 2–5 weeks." Basis for port congestion (95%).</div></div>
+      <div class="ritem"><div class="ritem-label">BBC — How closure affects food, medicines, smartphones</div><div class="ritem-src">bbc.com</div><div class="ritem-note">IFC modelling: wheat +4.2%, fruit/veg +5.2%. Basis for food_prices (95%) and Q3–Q4 timing.</div></div>
+      <div class="ritem"><div class="ritem-label">Dallas Fed — What Hormuz closure means for global economy, March 2026</div><div class="ritem-src">dallasfed.org</div><div class="ritem-note">60% recession probability. Stagflation modelling. Fed rate cut reversal documented.</div></div>
+      <div class="ritem"><div class="ritem-label">HKU Asia Global Institute — Strait crisis and supply chains</div><div class="ritem-src">asiaglobalinstitute.hku.hk</div><div class="ritem-note">Semiconductor helium dependency. Helium recycling timeline (1–3 years). Basis for tech restructuring (70%).</div></div>
+    </div>
+    <div class="rsec">
+      <div class="rsec-title">Geopolitical coupling &amp; European energy dependency</div>
+      <div class="ritem"><div class="ritem-label">Bruegel Institute — European gas dependency and alternatives</div><div class="ritem-src">bruegel.org · 2023–2025</div><div class="ritem-note">Europe replaced ~150 bcm/year of Russian pipeline gas with LNG. Infrastructure for re-dependency remains partially operational. Basis for European gas temptation node (55%).</div></div>
+      <div class="ritem"><div class="ritem-label">ECFR — EU cohesion under geopolitical pressure</div><div class="ritem-src">ecfr.eu · 2024–2025</div><div class="ritem-note">Hungary, Slovakia, Austria divergence documented. Legal basis for coordinated EU positions weakens under external pressure. Basis for EU cohesion fracture (72%).</div></div>
+      <div class="ritem"><div class="ritem-label">IISS Military Balance 2025; Kiel Institute Ukraine Support Tracker</div><div class="ritem-src">iiss.org · kieler-institut.de</div><div class="ritem-note">Ukraine artillery dependency on Western supply. Russian 3:1 artillery advantage when supply constrained. Basis for Ukraine military attrition (82%).</div></div>
+      <div class="ritem"><div class="ritem-label">EU ReArm Europe proposal 2025; NATO Defence Expenditure reports</div><div class="ritem-src">ec.europa.eu · nato.int</div><div class="ritem-note">€800B over 4 years proposed. NATO 2% target exceeded by most Eastern members. Defence spending confirmed as structurally inflationary. Basis for EU defence spending surge (confirmed).</div></div>
+      <div class="ritem"><div class="ritem-label">Arab Center DC — Iran war and end of US–Gulf oil-for-security deal</div><div class="ritem-src">arabcenterdc.org · March 2026</div><div class="ritem-note">Structural strain on 1974 oil-for-security compact. China acting independently. Direct basis for geopolitical coupling cluster.</div></div>
+    </div>
+    <div class="rsec">
+      <div class="rsec-title">Dollar system &amp; dedollarisation</div>
+      <div class="ritem"><div class="ritem-label">BIS Working Papers — Dedollarisation of global trade, 2023–2025</div><div class="ritem-src">bis.org</div><div class="ritem-note">USD share of trade invoicing: ~50% (2001) → ~42% (2024). Structural trend predating the crisis.</div></div>
+      <div class="ritem"><div class="ritem-label">Atlantic Council — Dollar dominance and nontraditional reserve currencies, 2024</div><div class="ritem-src">atlanticcouncil.org</div><div class="ritem-note">USD share of reserves: 71% (2001) → 58% (2024). Basis for dollar hegemony erosion (45%).</div></div>
+      <div class="ritem"><div class="ritem-label">Brookings — Petrodollar system and Gulf geopolitics, 2024</div><div class="ritem-src">brookings.edu</div><div class="ritem-note">Saudi–China yuan oil trade discussions. UAE dirham settlement pilots. Basis for petrodollar erosion (62%).</div></div>
+    </div>
+    <div class="rsec">
+      <div class="rsec-title">Probability table — all nodes</div>
+      <table class="prob-table">
+        <tr><th>Node</th><th>Time</th><th>Prob</th><th>Basis</th></tr>
+        <tr><td>Oil / LNG / Helium / Fertilizer / Shipping</td><td>Now</td><td class="conf">100%</td><td>Confirmed by real-time market and field data</td></tr>
+        <tr><td>EU defence spending surge</td><td>Now</td><td class="conf">100%</td><td>ReArm Europe €800B announced; NATO targets exceeded</td></tr>
+        <tr><td>Port congestion cascade</td><td>Weeks</td><td class="pct">95%</td><td>CNBC/Traffix model; 5% discount for faster reroute</td></tr>
+        <tr><td>Semiconductor slowdown</td><td>Weeks</td><td class="pct">90%</td><td>Fab buffer ~3–6 weeks; 10% discount for emergency sourcing</td></tr>
+        <tr><td>War revenue increase</td><td>Weeks</td><td class="pct">90%</td><td>Oil price mechanism; 10% discount for partial sanctions scope</td></tr>
+        <tr><td>Stagflation pressure</td><td>Weeks</td><td class="pct">88%</td><td>Dallas Fed; 1973 analogue; loop deepens each cycle</td></tr>
+        <tr><td>European gas crunch</td><td>Weeks</td><td class="pct">85%</td><td>IEA storage data; 15% discount for LNG spot flexibility</td></tr>
+        <tr><td>Food prices Q3–Q4</td><td>Months</td><td class="pct">95%</td><td>IFC/World Bank; planting window already compromised</td></tr>
+        <tr><td>Multi-sector inflation</td><td>Months</td><td class="pct">92%</td><td>Dallas Fed; simultaneous shock across 3+ sectors</td></tr>
+        <tr><td>EU energy bill spike</td><td>Months</td><td class="pct">88%</td><td>Gas → electricity price transmission; 12% buffer for renewables</td></tr>
+        <tr><td>SE Asia food stress</td><td>Months</td><td class="pct">82%</td><td>FAO field data; fertilizer import dependency rates</td></tr>
+        <tr><td>Ukraine military attrition</td><td>Months</td><td class="pct">82%</td><td>IISS/Kiel artillery dependency data</td></tr>
+        <tr><td>Electronics scarcity</td><td>Months</td><td class="pct">80%</td><td>Semiconductor → consumer lag ~3–6 months</td></tr>
+        <tr><td>MRI &amp; hospital ops</td><td>Months</td><td class="pct">75%</td><td>Hospital helium buffer ~3–6 months</td></tr>
+        <tr><td>EU cohesion fracture</td><td>Months</td><td class="pct">72%</td><td>Hungary precedent; legal basis weakens under external pressure</td></tr>
+        <tr><td>Pharma supply chain</td><td>Months</td><td class="pct">72%</td><td>Petrochemical → medical packaging lag</td></tr>
+        <tr><td>Recession risk</td><td>Months</td><td class="pct">60%</td><td>Dallas Fed explicitly: 60% if closure persists 3+ months</td></tr>
+        <tr><td>Permanent fear premium</td><td>Year+</td><td class="pct">90%</td><td>NYT; Suez 1956 embedded 18-month premium; loop amplifies</td></tr>
+        <tr><td>Mortgage &amp; rent pressure</td><td>Year+</td><td class="pct">82%</td><td>Inflation → rate → housing; already observed March 2026</td></tr>
+        <tr><td>Energy route reconfiguration</td><td>Year+</td><td class="pct">78%</td><td>UAE ADCO pipeline; Saudi Red Sea route confirmed</td></tr>
+        <tr><td>Tech supply restructuring</td><td>Year+</td><td class="pct">70%</td><td>Helium recycling capex announced by TSMC, Air Products</td></tr>
+        <tr><td>Chronic food insecurity</td><td>Year+</td><td class="pct">65%</td><td>Conditional on 6+ month closure; WFP trigger thresholds</td></tr>
+        <tr><td>Gulf alliance fractures</td><td>Year+</td><td class="pct">68%</td><td>Pakistan deal confirmed; Saudi–China yuan talks documented</td></tr>
+        <tr><td>Transatlantic fracture</td><td>Year+</td><td class="pct">60%</td><td>Structural strain on post-1945 architecture; political science expertise required for finer calibration</td></tr>
+        <tr><td>Iran regime shift</td><td>Year+</td><td class="pct">55%</td><td>High uncertainty; successor dynamics unknown</td></tr>
+        <tr class="loop-row"><td>European gas re-dependency</td><td>Year+</td><td class="pct">55%</td><td>Loop node: conditional on Hormuz 6+ months AND concurrent geopolitical pressure</td></tr>
+        <tr><td>Petrodollar erosion</td><td>Year+</td><td class="pct">62%</td><td>Saudi–China yuan; BIS invoicing trend; 5-year window</td></tr>
+        <tr><td>Dollar hegemony erosion</td><td>Year+</td><td class="pct">45%</td><td>Atlantic Council reserve share; 5–10 year structural drift, not collapse</td></tr>
+      </table>
+    </div>
+    <div class="rsec">
+      <div class="rsec-title">A note on "dollar collapse" vs "dollar hegemony erosion"</div>
+      <div class="ritem">
+        <div class="ritem-label">Why "erosion" not "collapse"</div>
+        <div class="ritem-note">Dollar collapse implies rapid, total loss of reserve currency status — no credible mechanism exists for this in a 2–5 year window. The yuan is not freely convertible. The euro is fiscally fragmented. No alternative has depth comparable to US Treasury markets. What IS happening is a gradual structural shift: declining USD share in trade invoicing (BIS) and central bank reserves (Atlantic Council), and Gulf states exploring bilateral non-dollar settlement (Brookings). This is a 5–10 year process. The 45% probability reflects meaningful acceleration of this trend within a decade — not catastrophic collapse. Complexity science should be precise about the difference between tipping points (fast) and slow structural drift.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 3: IMPLICATIONS -->
+<div id="impl-panel" class="panel">
+  <div class="impl-inner">
+    <div class="impl-lede">
+      A network map is not a forecast. It is a <em>topology of consequence</em> — a way of seeing which effects are inevitable, which are probable, and which are still preventable. The question is not whether this crisis will affect you. It already has. The question is whether you are making decisions at the right timescale, in response to the right signal.
+    </div>
+
+    <div class="loop-callout">
+      <div class="loop-callout-title">The reinforcing feedback loop</div>
+      <div class="loop-callout-text">
+        The pink links in the map trace something conventional analysis will miss entirely: two concurrent geopolitical disruptions that are structurally coupled through European energy dependency. Each feeds the other. The loop does not return to its starting point — it <em>ratchets</em>. Breaking it requires coordinated action across multiple nodes simultaneously. That is precisely what the current environment makes least likely.
+      </div>
+      <div class="loop-chain">
+        <span class="lc-node">EU gas crunch</span><span class="lc-arrow">→</span>
+        <span class="lc-node">Russian gas temptation</span><span class="lc-arrow">→</span>
+        <span class="lc-node">Geopolitical revenue</span><span class="lc-arrow">→</span>
+        <span class="lc-node">Ukraine attrition</span><span class="lc-arrow">→</span>
+        <span class="lc-node">EU security costs</span><span class="lc-arrow">→</span>
+        <span class="lc-node">Stagflation deepens</span><span class="lc-arrow">→</span>
+        <span class="lc-node">Fear premium</span><span class="lc-arrow">↻</span>
+      </div>
+    </div>
+
+    <div class="persona">
+      <div class="persona-head">
+        <span class="persona-tag">Individuals &amp; households</span>
+        <span class="persona-title">The signals that reach your life arrive late and look like something else</span>
+      </div>
+      <div class="persona-body">
+        <div class="persona-story">
+          By the time you notice this crisis in your grocery bill, the cause will be six months old and already forgotten by the news cycle. That is not an accident — it is the structure of the system. The fertilizer that did not arrive in March will become the wheat harvest that was smaller in September, which will become the bread price that is higher in October. Each link in that chain is separated by weeks or months. No single headline will connect them.<br><br>
+          The same logic applies to your energy bill, your mortgage rate, and the availability of the laptop or medical device you might need next year. The Strait of Hormuz is not in the news you read today. But it is already in the prices you will pay.
+        </div>
+        <div class="impl-items">
+          <div class="impl-item"><div class="impl-bullet">1</div><div class="impl-text"><strong>Fuel costs are already higher</strong> and will remain elevated through summer regardless of diplomatic resolution. Any fixed-price energy contract available to you is worth examining now, before the lag closes.</div></div>
+          <div class="impl-item"><div class="impl-bullet">2</div><div class="impl-text"><strong>Autumn food prices will rise structurally</strong> — not because of speculation but because the physical harvest is already compromised. This is not reversible by a ceasefire. Budget accordingly for Q3–Q4 2026.</div></div>
+          <div class="impl-item"><div class="impl-bullet">3</div><div class="impl-text"><strong>Mortgage and rent pressure will persist</strong> longer than the crisis itself. Central banks facing stagflation cannot cut rates to ease housing costs. If you are mid-decision on property, the rate environment you were planning around has shifted.</div></div>
+          <div class="impl-item"><div class="impl-bullet">4</div><div class="impl-text"><strong>Electronics and medical devices</strong> — if you have a deferred purchase, the 3–6 month semiconductor lag means late 2026 is a worse time to buy than now.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="persona">
+      <div class="persona-head">
+        <span class="persona-tag">Businesses &amp; institutions</span>
+        <span class="persona-title">Your supply chain exposure is almost certainly not where you think it is</span>
+      </div>
+      <div class="persona-body">
+        <div class="persona-story">
+          Most organisations will respond to this crisis by looking at their energy spend. That is the visible node. It is also the one every competitor is watching. The organisations that will be most surprised are those with second and third-order commodity dependencies they have never mapped — the manufacturer whose packaging resin comes from a Gulf petrochemical plant, the hospital whose MRI service contract assumes helium availability that no longer exists, the food company whose supplier's fertilizer costs are about to restructure their input prices for the next two growing seasons.<br><br>
+          The network diagram you just looked at is, in its essentials, a supplier risk map. Most organisations have a version of this in their procurement systems — but it stops at tier one. This is a tier-two and tier-three event.
+        </div>
+        <div class="impl-items">
+          <div class="impl-item"><div class="impl-bullet">1</div><div class="impl-text"><strong>Map your commodity dependencies to layer two.</strong> Ask not just "what do we buy?" but "what do our suppliers buy?" Helium, urea, polypropylene, and LNG are in more supply chains than most procurement teams know.</div></div>
+          <div class="impl-item"><div class="impl-bullet">2</div><div class="impl-text"><strong>The 6-month food price lag is an accounting event, not just a social one.</strong> If your organisation buys food at scale, the cost structure of autumn 2026 is already determined. Model it now.</div></div>
+          <div class="impl-item"><div class="impl-bullet">3</div><div class="impl-text"><strong>Insurance and logistics costs carry a fear premium</strong> that will not disappear when the strait reopens. Renegotiate freight contracts and war-risk insurance clauses before the new baseline is accepted as normal.</div></div>
+          <div class="impl-item"><div class="impl-bullet">4</div><div class="impl-text"><strong>Scenario planning must include a 6-month closure case.</strong> Most current analysis assumes resolution within weeks. The network structure suggests the economic consequences are largely independent of when the strait reopens — the harvest cycle does not wait.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="persona">
+      <div class="persona-head">
+        <span class="persona-tag">Aid organisations &amp; foundations</span>
+        <span class="persona-title">The crisis that will require your resources is not the one currently in the news</span>
+      </div>
+      <div class="persona-body">
+        <div class="persona-story">
+          Emergency funding follows visibility. The network map shows that the largest and most diffuse consequences — food insecurity across Southeast Asia, healthcare disruption from helium shortfalls, the slow erosion of smallholder farm viability in fertilizer-dependent economies — will arrive six to eighteen months later, when donor attention has moved on.<br><br>
+          This is a structural feature of how aid systems work. The question is whether any actor has the mandate and the foresight to position resources now for consequences that are highly probable but not yet visible. The nodes in the months and year+ rings are not hypothetical. They are already determined by what is happening today.
+        </div>
+        <div class="impl-items">
+          <div class="impl-item"><div class="impl-bullet">1</div><div class="impl-text"><strong>SE Asia food system stress is a 3–6 month event, not a year-horizon one.</strong> The fertilizer planting window closes in May. WFP and FAO positioning in Indonesia, Thailand, and Vietnam should begin now, not when prices rise.</div></div>
+          <div class="impl-item"><div class="impl-bullet">2</div><div class="impl-text"><strong>Healthcare system resilience in helium-dependent regions</strong> is an underfunded second-order risk. Elective MRI rationing will fall disproportionately on under-resourced health systems.</div></div>
+          <div class="impl-item"><div class="impl-bullet">3</div><div class="impl-text"><strong>Fund what is central, not what is visible.</strong> In network terms: nodes with highest betweenness centrality are systemic connectors. Interventions at these nodes prevent multiple downstream consequences simultaneously. This is where foundations with longer time horizons have genuine comparative advantage over emergency funds.</div></div>
+          <div class="impl-item"><div class="impl-bullet">4</div><div class="impl-text"><strong>The dollar system transition is a decade-long governance question</strong> that affects aid architecture directly — reserve currency composition, multilateral lending capacity, USD-denominated debt service for Global South countries. It belongs in your strategic foresight agenda now.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="closing">
+      <div class="closing-title">On reinforcing loops and the limits of single-crisis thinking</div>
+      <div class="closing-text">
+        The reason the feedback loop in this map is dangerous is not its size but its <em>self-reinforcing character</em>. Each activation makes the next activation more likely. The loop does not return to its starting point. It ratchets.<br><br>
+        What complexity science adds is not just the identification of the loop — any good analyst can trace it once it is pointed out. What it adds is the understanding that <em>the loop cannot be managed from inside any single node</em>. No energy minister, no central bank governor, no humanitarian coordinator controls enough of the loop to break it unilaterally. Breaking it requires coordinated action across nodes simultaneously. That kind of multi-node, multi-domain coordination is precisely what the current geopolitical environment makes least likely. <em>That is the real finding.</em>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <span>EIA · IEA · Carnegie · Dallas Fed · Bruegel · ECFR · IISS · Kiel Institute · BIS · Atlantic Council · Brookings · Arab Center DC · CREA · March 2026</span>
+  <a href="https://systemsandcomplexity.school">systemsandcomplexity.school</a>
+</footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script>
+function switchTab(id,btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(id+'-panel').classList.add('active');
+}
+const TH={
+  event:  {fill:'#D85A30',stroke:'#ff8060',glow:'rgba(216,90,48,0.28)'},
+  russia: {fill:'#cc3366',stroke:'#ff6699',glow:'rgba(204,51,102,0.28)'},
+  energy: {fill:'#e8733a',stroke:'#ffa060',glow:'rgba(232,115,58,0.18)'},
+  food:   {fill:'#5aaa6a',stroke:'#80dd90',glow:'rgba(90,170,106,0.18)'},
+  tech:   {fill:'#5a9fd4',stroke:'#80c8ff',glow:'rgba(90,159,212,0.18)'},
+  finance:{fill:'#a080d8',stroke:'#c8a8ff',glow:'rgba(160,128,216,0.18)'},
+  geo:    {fill:'#d48a40',stroke:'#ffb870',glow:'rgba(212,138,64,0.18)'},
+  health: {fill:'#40b8b8',stroke:'#70e8e8',glow:'rgba(64,184,184,0.18)'},
+  dollar: {fill:'#c8a840',stroke:'#f0d060',glow:'rgba(200,168,64,0.22)'},
+};
+const TL={now:'Now — weeks 1–4',weeks:'Weeks 4–8',months:'Months 3–6',year:'Year+ horizon'};
+const TR={now:.23,weeks:.42,months:.62,year:.83};
+const LOOP_COLOR='#ff4488';
+const LOOP_NODES=new Set(['europe_gas','ru_gas_tempt','ru_revenue','ukraine_attrition','eu_security','eu_defence','stagflation','fear_premium']);
+let showLoop=true;
+
+const nodes=[
+  {id:'hormuz',      label:'Strait of Hormuz\nclosed',      theme:'event',  time:'now',   prob:100,size:26,loop:false,info:'28 Feb 2026: US–Israel strikes kill Khamenei. IRGC closes strait March 4. ~70% traffic reduction. 20M barrels/day blocked. Force majeure: QatarEnergy, Shell, Kuwait Petroleum, Bapco.'},
+  {id:'ru_sanctions',label:'Geopolitical\ncoupling event',  theme:'russia', time:'now',   prob:100,size:18,loop:false,info:'A concurrent geopolitical disruption — operating through different mechanisms but coupling into the same European energy system. Creates the conditions for the reinforcing feedback loop visible in pink.'},
+  {id:'ru_revenue',  label:'Adversarial\nrevenue increase', theme:'russia', time:'now',   prob:90, size:17,loop:true, info:'LOOP NODE. Elevated oil prices combined with reduced financial isolation increases adversarial revenue. Every $10/bbl oil price rise adds ~$14B/year to a resource-dependent war economy. Hormuz and geopolitical disruptions compound here. (IMF, CREA)'},
+  {id:'ukraine_attrition',label:'Ukraine military\nattrition',theme:'russia',time:'months',prob:82,size:16,loop:true, info:'LOOP NODE. Ukrainian frontline capacity is directly dependent on Western artillery supply. Reduced Western support documented. Russian 3:1 artillery advantage when supply constrained. (IISS Military Balance 2025, Kiel Institute)'},
+  {id:'eu_security', label:'European\nsecurity crisis',      theme:'russia', time:'months',prob:68, size:15,loop:true, info:'LOOP NODE. If Ukraine loses significant territory: Baltic, Polish, Romanian deterrence calculus shifts. Article 5 credibility questioned. European NATO members face genuine threat reassessment for first time since 1989.'},
+  {id:'eu_defence',  label:'EU defence\nspending surge',     theme:'russia', time:'now',   prob:100,size:18,loop:true, info:'LOOP NODE. Confirmed. EU ReArm Europe: €800B over 4 years. NATO 2% GDP target now exceeded by most Eastern members. Defence spending is structurally inflationary — competes with civilian production, tightens labour markets, adds to fiscal deficits.'},
+  {id:'eu_cohesion', label:'EU cohesion\nfracture',          theme:'russia', time:'months',prob:72, size:14,loop:false,info:'Hungary already blocking EU Ukraine aid packages. Slovakia, Austria with existing energy agreements. If external pressure is removed from coordinated EU positions, legal and political basis for unified responses weakens. Frozen assets (€300B at Euroclear) become live flashpoint. (ECFR)'},
+  {id:'ru_gas_tempt',label:'European gas\nre-dependency\ntemptation',theme:'energy',time:'months',prob:55,size:15,loop:true,info:'LOOP NODE. Europe replaced ~150 bcm/year of Russian pipeline gas with LNG (primarily Qatari). If Qatari LNG is blocked (Hormuz) and European energy bills are rising, Russian gas becomes the cheapest available alternative. Infrastructure remains partially operational. This is where the two crises physically couple. (Bruegel, IEA)'},
+  {id:'transatlantic',label:'Transatlantic\nfracture',       theme:'geo',    time:'year',  prob:60, size:13,loop:false,info:'Structural strain on the post-1945 Atlantic security architecture. Reflects divergence on sanctions, energy dependency, and defence burden sharing — not a clean break, but structural damage that changes load-bearing capacity. Probability estimate reflects meaningful shift, not catastrophic rupture. Political science expertise required for finer calibration.'},
+  {id:'oil',         label:'Oil price spike',                theme:'energy', time:'now',   prob:100,size:18,loop:false,info:'~20% of global seaborne oil trade blocked. Iraq cut 3.3M→900K bbl/day. Brent surging. IEA emergency SPR releases. (EIA, Reuters)'},
+  {id:'lng',         label:'LNG price spike',                theme:'energy', time:'now',   prob:100,size:17,loop:false,info:'~20% of global LNG through Hormuz. Europe: 12–14% from Qatar. QatarEnergy force majeure. (IEA)'},
+  {id:'helium',      label:'Helium collapse',                theme:'tech',   time:'now',   prob:100,size:16,loop:false,info:'Qatar: ~1/3 of global helium. Polypropylene +6%; methanol +10%. MRI, chip fab, fiber optics, space launches. (Fortune, Inkstick)'},
+  {id:'fertilizer',  label:'Fertilizer shortage',            theme:'food',   time:'now',   prob:100,size:18,loop:false,info:'Gulf: major urea, ammonia, LPG supplier. Northern Hemisphere planting happening NOW. Carnegie: restarting takes weeks farmers do not have.'},
+  {id:'shipping',    label:'Shipping chaos',                 theme:'finance',time:'now',   prob:100,size:16,loop:false,info:'1,000+ ships stuck. Cape rerouting adds 10–14 days. Terminal congestion within 2–5 weeks. (project44, CNBC)'},
+  {id:'insurance',   label:'War risk premiums',              theme:'finance',time:'now',   prob:100,size:13,loop:false,info:'Lloyd\'s repricing Gulf coverage. Fear premium may persist years after reopening. (NYT)'},
+  {id:'iraq_cut',    label:'Iraq output –70%',               theme:'energy', time:'now',   prob:100,size:14,loop:false,info:'Iraq: 3.3M→900K bbl/day. Majority of Basra exports transit the strait. (Al Jazeera)'},
+  {id:'fuel_costs',  label:'Transport costs up',             theme:'energy', time:'weeks', prob:100,size:15,loop:false,info:'Oil + shipping surcharges pass through to all physical goods. Ocean 10–14 days; inland 2–5 weeks.'},
+  {id:'port_crunch', label:'Port congestion\ncascade',       theme:'finance',time:'weeks', prob:95, size:14,loop:false,info:'Containers mislocated globally. Congestion cascades inland 2–5 weeks. (project44, CNBC)'},
+  {id:'semi_supply', label:'Semiconductor\nslowdown',        theme:'tech',   time:'weeks', prob:90, size:16,loop:false,info:'Helium critical for chip fab. TSMC, Samsung, Intel: ~3–6 week buffer. (Fortune, HKU)'},
+  {id:'europe_gas',  label:'European gas\ncrunch',           theme:'energy', time:'weeks', prob:85, size:15,loop:true, info:'LOOP NODE. Europe: 12–14% LNG from Qatar. Winter 2026–27 stocks at risk. Germany, Italy, Portugal exposed via gas-setting electricity prices. This is the node where the Hormuz cascade and the geopolitical coupling physically meet. (IEA)'},
+  {id:'agri_input',  label:'Farm input\nprice shock',        theme:'food',   time:'weeks', prob:100,size:16,loop:false,info:'Fertilizer shortage hits farms during planting (March–May). Miss this window = reduced autumn harvest. No mid-season recovery. (Carnegie, FAO)'},
+  {id:'stagflation', label:'Stagflation\npressure',          theme:'finance',time:'weeks', prob:88, size:16,loop:true, info:'LOOP NODE. Supply shock + energy spike + defence spending inflation = stagflation. Fed rate cuts walked back. Mortgage rates above 6%. ECB trapped. The loop deepens this node with each cycle. (Dallas Fed)'},
+  {id:'food_prices', label:'Food prices rise\nQ3–Q4',        theme:'food',   time:'months',prob:95, size:17,loop:false,info:'Wheat +4.2%, fruit/veg +5.2%. Fertilizer → reduced yields → supermarket signal autumn 2026. Irreducible 6-month delay. (IFC/World Bank, BBC)'},
+  {id:'electronics', label:'Electronics scarcity',           theme:'tech',   time:'months',prob:80, size:15,loop:false,info:'Semiconductor slowdown → 3–6 month lag to product scarcity. Phones, laptops, EVs, medical devices.'},
+  {id:'inflation',   label:'Multi-sector inflation',         theme:'finance',time:'months',prob:92, size:17,loop:false,info:'Energy + food + manufactured goods + defence spending rising simultaneously. ECB and Fed face stagflation trap. (Dallas Fed)'},
+  {id:'asia_food',   label:'SE Asia food stress',            theme:'food',   time:'months',prob:82, size:15,loop:false,info:'"Fertilizer shocks are social and political ones." Indonesia, Thailand, Vietnam: agriculture = 10% GDP, 33% jobs. (FAO)'},
+  {id:'eu_energy',   label:'EU energy bill spike',           theme:'energy', time:'months',prob:88, size:14,loop:false,info:'Gas peakers set electricity prices at the margin. LNG shock + defence inflation feeds bills through 2026–27.'},
+  {id:'recession',   label:'Recession risk',                 theme:'finance',time:'months',prob:60, size:16,loop:false,info:'60% probability if closure persists 3+ months, compounded by dual-shock stagflation. (Dallas Fed)'},
+  {id:'mri_helium',  label:'MRI & hospital ops',             theme:'health', time:'months',prob:75, size:14,loop:false,info:'Hospital-grade helium. ~3–6 month buffer. Elective MRI rationing likely. Cryotherapy, surgical robotics also affected. (OilPrice.com, BBC)'},
+  {id:'pharma',      label:'Pharma supply chain',            theme:'health', time:'months',prob:72, size:13,loop:false,info:'Petrochemicals → packaging, pill coatings, IV bags, surgical plastics. 6–12 month lag before hospital shortfall.'},
+  {id:'fear_premium',label:'Permanent fear\npremium',        theme:'geo',    time:'year',  prob:90, size:15,loop:true, info:'LOOP NODE. Embeds lasting price increase in global energy markets. In the loop, this fear premium sustains European motivation to seek cheaper alternative gas — feeding the cycle again. (NYT)'},
+  {id:'regime',      label:'Iran regime shift',              theme:'geo',    time:'year',  prob:55, size:13,loop:false,info:'Khamenei killed. 55%: negotiated settlement, continued proxy war, or regime fragmentation.'},
+  {id:'global_reconfig',label:'Energy route\nreconfiguration',theme:'geo',  time:'year',  prob:78, size:14,loop:false,info:'UAE ADCO pipeline, Saudi Red Sea routes accelerating. Reduces Hormuz chokepoint long-run but takes 2–5 years at scale.'},
+  {id:'food_insec',  label:'Chronic food\ninsecurity',       theme:'food',   time:'year',  prob:65, size:15,loop:false,info:'6+ month closure: 2026 harvest shortfall → 2027 food crisis. WFP emergency operations triggered. SE Asia and MENA most exposed.'},
+  {id:'mortgage',    label:'Mortgage & rent\npressure',      theme:'finance',time:'year',  prob:82, size:14,loop:false,info:'Inflation embeds into wages, rents, mortgage rates. US rates above 6%. ECB paralysed. Housing pressure persists 12–18 months post-shock.'},
+  {id:'tech_shift',  label:'Tech supply\nrestructuring',     theme:'tech',   time:'year',  prob:70, size:13,loop:false,info:'Helium recycling + alternative sourcing. 1–3 year horizon. (HKU Asia Global Institute)'},
+  {id:'alliances',   label:'Gulf alliance\nfractures',       theme:'geo',    time:'year',  prob:68, size:13,loop:false,info:'Pakistan 20-ship deal. China (37% of Hormuz oil) acting independently. US–Gulf compact under strain. (Arab Center DC)'},
+  {id:'petrodollar', label:'Petrodollar erosion',            theme:'dollar', time:'year',  prob:62, size:14,loop:false,info:'Saudi–China yuan oil trade discussions. UAE dirham settlement pilots. Acceleration of existing trend, not a new event. (Brookings, Arab Center DC)'},
+  {id:'dollar_heg',  label:'Dollar hegemony\nerosion',       theme:'dollar', time:'year',  prob:45, size:13,loop:false,info:'USD reserves: 71% (2001) → 58% (2024). 5–10 year structural drift — NOT collapse. No credible alternative reserve currency exists at scale. (Atlantic Council, BIS)'},
+];
+
+const links=[
+  {s:'hormuz',t:'oil',c:1,l:false},{s:'hormuz',t:'lng',c:1,l:false},{s:'hormuz',t:'helium',c:1,l:false},
+  {s:'hormuz',t:'fertilizer',c:1,l:false},{s:'hormuz',t:'shipping',c:1,l:false},
+  {s:'hormuz',t:'iraq_cut',c:1,l:false},{s:'hormuz',t:'insurance',c:1,l:false},
+  {s:'hormuz',t:'regime',c:0,l:false},{s:'hormuz',t:'alliances',c:0,l:false},
+  {s:'ru_sanctions',t:'ru_revenue',c:1,l:false},
+  {s:'ru_sanctions',t:'eu_cohesion',c:0,l:false},
+  {s:'ru_sanctions',t:'transatlantic',c:0,l:false},
+  {s:'iraq_cut',t:'oil',c:1,l:false},
+  {s:'oil',t:'fuel_costs',c:1,l:false},{s:'oil',t:'stagflation',c:0,l:false},
+  {s:'lng',t:'europe_gas',c:0,l:false},
+  // THE LOOP
+  {s:'europe_gas',t:'ru_gas_tempt',c:0,l:true},
+  {s:'ru_gas_tempt',t:'ru_revenue',c:0,l:true},
+  {s:'ru_revenue',t:'ukraine_attrition',c:0,l:true},
+  {s:'ukraine_attrition',t:'eu_security',c:0,l:true},
+  {s:'eu_security',t:'eu_defence',c:0,l:true},
+  {s:'eu_defence',t:'stagflation',c:0,l:true},
+  {s:'stagflation',t:'fear_premium',c:0,l:true},
+  {s:'fear_premium',t:'europe_gas',c:0,l:true},
+  // non-loop
+  {s:'eu_cohesion',t:'transatlantic',c:0,l:false},
+  {s:'eu_security',t:'transatlantic',c:0,l:false},
+  {s:'helium',t:'semi_supply',c:0,l:false},{s:'helium',t:'mri_helium',c:0,l:false},
+  {s:'fertilizer',t:'agri_input',c:1,l:false},
+  {s:'shipping',t:'port_crunch',c:0,l:false},{s:'shipping',t:'fuel_costs',c:1,l:false},
+  {s:'insurance',t:'stagflation',c:0,l:false},{s:'insurance',t:'fear_premium',c:0,l:false},
+  {s:'fuel_costs',t:'inflation',c:0,l:false},
+  {s:'port_crunch',t:'electronics',c:0,l:false},{s:'port_crunch',t:'inflation',c:0,l:false},
+  {s:'semi_supply',t:'electronics',c:0,l:false},
+  {s:'europe_gas',t:'eu_energy',c:0,l:false},{s:'europe_gas',t:'inflation',c:0,l:false},
+  {s:'agri_input',t:'food_prices',c:0,l:false},{s:'agri_input',t:'asia_food',c:0,l:false},
+  {s:'stagflation',t:'recession',c:0,l:false},{s:'stagflation',t:'inflation',c:0,l:false},
+  {s:'mri_helium',t:'pharma',c:0,l:false},
+  {s:'food_prices',t:'food_insec',c:0,l:false},{s:'food_prices',t:'asia_food',c:0,l:false},
+  {s:'electronics',t:'tech_shift',c:0,l:false},
+  {s:'inflation',t:'mortgage',c:0,l:false},{s:'inflation',t:'recession',c:0,l:false},
+  {s:'recession',t:'food_insec',c:0,l:false},{s:'eu_energy',t:'inflation',c:0,l:false},
+  {s:'asia_food',t:'food_insec',c:0,l:false},
+  {s:'regime',t:'global_reconfig',c:0,l:false},{s:'alliances',t:'global_reconfig',c:0,l:false},
+  {s:'fear_premium',t:'global_reconfig',c:0,l:false},
+  {s:'alliances',t:'petrodollar',c:0,l:false},{s:'fear_premium',t:'petrodollar',c:0,l:false},
+  {s:'global_reconfig',t:'petrodollar',c:0,l:false},{s:'inflation',t:'petrodollar',c:0,l:false},
+  {s:'petrodollar',t:'dollar_heg',c:0,l:false},
+  {s:'eu_defence',t:'inflation',c:0,l:false},
+];
+
+function computeBetweenness(nodes,links){
+  const idx={};nodes.forEach((n,i)=>idx[n.id]=i);
+  const n=nodes.length,adj=Array.from({length:n},()=>[]);
+  links.forEach(l=>{const s=idx[l.s],t=idx[l.t];if(s!==undefined&&t!==undefined){adj[s].push(t);adj[t].push(s);}});
+  const bc=new Array(n).fill(0);
+  for(let s=0;s<n;s++){
+    const stack=[],pred=Array.from({length:n},()=>[]);
+    const sigma=new Array(n).fill(0);sigma[s]=1;
+    const dist=new Array(n).fill(-1);dist[s]=0;
+    const queue=[s];
+    while(queue.length){
+      const v=queue.shift();stack.push(v);
+      adj[v].forEach(w=>{
+        if(dist[w]<0){dist[w]=dist[v]+1;queue.push(w);}
+        if(dist[w]===dist[v]+1){sigma[w]+=sigma[v];pred[w].push(v);}
+      });
+    }
+    const delta=new Array(n).fill(0);
+    while(stack.length){
+      const w=stack.pop();
+      pred[w].forEach(v=>{delta[v]+=sigma[v]/sigma[w]*(1+delta[w]);});
+      if(w!==s)bc[w]+=delta[w];
+    }
+  }
+  return bc;
+}
+const bcRaw=computeBetweenness(nodes,links);
+const bcMax=Math.max(...bcRaw),bcMin=Math.min(...bcRaw);
+nodes.forEach((n,i)=>{n.bcSize=10+((bcRaw[i]-bcMin)/(bcMax-bcMin||1))*22;n.bcRaw=Math.round(bcRaw[i]);});
+
+let useCentrality=false;
+function toggleSize(){
+  useCentrality=!useCentrality;
+  document.getElementById('sizeLabel').textContent=useCentrality?'size: centrality':'size: impact';
+  document.getElementById('sizeToggle').classList.toggle('cent',useCentrality);
+  d3.selectAll('.ng').each(function(d){
+    const r=useCentrality?d.bcSize:d.size;
+    d3.select(this).select('.glow').attr('r',r+7);
+    d3.select(this).select('.main').attr('r',r);
+  });
+}
+
+function toggleLoop(btn){
+  showLoop=!showLoop;
+  btn.classList.toggle('active',showLoop);
+  d3.selectAll('.lnk-loop').style('opacity',showLoop?0.9:0.06).style('stroke-width',showLoop?2.2:0.4);
+  d3.selectAll('.ng').filter(d=>d.loop).each(function(){
+    d3.select(this).select('.loop-ring').style('opacity',showLoop?0.7:0);
+  });
+}
+
+let aT='all';
+function ft(th,btn){
+  aT=th;
+  document.querySelectorAll('.btn:not(.loop-btn)').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  d3.selectAll('.lnk').style('opacity',d=>{
+    if(d.l) return showLoop?0.9:0.06;
+    if(aT==='all') return d.c?0.65:0.28;
+    const sn=nodes.find(n=>n.id===(d.source.id||d.source));
+    const tn=nodes.find(n=>n.id===(d.target.id||d.target));
+    const m=(sn&&(sn.theme===aT||sn.theme==='event'||sn.theme==='russia'))||(tn&&(tn.theme===aT||tn.theme==='event'||tn.theme==='russia'));
+    return m?(d.c?0.85:0.5):0.04;
+  });
+  d3.selectAll('.ng').style('opacity',d=>{
+    if(aT==='all') return 1;
+    return(d.theme===aT||d.theme==='event'||d.theme==='russia')?1:0.1;
+  });
+}
+
+window.addEventListener('load',()=>{
+  const cw=document.getElementById('cw');
+  const W=cw.offsetWidth||900;
+  const H=Math.max(720,Math.round(W*0.82));
+  const cx=W/2,cy=H/2,mR=Math.min(cx,cy)*0.88;
+  const svg=d3.select('#net').attr('width',W).attr('height',H);
+
+  [{key:'now',col:'#D85A30'},{key:'weeks',col:'#d48a40'},{key:'months',col:'#5a9fd4'},{key:'year',col:'#a080d8'}].forEach((r,i)=>{
+    svg.append('circle').attr('cx',cx).attr('cy',cy).attr('r',TR[r.key]*mR)
+      .attr('fill','none').attr('stroke',r.col).attr('stroke-width',0.5)
+      .attr('stroke-dasharray',i===0?'0':'6 4').attr('opacity',0.15);
+    svg.append('text').attr('x',cx+TR[r.key]*mR-5).attr('y',cy-6)
+      .attr('text-anchor','end').attr('font-size',9)
+      .attr('font-family',"'IBM Plex Mono',monospace")
+      .attr('fill',r.col).attr('opacity',0.4).text(TL[r.key]);
+  });
+
+  const rb={now:[],weeks:[],months:[],year:[]};
+  nodes.forEach(n=>{if(n.id!=='hormuz')rb[n.time].push(n);});
+  nodes.forEach(n=>{
+    if(n.id==='hormuz'){n.x=cx;n.y=cy;n.fx=cx;n.fy=cy;return;}
+    const bk=rb[n.time];const idx=bk.indexOf(n);
+    const angle=(idx/bk.length)*2*Math.PI-Math.PI/2;
+    const r=TR[n.time]*mR;
+    n.x=cx+r*Math.cos(angle);n.y=cy+r*Math.sin(angle);
+  });
+
+  const ld=links.map(l=>({...l,source:l.s,target:l.t}));
+  const to={now:0,weeks:1,months:2,year:3};
+
+  const sim=d3.forceSimulation(nodes)
+    .force('link',d3.forceLink(ld).id(d=>d.id)
+      .distance(d=>{
+        const tn=nodes.find(n=>n.id===(d.target.id||d.target));
+        const sn=nodes.find(n=>n.id===(d.source.id||d.source));
+        return 46+(to[tn?.time||'now']-to[sn?.time||'now'])*16;
+      }).strength(0.26))
+    .force('radial',d3.forceRadial(d=>d.id==='hormuz'?0:TR[d.time]*mR,cx,cy).strength(0.58))
+    .force('collide',d3.forceCollide(d=>d.size+25).strength(0.88))
+    .force('charge',d3.forceManyBody().strength(-65))
+    .alphaDecay(0.026);
+
+  const lsEl=svg.append('g').selectAll('line').data(ld).enter().append('line')
+    .attr('class',d=>d.l?'lnk lnk-loop':'lnk')
+    .attr('stroke',d=>d.l?LOOP_COLOR:(()=>{const sn=nodes.find(n=>n.id===d.s);return sn?TH[sn.theme].stroke:'#666';})())
+    .attr('stroke-width',d=>d.l?2.2:(d.c?1.4:0.7))
+    .attr('stroke-dasharray',d=>d.l?'none':(d.c?'none':'4 3'))
+    .attr('opacity',d=>d.l?0.9:(d.c?0.65:0.28));
+
+  const tt=document.getElementById('tt');
+
+  const ng=svg.append('g').selectAll('g').data(nodes).enter().append('g')
+    .attr('class','ng').style('cursor','pointer')
+    .call(d3.drag()
+      .on('start',(e,d)=>{if(!e.active)sim.alphaTarget(0.15).restart();d.fx=d.x;d.fy=d.y;})
+      .on('drag',(e,d)=>{d.fx=e.x;d.fy=e.y;})
+      .on('end',(e,d)=>{if(!e.active)sim.alphaTarget(0);if(d.id!=='hormuz'){d.fx=null;d.fy=null;}}))
+    .on('mouseover',(e,d)=>{
+      tt.style.display='block';
+      const ps=d.prob<100?`<span class="tp">${d.prob}% probability</span>`:'';
+      const cs=`<span class="tc">betweenness centrality: ${d.bcRaw}</span>`;
+      const ls=d.loop?`<span class="tl">part of the reinforcing feedback loop</span>`:'';
+      tt.innerHTML=`<span class="tn">${d.label.replace(/\n/g,' ')}</span><span class="tt2">${TL[d.time]}</span>${ps}<span class="ti">${d.info}</span>${cs}${ls}`;
+    })
+    .on('mousemove',(e)=>{
+      const r=cw.getBoundingClientRect();
+      let lx=e.clientX-r.left+14,ly=e.clientY-r.top+14;
+      if(lx+248>W)lx=e.clientX-r.left-254;
+      if(ly+260>H)ly=e.clientY-r.top-260;
+      tt.style.left=lx+'px';tt.style.top=ly+'px';
+    })
+    .on('mouseout',()=>{tt.style.display='none';});
+
+  ng.append('circle').attr('class','glow').attr('r',d=>d.size+7).attr('fill',d=>TH[d.theme].glow).attr('stroke','none');
+  ng.filter(d=>d.loop).append('circle').attr('class','loop-ring')
+    .attr('r',d=>d.size+12).attr('fill','none')
+    .attr('stroke',LOOP_COLOR).attr('stroke-width',1).attr('stroke-dasharray','3 3').attr('opacity',0.7);
+  ng.append('circle').attr('class','main')
+    .attr('r',d=>d.size)
+    .attr('fill',d=>TH[d.theme].fill)
+    .attr('stroke',d=>d.loop?LOOP_COLOR:TH[d.theme].stroke)
+    .attr('stroke-width',d=>d.loop?2:(d.prob<100?1.5:0.5))
+    .attr('stroke-dasharray',d=>(!d.loop&&d.prob<100)?'3.5 2':'none')
+    .attr('opacity',d=>0.75+0.25*(d.prob/100));
+  ng.filter(d=>d.prob<100&&!d.loop).append('text')
+    .attr('text-anchor','middle').attr('dominant-baseline','central').attr('y',0)
+    .attr('font-size',7.5).attr('font-family',"'IBM Plex Mono',monospace").attr('font-weight',500)
+    .attr('fill','#EFC97A').text(d=>d.prob+'%');
+  ng.filter(d=>d.prob<100&&d.loop).append('text')
+    .attr('text-anchor','middle').attr('dominant-baseline','central').attr('y',0)
+    .attr('font-size',7.5).attr('font-family',"'IBM Plex Mono',monospace").attr('font-weight',500)
+    .attr('fill','#ffaac8').text(d=>d.prob+'%');
+
+  const labelG=svg.append('g');
+  sim.on('tick',()=>{
+    lsEl.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y).attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
+    ng.attr('transform',d=>`translate(${d.x},${d.y})`);
+  });
+  sim.on('end',()=>{
+    labelG.selectAll('*').remove();
+    nodes.forEach(d=>{
+      const lines=d.label.split('\n');
+      const angle=Math.atan2(d.y-cy,d.x-cx);
+      const r=useCentrality?d.bcSize:d.size;
+      const lx=d.x+Math.cos(angle)*(r+10);
+      const ly=d.y+Math.sin(angle)*(r+10);
+      const anchor=Math.cos(angle)<0?'end':'start';
+      const lh=11,tH=(lines.length-1)*lh;
+      lines.forEach((line,i)=>{
+        labelG.append('text')
+          .attr('x',lx).attr('y',ly-tH/2+i*lh)
+          .attr('text-anchor',anchor).attr('dominant-baseline','central')
+          .attr('font-size',9).attr('font-family',"'IBM Plex Mono',monospace")
+          .attr('font-weight',i===0?500:400)
+          .attr('fill',d.loop?'#ff88bb':TH[d.theme].stroke)
+          .attr('opacity',0.9).text(line);
+      });
+    });
+  });
+});
+</script>
