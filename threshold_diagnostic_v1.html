@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Threshold — Governance Diagnostic</title>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:         #EDE8DF;
+  --surface:    #F5F0E8;
+  --surface2:   #EDE6D8;
+  --border:     rgba(44,85,48,0.12);
+  --border-mid: rgba(44,85,48,0.22);
+  --text:       #1A1A18;
+  --muted:      #6B6357;
+  --rust:       #8B2E1A;
+  --green:      #2C5530;
+  --green-lt:   #3a7045;
+  --blush:      rgba(139,46,26,0.07);
+  --serif:      'EB Garamond', Georgia, serif;
+  --sans:       'Inter', system-ui, sans-serif;
+}
+
+html, body { height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem 1rem;
+}
+
+#app {
+  width: 100%;
+  max-width: 640px;
+  background: var(--surface);
+  border: 1px solid var(--border-mid);
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 580px;
+  box-shadow: 0 2px 24px rgba(44,85,48,0.08);
+}
+
+/* ── HEADER ── */
+#header {
+  padding: 1.75rem 1.75rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+#header-eyebrow {
+  font-family: var(--sans);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--green);
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+#header-title {
+  font-family: var(--serif);
+  font-size: 1.75rem;
+  font-weight: 400;
+  color: var(--rust);
+  line-height: 1.15;
+  font-style: italic;
+}
+#header-sub {
+  font-family: var(--sans);
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 5px;
+  line-height: 1.6;
+}
+
+/* ── ENTRY SCREEN ── */
+#entry-screen {
+  padding: 2rem 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  flex: 1;
+}
+.entry-intro p {
+  font-family: var(--serif);
+  font-size: 16px;
+  line-height: 1.8;
+  color: var(--text);
+}
+.entry-intro p + p { margin-top: 0.75rem; }
+.entry-intro em { font-style: italic; color: var(--rust); }
+
+.entry-form { display: flex; flex-direction: column; gap: 1rem; }
+.field-group { display: flex; flex-direction: column; gap: 5px; }
+.field-label {
+  font-size: 10px; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--green);
+  font-weight: 500;
+}
+.field-input {
+  background: var(--surface2);
+  border: 1px solid var(--border-mid);
+  border-radius: 2px;
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 13px;
+  padding: 9px 12px;
+  transition: border-color 0.15s;
+  width: 100%;
+}
+.field-input::placeholder { color: var(--muted); opacity: 0.6; }
+.field-input:focus { outline: none; border-color: var(--green); box-shadow: 0 0 0 2px rgba(44,85,48,0.1); }
+
+.entry-note {
+  font-size: 11px; color: var(--muted);
+  line-height: 1.7; font-style: italic;
+}
+#entry-btn {
+  align-self: flex-start;
+  padding: 10px 24px;
+  background: var(--green);
+  color: #fff;
+  border: none;
+  border-radius: 2px;
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+#entry-btn:hover { background: var(--green-lt); }
+#entry-error { font-size: 11px; color: var(--rust); display: none; margin-top: -0.5rem; }
+
+/* ── CHAT ── */
+#chat-area {
+  flex: 1; overflow-y: auto;
+  padding: 1.5rem 1.75rem;
+  display: none; flex-direction: column; gap: 1.25rem;
+  max-height: 420px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-mid) transparent;
+  background: var(--surface);
+}
+#chat-area.active { display: flex; }
+
+.msg { display: flex; gap: 10px; align-items: flex-start; animation: fadeIn 0.3s ease; }
+@keyframes fadeIn { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:translateY(0); } }
+.msg.user { flex-direction: row-reverse; }
+
+.avatar {
+  width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 600; letter-spacing: 0.04em;
+}
+.avatar.ai { background: var(--green); color: #fff; font-family: var(--sans); }
+.avatar.user {
+  background: var(--blush); color: var(--rust);
+  border: 1px solid rgba(139,46,26,0.2);
+  font-family: var(--sans);
+}
+
+.bubble {
+  max-width: 82%; padding: 11px 15px;
+  font-size: 14px; line-height: 1.7;
+  font-family: var(--serif);
+}
+.bubble.ai {
+  background: var(--surface2);
+  color: var(--text);
+  border-radius: 2px 10px 10px 10px;
+  border: 1px solid var(--border);
+}
+.bubble.user {
+  background: var(--green);
+  color: #fff;
+  border-radius: 10px 2px 10px 10px;
+  font-family: var(--sans);
+  font-size: 13px;
+}
+
+/* ── RESULT BUBBLE ── */
+.bubble.result {
+  background: var(--surface2);
+  border: 1px solid var(--border-mid);
+  border-radius: 2px 10px 10px 10px;
+  max-width: 96%;
+  padding: 1.25rem 1.4rem;
+}
+.result-label {
+  font-family: var(--sans);
+  font-size: 9px; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--green);
+  margin-bottom: 8px; font-weight: 500;
+}
+.result-narrative {
+  font-family: var(--serif);
+  font-size: 14.5px; line-height: 1.85; color: var(--text);
+}
+.result-section { margin-bottom: 1.1rem; }
+.pattern-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 7px; }
+.chip {
+  padding: 3px 10px; border-radius: 20px;
+  font-size: 11px; font-weight: 500;
+  font-family: var(--sans); letter-spacing: 0.03em;
+}
+.chip.block {
+  background: rgba(139,46,26,0.08);
+  color: var(--rust);
+  border: 1px solid rgba(139,46,26,0.2);
+}
+.chip.unblock {
+  background: rgba(44,85,48,0.08);
+  color: var(--green);
+  border: 1px solid rgba(44,85,48,0.2);
+}
+
+/* ── TYPING ── */
+.typing {
+  display: flex; align-items: center; gap: 5px; padding: 11px 15px;
+  background: var(--surface2); border-radius: 2px 10px 10px 10px;
+  border: 1px solid var(--border);
+}
+.typing span {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--muted); animation: bounce 1.2s infinite;
+}
+.typing span:nth-child(2) { animation-delay: 0.2s; }
+.typing span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes bounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-5px)} }
+
+/* ── PROGRESS ── */
+#progress {
+  padding: 0.6rem 1.75rem 0.5rem;
+  display: none; gap: 5px; align-items: center;
+  border-top: 1px solid var(--border);
+}
+#progress.active { display: flex; }
+.progress-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--border-mid); transition: background 0.3s;
+}
+.progress-dot.done { background: var(--green); }
+.progress-dot.active-dot { background: var(--rust); }
+#progress-label {
+  font-size: 10px; color: var(--muted);
+  margin-left: 6px; letter-spacing: 0.05em;
+  font-family: var(--sans);
+}
+
+/* ── INPUT ── */
+#input-area {
+  padding: 1rem 1.75rem 1.25rem;
+  border-top: 1px solid var(--border);
+  display: none; gap: 8px; align-items: flex-end;
+}
+#input-area.active { display: flex; }
+#user-input {
+  flex: 1; resize: none; font-family: var(--serif);
+  font-size: 14px; line-height: 1.5;
+  padding: 9px 12px; border-radius: 2px;
+  border: 1px solid var(--border-mid);
+  background: var(--surface2); color: var(--text);
+  min-height: 40px; max-height: 120px; overflow-y: auto;
+}
+#user-input::placeholder { color: var(--muted); font-style: italic; }
+#user-input:focus { outline: none; border-color: var(--green); box-shadow: 0 0 0 2px rgba(44,85,48,0.1); }
+#send-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--green); border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: background 0.15s;
+}
+#send-btn:hover { background: var(--green-lt); }
+#send-btn:disabled { opacity: 0.35; cursor: default; }
+#send-btn svg { width: 14px; height: 14px; fill: #fff; }
+
+/* ── CONSENT SCREEN ── */
+#consent-screen {
+  padding: 2rem 1.75rem;
+  display: none; flex-direction: column; gap: 1.25rem;
+  flex: 1; justify-content: center;
+}
+#consent-screen.active { display: flex; }
+.consent-title {
+  font-family: var(--serif); font-size: 1.3rem;
+  color: var(--rust); font-style: italic; line-height: 1.3;
+}
+.consent-body {
+  font-family: var(--serif); font-size: 15px;
+  line-height: 1.8; color: var(--text);
+}
+.consent-note {
+  font-size: 12px; color: var(--muted);
+  font-style: italic; line-height: 1.6;
+}
+.consent-btns { display: flex; gap: 10px; flex-wrap: wrap; }
+.consent-btn {
+  padding: 10px 22px; border-radius: 2px;
+  font-family: var(--sans); font-size: 12px;
+  font-weight: 500; letter-spacing: 0.08em;
+  text-transform: uppercase; cursor: pointer;
+  transition: background 0.15s; border: none;
+}
+.consent-btn.yes { background: var(--green); color: #fff; }
+.consent-btn.yes:hover { background: var(--green-lt); }
+.consent-btn.no {
+  background: transparent; color: var(--muted);
+  border: 1px solid var(--border-mid);
+}
+.consent-btn.no:hover { background: var(--surface2); }
+
+/* ── THANK YOU SCREEN ── */
+#thankyou-screen {
+  padding: 2rem 1.75rem;
+  display: none; flex-direction: column; gap: 1rem;
+  flex: 1; justify-content: center;
+}
+#thankyou-screen.active { display: flex; }
+.thankyou-title {
+  font-family: var(--serif); font-size: 1.5rem;
+  color: var(--green); font-style: italic;
+}
+.thankyou-body {
+  font-family: var(--serif); font-size: 15px;
+  line-height: 1.85; color: var(--text);
+}
+.threshold-link {
+  font-family: var(--sans); font-size: 12px;
+  color: var(--green); text-decoration: none;
+  letter-spacing: 0.05em; border-bottom: 1px solid rgba(44,85,48,0.3);
+  padding-bottom: 1px; transition: opacity 0.15s;
+}
+.threshold-link:hover { opacity: 0.7; }
+
+/* ── FOOTER ── */
+footer {
+  padding: 0.9rem 1.75rem;
+  border-top: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.footer-brand {
+  font-family: var(--serif); font-size: 13px;
+  color: var(--muted); font-style: italic;
+}
+.footer-tagline {
+  font-family: var(--sans); font-size: 10px;
+  color: var(--muted); letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 600px) {
+  body { padding: 0; align-items: stretch; }
+  #app { border-radius: 0; min-height: 100vh; border: none; box-shadow: none; }
+}
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <div id="header">
+    <div id="header-eyebrow">Governance Diagnostic</div>
+    <div id="header-title">the threshold</div>
+    <div id="header-sub">we help teams make sense of complexity</div>
+  </div>
+
+  <!-- ── ENTRY SCREEN ── -->
+  <div id="entry-screen">
+    <div class="entry-intro">
+      <p>This isn't a survey. It's a <em>conversation</em>.</p>
+      <p>We'll ask you a few questions about how decisions get made, who holds power, and where things get stuck. Each answer shapes the next question.</p>
+      <p>At the end, you'll receive a reading of the governance patterns active in your system — and what moves might open things up.</p>
+    </div>
+    <div class="entry-form">
+      <div class="field-group">
+        <label class="field-label" for="f-name">Your name</label>
+        <input class="field-input" type="text" id="f-name" placeholder="Ana Ferreira" autocomplete="name" />
+      </div>
+      <div class="field-group">
+        <label class="field-label" for="f-email">Email</label>
+        <input class="field-input" type="email" id="f-email" placeholder="ana@organisation.org" autocomplete="email" />
+      </div>
+      <div class="field-group">
+        <label class="field-label" for="f-org">Organisation</label>
+        <input class="field-input" type="text" id="f-org" placeholder="Network or organisation name" autocomplete="organization" />
+      </div>
+    </div>
+    <p id="entry-error">Please fill in all fields before continuing.</p>
+    <p class="entry-note">Takes 5–8 minutes. No right answers.</p>
+    <button id="entry-btn">Begin →</button>
+  </div>
+
+  <!-- ── CHAT ── -->
+  <div id="chat-area"></div>
+
+  <div id="progress">
+    <div class="progress-dot active-dot" id="d0"></div>
+    <div class="progress-dot" id="d1"></div>
+    <div class="progress-dot" id="d2"></div>
+    <div class="progress-dot" id="d3"></div>
+    <div class="progress-dot" id="d4"></div>
+    <div class="progress-dot" id="d5"></div>
+    <div class="progress-dot" id="d6"></div>
+    <span id="progress-label">Starting...</span>
+  </div>
+
+  <div id="input-area">
+    <textarea id="user-input" placeholder="Your response..." rows="1"></textarea>
+    <button id="send-btn" disabled>
+      <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+    </button>
+  </div>
+
+  <!-- ── CONSENT SCREEN ── -->
+  <div id="consent-screen">
+    <div class="consent-title">Before we part ways</div>
+    <p class="consent-body">
+      We'd find it genuinely useful to read this conversation — not to evaluate you, but because patterns across many organisations inform how we work.<br><br>
+      Would you be willing to share your responses and reading with us at The Threshold?
+    </p>
+    <p class="consent-note">If you say yes, your name, organisation, and conversation will be shared with Pedro and Jason. If you say no, nothing leaves this page.</p>
+    <div class="consent-btns">
+      <button class="consent-btn yes" id="consent-yes">Yes, share it</button>
+      <button class="consent-btn no" id="consent-no">No, keep it private</button>
+    </div>
+  </div>
+
+  <!-- ── THANK YOU (no share) ── -->
+  <div id="thankyou-screen">
+    <div class="thankyou-title">Thank you.</div>
+    <p class="thankyou-body">
+      We hope the reading was useful. The patterns you encountered are real — naming them is often the first step toward changing them.<br><br>
+      If something in this conversation sparked a question, or if you'd like to explore what working with The Threshold might look like, we're easy to reach.
+    </p>
+    <a href="mailto:info@systemsandcomplexity.school" class="threshold-link">info@systemsandcomplexity.school</a>
+  </div>
+
+  <footer>
+    <span class="footer-brand">the threshold</span>
+    <span class="footer-tagline">we help teams make sense of complexity</span>
+  </footer>
+
+</div>
+
+<script>
+// ── CONFIG ───────────────────────────────────────────────────────
+const API_BASE            = null;
+const ANTHROPIC_API_KEY   = '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';
+const EMAILJS_SERVICE_ID  = 'service_vachfcz';
+const EMAILJS_TEMPLATE_ID = 'template_tprz9wf';
+const EMAILJS_PUBLIC_KEY  = 'MsJtoPSX_A4dfKeCn';
+emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+
+// ── SYSTEM PROMPT ────────────────────────────────────────────────
+const SYSTEM_PROMPT = `You are a governance diagnostician at The Threshold, a consultancy co-led by Pedro Oliveira and Jason Ferenczi that helps teams make sense of complexity. You conduct a dynamic diagnostic interview to identify which governance patterns are active in a person's organisation or network.
+
+You know these patterns:
+
+BLOCKS: The Bottleneck Leader, The Gatekeeper Effect, The Cult of the Founder, The Illusion of Simplicity, The Predictive Fallacy, Over-Standardization Trap, The Black Box Decision, Participation as Performance, The Token Inclusion Trap, The Fragile Hierarchy, The Vanity Metric Trap, Suppressing Dissent, Impenetrable Boundaries, Entry by Favoritism, Closed Networks.
+
+UNBLOCKS: Shared Stewardship, Consent Not Consensus, Power as Resource, Right Decision Right Level, Naming the Invisible, Sense-Making First, Hold Multiple Truths, Patterns Before Solutions, Start Small Learn Fast, Stay in Inquiry, Stop Reflect Realign, Slowing Down to Go Faster, Making Power Visible, Participation with Purpose, Entry by Relationship, Learn in Public, Reflect Adapt Iterate, Story as Feedback, Accountability as Care, From Ownership to Stewardship, Rest as Governance, Replenishment is a Practice, Permeable Boundaries, Invite Don't Oblige, Holding the Edge, Trust is the Work.
+
+YOUR APPROACH:
+- Ask ONE question at a time. Never multiple questions in one turn.
+- Be warm, curious, precise — like a thoughtful doctor taking a case history.
+- Let each answer shape your next question. Do not follow a fixed script.
+- Ask about concrete situations, not abstract assessments.
+- Probe where you sense tension, ambiguity, or contradiction. Follow threads.
+- Do NOT name patterns during the interview. The naming is the payoff at the end.
+- After 6-9 exchanges, when you have enough signal, deliver the reading.
+- You are mapping their system, not judging it. Your tone is curious, never clinical.
+
+READING FORMAT — use EXACTLY this structure when ready:
+---READING---
+NARRATIVE: [2-3 paragraphs. Warm, specific, precise. Name what you see using the person's own language. Make it feel like someone finally put words to something they felt but could not name. End with where leverage might be.]
+BLOCKS: [comma-separated pattern names]
+UNBLOCKS: [2-3 comma-separated pattern names]
+INVITATION: [One genuine sentence opening a door to working with The Threshold — not a pitch, a real next step]
+---END---`;
+
+// ── STATE ────────────────────────────────────────────────────────
+let lead = { name: '', email: '', organisation: '' };
+let messages = [];
+let questionCount = 0;
+let isTyping = false;
+let readingData = null;
+
+// ── ELEMENTS ─────────────────────────────────────────────────────
+const entryScreen   = document.getElementById('entry-screen');
+const chatArea      = document.getElementById('chat-area');
+const progressBar   = document.getElementById('progress');
+const inputArea     = document.getElementById('input-area');
+const consentScreen = document.getElementById('consent-screen');
+const thankyouScreen= document.getElementById('thankyou-screen');
+const userInput     = document.getElementById('user-input');
+const sendBtn       = document.getElementById('send-btn');
+const entryBtn      = document.getElementById('entry-btn');
+const entryError    = document.getElementById('entry-error');
+
+// ── ENTRY ────────────────────────────────────────────────────────
+entryBtn.addEventListener('click', () => {
+  const name  = document.getElementById('f-name').value.trim();
+  const email = document.getElementById('f-email').value.trim();
+  const org   = document.getElementById('f-org').value.trim();
+  if (!name || !email || !org) { entryError.style.display = 'block'; return; }
+  if (!email.includes('@')) {
+    entryError.textContent = 'Please enter a valid email address.';
+    entryError.style.display = 'block'; return;
+  }
+  lead = { name, email, organisation: org };
+  entryError.style.display = 'none';
+  entryScreen.style.display = 'none';
+  chatArea.classList.add('active');
+  progressBar.classList.add('active');
+  inputArea.classList.add('active');
+  startInterview();
+});
+
+['f-name','f-email','f-org'].forEach(id => {
+  document.getElementById(id).addEventListener('keydown', e => {
+    if (e.key === 'Enter') entryBtn.click();
+  });
+});
+
+// ── CHAT HELPERS ──────────────────────────────────────────────────
+function addMessage(role, content) {
+  const msg = document.createElement('div');
+  msg.className = `msg ${role}`;
+  const avatar = document.createElement('div');
+  avatar.className = `avatar ${role}`;
+  avatar.textContent = role === 'ai' ? 'TT' : lead.name.split(' ')[0]?.[0] || 'Y';
+  const bubble = document.createElement('div');
+  bubble.className = `bubble ${role}`;
+  bubble.innerHTML = content.replace(/\n/g, '<br>');
+  msg.appendChild(avatar);
+  msg.appendChild(bubble);
+  chatArea.appendChild(msg);
+  chatArea.scrollTop = chatArea.scrollHeight;
+}
+
+function showTyping() {
+  const msg = document.createElement('div');
+  msg.className = 'msg ai'; msg.id = 'typing-indicator';
+  const avatar = document.createElement('div');
+  avatar.className = 'avatar ai'; avatar.textContent = 'TT';
+  const bubble = document.createElement('div');
+  bubble.className = 'typing';
+  bubble.innerHTML = '<span></span><span></span><span></span>';
+  msg.appendChild(avatar); msg.appendChild(bubble);
+  chatArea.appendChild(msg); chatArea.scrollTop = chatArea.scrollHeight;
+}
+
+function hideTyping() {
+  const t = document.getElementById('typing-indicator');
+  if (t) t.remove();
+}
+
+function updateProgress() {
+  const dots = document.querySelectorAll('.progress-dot');
+  const label = document.getElementById('progress-label');
+  const idx = Math.min(questionCount, 6);
+  dots.forEach((d, i) => {
+    d.className = 'progress-dot';
+    if (i < idx) d.classList.add('done');
+    else if (i === idx) d.classList.add('active-dot');
+  });
+  label.textContent = questionCount >= 7 ? 'Reading your system...' : `Exchange ${questionCount + 1} of ~8`;
+}
+
+// ── READING RENDERER ──────────────────────────────────────────────
+function renderReading(raw) {
+  const get = (key, nextKey) => {
+    const rx = new RegExp(key + ':\\s*([\\s\\S]*?)(?=\\n' + nextKey + ':|---END---|$)');
+    const m = raw.match(rx);
+    return m ? m[1].trim() : '';
+  };
+  const narrative  = get('NARRATIVE', 'BLOCKS');
+  const blocks     = get('BLOCKS', 'UNBLOCKS').split(',').map(s => s.trim()).filter(Boolean);
+  const unblocks   = get('UNBLOCKS', 'INVITATION').split(',').map(s => s.trim()).filter(Boolean);
+  const invitation = get('INVITATION', 'XXXXXXXXX');
+  readingData = { narrative, blocks, unblocks, invitation };
+
+  const msg = document.createElement('div');
+  msg.className = 'msg ai';
+  const avatar = document.createElement('div');
+  avatar.className = 'avatar ai'; avatar.textContent = 'TT';
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble result';
+
+  let html = `<div class="result-section">
+    <div class="result-label">Your governance reading</div>
+    <div class="result-narrative">${narrative.replace(/\n\n/g,'</p><p style="margin-top:0.85rem">').replace(/\n/g,'<br>')}</div>
+  </div>`;
+  if (blocks.length) {
+    html += `<div class="result-section" style="border-top:1px solid var(--border);padding-top:0.9rem">
+      <div class="result-label">Active blocks</div>
+      <div class="pattern-chips">${blocks.map(b=>`<span class="chip block">${b}</span>`).join('')}</div>
+    </div>`;
+  }
+  if (unblocks.length) {
+    html += `<div class="result-section">
+      <div class="result-label">Moves worth considering</div>
+      <div class="pattern-chips">${unblocks.map(u=>`<span class="chip unblock">${u}</span>`).join('')}</div>
+    </div>`;
+  }
+  if (invitation) {
+    html += `<div style="border-top:1px solid var(--border);padding-top:0.9rem;font-family:var(--serif);font-size:14px;color:var(--muted);font-style:italic;line-height:1.7">${invitation}</div>`;
+  }
+
+  bubble.innerHTML = html;
+  msg.appendChild(avatar); msg.appendChild(bubble);
+  chatArea.appendChild(msg);
+  chatArea.scrollTop = chatArea.scrollHeight;
+
+  // Hide input, show consent
+  inputArea.classList.remove('active');
+  progressBar.innerHTML = '<span style="font-size:10px;color:var(--muted);letter-spacing:0.08em;font-family:var(--sans);text-transform:uppercase">Reading complete</span>';
+
+  setTimeout(() => {
+    chatArea.classList.remove('active');
+    chatArea.style.display = 'none';
+    progressBar.style.display = 'none';
+    consentScreen.classList.add('active');
+  }, 2200);
+}
+
+// ── CONSENT ───────────────────────────────────────────────────────
+document.getElementById('consent-yes').addEventListener('click', () => {
+  consentScreen.classList.remove('active');
+  thankyouScreen.classList.add('active');
+  document.querySelector('.thankyou-title').textContent = 'Thank you — and thank you for sharing.';
+  document.querySelector('.thankyou-body').innerHTML =
+    'We\'ll read this carefully. The patterns you named are ones we recognise.<br><br>If something in this conversation sparked a question, or if you\'d like to explore what working with The Threshold might look like, we\'re easy to reach.';
+  sendReport();
+});
+
+document.getElementById('consent-no').addEventListener('click', () => {
+  consentScreen.classList.remove('active');
+  thankyouScreen.classList.add('active');
+});
+
+// ── SEND REPORT ───────────────────────────────────────────────────
+async function sendReport() {
+  try {
+    const transcript = messages
+      .filter(m => m.content !== '[Interview started]')
+      .map(m => {
+        const who = m.role === 'assistant' ? 'The Threshold' : lead.name;
+        return `${who}:\n${m.content}`;
+      })
+      .join('\n\n---\n\n');
+
+    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+      lead_name:   lead.name,
+      lead_email:  lead.email,
+      lead_org:    lead.organisation,
+      narrative:   readingData.narrative,
+      blocks:      readingData.blocks.join(', '),
+      unblocks:    readingData.unblocks.join(', '),
+      invitation:  readingData.invitation,
+      transcript:  transcript,
+      date:        new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+    });
+    console.log('Report sent.');
+  } catch(e) {
+    console.warn('EmailJS error:', e);
+  }
+}
+
+// ── CLAUDE API CALL ───────────────────────────────────────────────
+async function callClaude(userMsg) {
+  isTyping = true; sendBtn.disabled = true; showTyping();
+
+  if (userMsg !== null) {
+    messages.push({ role: 'user', content: userMsg });
+  } else {
+    messages.push({ role: 'user', content: `Begin the interview. The person's name is ${lead.name} and they work at ${lead.organisation}. Welcome them warmly by name in 1-2 sentences, then ask your first question about a concrete recent situation — a decision, meeting, or moment of friction. Just the welcome and one question.` });
+  }
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        system: SYSTEM_PROMPT,
+        messages
+      })
+    });
+
+    const data = await response.json();
+    hideTyping();
+    const text = data.content?.[0]?.text || '';
+
+    if (userMsg === null) {
+      messages[messages.length - 1] = { role: 'user', content: '[Interview started]' };
+    }
+    messages.push({ role: 'assistant', content: text });
+
+    if (text.includes('---READING---')) {
+      const parts = text.split('---READING---');
+      if (parts[0].trim()) addMessage('ai', parts[0].trim());
+      renderReading(parts[1]);
+    } else {
+      addMessage('ai', text);
+      questionCount++;
+      updateProgress();
+    }
+  } catch(e) {
+    hideTyping();
+    addMessage('ai', 'Something went wrong. Please refresh and try again.');
+  }
+
+  isTyping = false; sendBtn.disabled = false; userInput.focus();
+}
+
+function startInterview() { updateProgress(); callClaude(null); }
+
+function send() {
+  if (isTyping) return;
+  const val = userInput.value.trim();
+  if (!val) return;
+  userInput.value = ''; userInput.style.height = 'auto';
+  addMessage('user', val); callClaude(val);
+}
+
+sendBtn.addEventListener('click', send);
+userInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+});
+userInput.addEventListener('input', () => {
+  userInput.style.height = 'auto';
+  userInput.style.height = Math.min(userInput.scrollHeight, 120) + 'px';
+  sendBtn.disabled = userInput.value.trim() === '';
+});
+</script>
+</body>
+</html>
