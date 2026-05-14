@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>When the three-body problem bites — three equal masses</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Serif+Display&display=swap" rel="stylesheet"/>
+<style>
+  *,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #F5F0E8;
+    --surface: #EDE8DC;
+    --surface-2: #E5DFD1;
+    --border: rgba(44,40,32,0.12);
+    --border-mid: rgba(44,40,32,0.22);
+    --text: #2C2820;
+    --muted: #888070;
+    --accent: #8C3A1E;
+    --accent-2: #2A5A8C;
+    --accent-3: #2A7A5A;
+    --mono: 'DM Mono', monospace;
+    --serif: 'DM Serif Display', serif;
+  }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 14px;
+    line-height: 1.65;
+    min-height: 100vh;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 3rem 1.5rem 4rem;
+  }
+
+  .container { width: 100%; max-width: 820px; }
+
+  header {
+    margin-bottom: 2.5rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 2rem;
+  }
+
+  .eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.6rem;
+  }
+
+  h1 {
+    font-family: var(--serif);
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 400;
+    line-height: 1.1;
+    margin-bottom: 1.2rem;
+  }
+
+  h1 em { font-style: italic; color: var(--accent); }
+
+  .lede {
+    color: var(--muted);
+    font-size: 15px;
+    max-width: 680px;
+    margin-bottom: 1.6rem;
+  }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-top: 1.4rem;
+  }
+
+  @media (max-width: 560px) {
+    .two-col { grid-template-columns: 1fr; }
+  }
+
+  .desc-block {
+    border-left: 1px solid var(--border-mid);
+    padding-left: 1rem;
+  }
+
+  .desc-block h3 {
+    font-family: var(--serif);
+    font-size: 18px;
+    font-weight: 400;
+    margin-bottom: 0.5rem;
+  }
+
+  .desc-block p {
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .simulator {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 2rem;
+  }
+
+  .controls {
+    padding: 1rem 1.2rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  .toggle-group { display: flex; }
+
+  .toggle-btn {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border-mid);
+    padding: 7px 14px;
+    font-family: inherit;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .toggle-btn:first-child { border-radius: 3px 0 0 3px; }
+  .toggle-btn:last-child { border-radius: 0 3px 3px 0; border-left: none; }
+  .toggle-btn:not(:first-child):not(:last-child) { border-left: none; }
+
+  .toggle-btn.active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+
+  .toggle-btn:hover:not(.active) {
+    color: var(--text);
+    border-color: var(--text);
+  }
+
+  .reset-btn {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border-mid);
+    padding: 7px 14px;
+    font-family: inherit;
+    font-size: 12px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-left: auto;
+  }
+
+  .reset-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+  .setup-panel {
+    display: none;
+    padding: 1rem 1.2rem;
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--border);
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+
+  .setup-panel.visible { display: flex; }
+
+  .setup-instructions {
+    font-size: 13px;
+    color: var(--text);
+    font-family: var(--mono);
+  }
+
+  .setup-instructions strong { color: var(--accent); }
+
+  .mass-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.4rem;
+  }
+
+  .mass-group {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-width: 220px;
+    flex: 1;
+  }
+
+  .mass-label {
+    font-size: 12px;
+    min-width: 70px;
+    font-weight: 500;
+  }
+
+  .mass-group input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    flex: 1;
+    height: 3px;
+    background: var(--border-mid);
+    border-radius: 2px;
+    outline: none;
+  }
+
+  .mass-group input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    background: var(--accent);
+    border-radius: 50%;
+    cursor: pointer;
+  }
+
+  .mass-group input[type="range"]::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    background: var(--accent);
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+  }
+
+  .mass-val {
+    font-size: 12px;
+    color: var(--text);
+    min-width: 36px;
+    text-align: right;
+  }
+
+  .setup-actions {
+    display: flex;
+    gap: 0.6rem;
+  }
+
+  .action-btn {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border-mid);
+    padding: 7px 16px;
+    font-family: inherit;
+    font-size: 12px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .action-btn:hover:not(:disabled) {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .action-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .action-btn.primary {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+
+  .action-btn.primary:hover:not(:disabled) {
+    background: transparent;
+    color: var(--accent);
+  }
+
+  .run-panel {
+    display: none;
+    padding: 0.8rem 1.2rem;
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .run-panel.visible { display: block; }
+
+  canvas.placing { cursor: crosshair; }
+
+  canvas {
+    display: block;
+    width: 100%;
+    background: var(--surface-2);
+  }
+
+  .status-bar {
+    padding: 10px 1.2rem;
+    background: var(--surface-2);
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--muted);
+    font-family: var(--mono);
+  }
+
+  .status-bar strong { color: var(--accent); }
+
+  .explainer { margin-top: 2rem; }
+  .explainer-section { margin-bottom: 2.5rem; }
+
+  .section-label {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.8rem;
+  }
+
+  .explainer h2 {
+    font-family: var(--serif);
+    font-size: 24px;
+    line-height: 1.25;
+    font-weight: 400;
+    margin-bottom: 1rem;
+  }
+
+  .explainer h2 em { font-style: italic; color: var(--accent); }
+
+  .explainer p {
+    color: var(--text);
+    margin-bottom: 1rem;
+    max-width: 700px;
+  }
+
+  .explainer p strong { color: var(--accent); font-weight: 500; }
+
+  .quote {
+    background: var(--surface);
+    border-left: 2px solid var(--accent);
+    padding: 1rem 1.2rem;
+    margin: 1.4rem 0;
+    font-style: italic;
+    color: var(--text);
+  }
+
+  .quote p { margin-bottom: 0.6rem; }
+
+  .quote cite {
+    font-size: 12px;
+    color: var(--muted);
+    font-style: normal;
+  }
+
+  .fact-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 1rem 1.1rem;
+    border-radius: 3px;
+  }
+
+  .fact-block h4 {
+    font-size: 12px;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 500;
+  }
+
+  .fact-block p {
+    font-size: 13px;
+    color: var(--text);
+    margin-bottom: 0;
+  }
+
+  .fact-block p strong { color: var(--accent); }
+
+  .legend {
+    display: flex;
+    gap: 1.4rem;
+    align-items: center;
+    padding: 8px 1.2rem;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .legend-item { display: flex; align-items: center; gap: 0.5rem; }
+
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+
+  footer {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    width: 100%;
+    max-width: 820px;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<header>
+  <p class="eyebrow">School of Systems and Complexity · Orbital mechanics</p>
+  <h1>When the three-body problem <em>bites</em></h1>
+  <p class="lede">Three masses of comparable size, governed by Newton's law of gravity. No randomness. No approximation. And no hierarchy to hide behind. For almost all starting conditions, the trajectories are impossible to predict beyond a short horizon. This is the three-body problem in its undisguised form.</p>
+
+  <div class="two-col">
+    <div class="desc-block">
+      <h3>The setup</h3>
+      <p>Three bodies, comparable masses, mutual gravity only. Newton's law integrated with fourth-order Runge-Kutta. Same physics as planetary motion — but without the mass hierarchy that lets the solar system pretend to be stable.</p>
+    </div>
+    <div class="desc-block">
+      <h3>The experiment</h3>
+      <p>Three classic configurations. Figure-8 is rare order. Pythagorean ends in ejection. Chaos shows the generic case. Reset any scenario to see how sensitive it is to tiny differences in initial conditions.</p>
+    </div>
+  </div>
+</header>
+
+<div class="simulator">
+  <div class="controls">
+    <div class="toggle-group">
+      <button class="toggle-btn active" id="btn-fig8"   onclick="load('fig8')">Figure-8</button>
+      <button class="toggle-btn"        id="btn-pyth"   onclick="load('pyth')">Pythagorean</button>
+      <button class="toggle-btn"        id="btn-chaos"  onclick="load('chaos')">Chaos</button>
+      <button class="toggle-btn"        id="btn-custom" onclick="load('custom')">Custom</button>
+    </div>
+    <button class="reset-btn" id="btn-reset" onclick="resetCurrent()">Reset</button>
+  </div>
+
+  <div class="setup-panel" id="setup-panel">
+    <div class="setup-instructions" id="setup-instructions">
+      Click on the canvas to place <strong>Body 1</strong>. You will place three bodies in turn.
+    </div>
+    <div class="mass-controls" id="mass-controls">
+      <div class="mass-group">
+        <span class="mass-label" style="color:#8C3A1E">● Body 1</span>
+        <input type="range" min="0.1" max="10" value="1" step="0.1" id="sl-m1" oninput="onMassChange(0, this.value)"/>
+        <span class="mass-val" id="val-m1">1.0</span>
+      </div>
+      <div class="mass-group">
+        <span class="mass-label" style="color:#2A5A8C">● Body 2</span>
+        <input type="range" min="0.1" max="10" value="1" step="0.1" id="sl-m2" oninput="onMassChange(1, this.value)"/>
+        <span class="mass-val" id="val-m2">1.0</span>
+      </div>
+      <div class="mass-group">
+        <span class="mass-label" style="color:#2A7A5A">● Body 3</span>
+        <input type="range" min="0.1" max="10" value="1" step="0.1" id="sl-m3" oninput="onMassChange(2, this.value)"/>
+        <span class="mass-val" id="val-m3">1.0</span>
+      </div>
+    </div>
+    <div class="setup-actions">
+      <button class="action-btn" id="btn-clear" onclick="clearCustom()">Clear</button>
+      <button class="action-btn primary" id="btn-run" onclick="runCustom()" disabled>Run</button>
+    </div>
+  </div>
+
+  <div class="run-panel" id="run-panel">
+    <button class="action-btn" onclick="pauseAndEdit()">Pause and edit</button>
+  </div>
+
+  <canvas id="c" height="500"></canvas>
+  <div class="legend">
+    <div class="legend-item"><span class="legend-dot" style="background:#8C3A1E"></span> Body 1</div>
+    <div class="legend-item"><span class="legend-dot" style="background:#2A5A8C"></span> Body 2</div>
+    <div class="legend-item"><span class="legend-dot" style="background:#2A7A5A"></span> Body 3</div>
+    <div class="legend-item" style="margin-left:auto"><span id="time-display">t = 0.00</span></div>
+  </div>
+  <div class="status-bar" id="status">Figure-8 — three equal masses chase each other along a single closed curve. A rare periodic solution.</div>
+</div>
+
+<div class="explainer">
+
+  <div class="explainer-section">
+    <p class="section-label">The result</p>
+    <h2>Determinism does not imply <em>predictability</em></h2>
+    <p>The two-body problem has an exact analytical solution. Newton wrote it down in 1687. Given the initial positions and velocities of two gravitating masses, you can calculate where they will be at any future time — exactly, forever. The orbit is a perfect ellipse, repeating without deviation.</p>
+    <p>Add a third body of comparable mass and the problem changes category. <strong>Henri Poincaré proved in 1890 that no such solution exists.</strong> The system is chaotic: small differences in initial conditions grow exponentially. No measurement precision, however fine, gives infinite predictive horizon. The uncertainty always catches up.</p>
+    <div class="quote">
+      <p>"It may happen that small differences in the initial conditions produce very great ones in the final phenomena. A small error in the former will produce an enormous error in the latter. Prediction becomes impossible."</p>
+      <cite>— Henri Poincaré, Science and Method (1908)</cite>
+    </div>
+    <p>This was the founding result of chaos theory — discovered not by meteorologists or economists, but by a mathematician trying to prove that the solar system was stable. He proved the opposite.</p>
+  </div>
+
+  <div class="explainer-section">
+    <p class="section-label">The three scenarios</p>
+    <h2>Three faces of <em>the same problem</em></h2>
+    <div class="two-col" style="grid-template-columns: 1fr; gap: 1rem;">
+      <div class="fact-block">
+        <h4>Figure-8</h4>
+        <p>Discovered by Chenciner and Montgomery in 2000 — only 110 years after Poincaré. Three equal masses chase each other along a single closed figure-of-eight curve. It is one of the rare known periodic solutions of the three-body problem: a vanishingly thin slice of initial conditions for which the chaos cancels itself out by symmetry. Press Reset and watch — eventually, tiny numerical differences will break the symmetry and the chaos will reassert itself.</p>
+      </div>
+      <div class="fact-block">
+        <h4>Pythagorean</h4>
+        <p>Studied since Burrau (1913). Three masses in ratio 3 : 4 : 5, placed at rest at the vertices of a right triangle with sides in the same proportion. They pull on each other, accelerate, have close encounters, and eventually one body is ejected. The system always ends the same way: a tight binary plus a fugitive. The Pythagorean problem is the classic demonstration that three-body systems do not generally remain bounded.</p>
+      </div>
+      <div class="fact-block">
+        <h4>Chaos</h4>
+        <p>Three equal masses in a generic starting configuration — no special symmetry, no special ratios. Close encounters, temporary captures, unpredictable ejections. This is what the three-body problem looks like for almost all initial conditions: the chaotic regime, which fills the parameter space, surrounding the rare islands of order like Figure-8.</p>
+      </div>
+      <div class="fact-block">
+        <h4>Custom</h4>
+        <p>Place three bodies anywhere on the canvas. Set their masses. Press Run. The bodies start at rest — gravity does all the work. Try placing them in a perfectly symmetric triangle and watch what happens. Try one heavy body and two light ones. Try three bodies in a near-collinear arrangement. Almost every configuration ends the same way: ejection, with a tight binary left behind. The exceptions are vanishingly rare. This is the parameter space Poincaré was talking about.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="explainer-section">
+    <p class="section-label">The companion question</p>
+    <h2>Why doesn't the solar system <em>do this?</em></h2>
+    <p>If three bodies are generically chaotic, why has the solar system — with one star, eight planets, dozens of moons, thousands of asteroids — been stable for 4.5 billion years? The answer is <strong>hierarchy</strong>: the Sun holds 99.86% of the system's mass, and each planet's moons are tiny compared to the planet. Each body orbits something much heavier than itself, and the scales separate cleanly. The chaos that Poincaré proved was present is suppressed — not removed — by the hierarchy.</p>
+    <p>This is the more interesting story: most stable real-world systems are not structurally stable in Poincaré's sense. They are <em>hierarchically</em> stable. The chaos is latent in the equations the whole time. When the hierarchy breaks — when a body is comparable in mass to what it orbits — the chaos arrives all at once.</p>
+    <div class="fact-block">
+      <h4>See also</h4>
+      <p>The companion simulator <strong>"When the three-body problem hides"</strong> takes the Sun-Earth-Moon system and lets you crank up the Moon's mass. You can watch the moment the hierarchy collapses and the chaos shown here begins to assert itself. Together the two pages make a single point: chaos is generic, stability is the exception, and the exception is almost always hierarchical.</p>
+    </div>
+  </div>
+
+  <div class="explainer-section">
+    <p class="section-label">A note on the solar system itself</p>
+    <div class="fact-block">
+      <h4>Even the solar system is not eternally stable</h4>
+      <p>Numerical simulations going out billions of years show that the inner solar system is chaotic in the long run. There is roughly a 1% probability that Mercury's orbit will become so eccentric within the Sun's remaining lifetime that it collides with Venus, or is ejected. We exist in a window of quasi-stability, not eternal order. Poincaré's chaos is not absent from our system. It is merely operating on timescales longer than human attention.</p>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  School of Systems and Complexity · tools.systemsandcomplexity.school · RK4 integration with softening
+</footer>
+
+</div>
+
+<script>
+// ============================================================
+// Three-body problem — equal-comparable mass case
+// Units: G = 1, masses ~1, distances ~1, integration with RK4
+// ============================================================
+const canvas = document.getElementById('c');
+const ctx    = canvas.getContext('2d');
+
+const G = 1.0;
+const DT = 0.003;
+const SOFT = 0.02;          // softening to avoid singularities at close approaches
+const TRAIL_MAX = 800;
+const SUBSTEPS = 4;
+const COL = ['#8C3A1E', '#2A5A8C', '#2A7A5A'];
+
+let W, H;
+let bodies = [];
+let trails = [[], [], []];
+let animId = null;
+let current = 'fig8';
+let simTime = 0;
+let cameraZoom = 1.0;
+let cameraTarget = 1.0;
+
+// ============================================================
+// Canvas sizing
+// ============================================================
+function resize() {
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  W = rect.width;
+  H = 500;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.height = H + 'px';
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+
+// ============================================================
+// Scenarios
+// ============================================================
+const scenarios = {
+  fig8: {
+    label: 'Figure-8 — three equal masses chase each other along a single closed curve. A rare periodic solution.',
+    // Chenciner & Montgomery 2000 figure-eight initial conditions
+    init: () => {
+      // Positions and velocities from the canonical figure-8 solution
+      const x1 =  0.97000436, y1 = -0.24308753;
+      const vx3 = -0.93240737, vy3 = -0.86473146;
+      return [
+        { m: 1, x:  x1, y:  y1, vx: -vx3/2, vy: -vy3/2 },
+        { m: 1, x: -x1, y: -y1, vx: -vx3/2, vy: -vy3/2 },
+        { m: 1, x:  0,  y:  0,  vx:  vx3,   vy:  vy3   },
+      ];
+    },
+  },
+  pyth: {
+    label: 'Pythagorean — masses 3:4:5 at vertices of a 3:4:5 triangle, starting at rest. One body is always ejected.',
+    init: () => [
+      { m: 3, x:  1.0, y:  3.0, vx: 0, vy: 0 },
+      { m: 4, x: -2.0, y: -1.0, vx: 0, vy: 0 },
+      { m: 5, x:  1.0, y: -1.0, vx: 0, vy: 0 },
+    ],
+  },
+  chaos: {
+    label: 'Chaos — three equal masses in a generic configuration. Ejections, close encounters, temporary captures.',
+    init: () => [
+      { m: 1, x:  1.0, y:  0.0, vx:  0.0, vy:  0.5 },
+      { m: 1, x: -0.5, y:  0.866, vx: -0.433, vy: -0.25 },
+      { m: 1, x: -0.5, y: -0.866, vx:  0.433, vy: -0.25 },
+    ],
+  },
+  custom: {
+    label: 'Custom — place three bodies on the canvas. They will start at rest. Gravity does the rest.',
+    init: () => [],  // populated by user clicks
+  },
+};
+
+// ============================================================
+// Custom mode state
+// ============================================================
+let mode = 'preset';            // 'preset' | 'setup' | 'run'
+let customBodies = [];          // bodies placed so far in setup
+let customMasses = [1.0, 1.0, 1.0];
+let customCameraZoom = 4.0;     // fixed zoom in setup mode so placement is predictable
+
+function load(name) {
+  current = name;
+  document.getElementById('btn-fig8').classList.toggle('active', name === 'fig8');
+  document.getElementById('btn-pyth').classList.toggle('active', name === 'pyth');
+  document.getElementById('btn-chaos').classList.toggle('active', name === 'chaos');
+  document.getElementById('btn-custom').classList.toggle('active', name === 'custom');
+
+  if (name === 'custom') {
+    enterSetupMode();
+  } else {
+    mode = 'preset';
+    document.getElementById('setup-panel').classList.remove('visible');
+    document.getElementById('run-panel').classList.remove('visible');
+    canvas.classList.remove('placing');
+    bodies = scenarios[name].init();
+    trails = bodies.map(() => []);
+    simTime = 0;
+    cameraZoom = 1.0;
+    cameraTarget = 1.0;
+    document.getElementById('status').textContent = scenarios[name].label;
+    document.getElementById('btn-reset').textContent = 'Reset';
+  }
+}
+
+function resetCurrent() {
+  if (current === 'custom') {
+    if (mode === 'run') {
+      // Reset re-runs the saved custom configuration
+      runCustom();
+    } else {
+      clearCustom();
+    }
+  } else {
+    load(current);
+  }
+}
+
+// ============================================================
+// Custom mode
+// ============================================================
+function enterSetupMode() {
+  mode = 'setup';
+  customBodies = [];
+  bodies = [];
+  trails = [];
+  simTime = 0;
+  cameraZoom = customCameraZoom;
+  cameraTarget = customCameraZoom;
+  document.getElementById('setup-panel').classList.add('visible');
+  document.getElementById('run-panel').classList.remove('visible');
+  document.getElementById('btn-run').disabled = true;
+  document.getElementById('btn-reset').textContent = 'Clear';
+  canvas.classList.add('placing');
+  updateSetupInstructions();
+  document.getElementById('status').textContent = scenarios.custom.label;
+}
+
+function clearCustom() {
+  customBodies = [];
+  bodies = [];
+  trails = [];
+  document.getElementById('btn-run').disabled = true;
+  updateSetupInstructions();
+}
+
+function updateSetupInstructions() {
+  const el = document.getElementById('setup-instructions');
+  const n = customBodies.length;
+  if (n === 0) {
+    el.innerHTML = 'Click on the canvas to place <strong style="color:#8C3A1E">Body 1</strong>. You will place three bodies in turn. They will start at rest — gravity will do the rest.';
+  } else if (n === 1) {
+    el.innerHTML = 'Now place <strong style="color:#2A5A8C">Body 2</strong>.';
+  } else if (n === 2) {
+    el.innerHTML = 'Now place <strong style="color:#2A7A5A">Body 3</strong>.';
+  } else {
+    el.innerHTML = 'All three bodies placed. Adjust masses below if you like, then press <strong>Run</strong>.';
+  }
+}
+
+function onMassChange(idx, val) {
+  customMasses[idx] = parseFloat(val);
+  document.getElementById(`val-m${idx+1}`).textContent = parseFloat(val).toFixed(1);
+  if (customBodies[idx]) {
+    customBodies[idx].m = customMasses[idx];
+  }
+}
+
+function runCustom() {
+  // Snapshot the placed bodies into the live simulation
+  bodies = customBodies.map(b => ({
+    m: b.m,
+    x: b.x, y: b.y,
+    vx: 0, vy: 0,
+  }));
+  trails = bodies.map(() => []);
+  simTime = 0;
+  cameraZoom = customCameraZoom;
+  cameraTarget = customCameraZoom;
+  mode = 'run';
+  document.getElementById('setup-panel').classList.remove('visible');
+  document.getElementById('run-panel').classList.add('visible');
+  canvas.classList.remove('placing');
+  document.getElementById('btn-reset').textContent = 'Reset';
+  document.getElementById('status').textContent = 'Custom configuration — physics running. Watch how the system evolves from rest.';
+}
+
+function pauseAndEdit() {
+  mode = 'setup';
+  // Restore the original placed positions, not the evolved ones
+  bodies = [];
+  trails = [];
+  document.getElementById('setup-panel').classList.add('visible');
+  document.getElementById('run-panel').classList.remove('visible');
+  document.getElementById('btn-run').disabled = customBodies.length < 3;
+  canvas.classList.add('placing');
+  updateSetupInstructions();
+  document.getElementById('status').textContent = scenarios.custom.label;
+}
+
+// ============================================================
+// Canvas click handler for placing bodies
+// ============================================================
+function canvasToWorld(screenX, screenY) {
+  // In setup mode, camera is fixed at customCameraZoom, centred at origin
+  const rect = canvas.getBoundingClientRect();
+  const cssX = screenX - rect.left;
+  const cssY = screenY - rect.top;
+  const scale = (Math.min(W, H) / 2) / customCameraZoom;
+  const wx = (cssX - W / 2) / scale;
+  const wy = (cssY - H / 2) / scale;
+  return { x: wx, y: wy };
+}
+
+canvas.addEventListener('click', (e) => {
+  if (mode !== 'setup') return;
+  if (customBodies.length >= 3) return;
+  const w = canvasToWorld(e.clientX, e.clientY);
+  customBodies.push({
+    m: customMasses[customBodies.length],
+    x: w.x,
+    y: w.y,
+  });
+  updateSetupInstructions();
+  if (customBodies.length === 3) {
+    document.getElementById('btn-run').disabled = false;
+  }
+});
+
+// ============================================================
+// Physics
+// ============================================================
+function accelerations(bs) {
+  const n = bs.length;
+  const result = [];
+  for (let i = 0; i < n; i++) {
+    let ax = 0, ay = 0;
+    for (let j = 0; j < n; j++) {
+      if (i === j) continue;
+      const dx = bs[j].x - bs[i].x;
+      const dy = bs[j].y - bs[i].y;
+      const r2 = dx*dx + dy*dy + SOFT*SOFT;
+      const r3 = Math.pow(r2, 1.5);
+      const f = G * bs[j].m / r3;
+      ax += f * dx;
+      ay += f * dy;
+    }
+    result.push({ ax, ay });
+  }
+  return result;
+}
+
+function rk4Step(bs, dt) {
+  const a1 = accelerations(bs);
+  const half = bs.map((b, i) => ({
+    m: b.m,
+    x: b.x + 0.5 * dt * b.vx,
+    y: b.y + 0.5 * dt * b.vy,
+    vx: b.vx + 0.5 * dt * a1[i].ax,
+    vy: b.vy + 0.5 * dt * a1[i].ay,
+  }));
+  const a2 = accelerations(half);
+  const half2 = bs.map((b, i) => ({
+    m: b.m,
+    x: b.x + 0.5 * dt * half[i].vx,
+    y: b.y + 0.5 * dt * half[i].vy,
+    vx: b.vx + 0.5 * dt * a2[i].ax,
+    vy: b.vy + 0.5 * dt * a2[i].ay,
+  }));
+  const a3 = accelerations(half2);
+  const full = bs.map((b, i) => ({
+    m: b.m,
+    x: b.x + dt * half2[i].vx,
+    y: b.y + dt * half2[i].vy,
+    vx: b.vx + dt * a3[i].ax,
+    vy: b.vy + dt * a3[i].ay,
+  }));
+  const a4 = accelerations(full);
+
+  for (let i = 0; i < bs.length; i++) {
+    bs[i].x  += dt * (bs[i].vx + 2*half[i].vx + 2*half2[i].vx + full[i].vx) / 6;
+    bs[i].y  += dt * (bs[i].vy + 2*half[i].vy + 2*half2[i].vy + full[i].vy) / 6;
+    bs[i].vx += dt * (a1[i].ax + 2*a2[i].ax + 2*a3[i].ax + a4[i].ax) / 6;
+    bs[i].vy += dt * (a1[i].ay + 2*a2[i].ay + 2*a3[i].ay + a4[i].ay) / 6;
+  }
+}
+
+// ============================================================
+// Rendering
+// ============================================================
+function comAndExtent() {
+  let totalM = 0, cx = 0, cy = 0;
+  for (const b of bodies) { totalM += b.m; cx += b.m * b.x; cy += b.m * b.y; }
+  cx /= totalM; cy /= totalM;
+  let maxR = 0;
+  for (const b of bodies) {
+    const dx = b.x - cx, dy = b.y - cy;
+    maxR = Math.max(maxR, Math.sqrt(dx*dx + dy*dy));
+  }
+  return { cx, cy, maxR };
+}
+
+function render() {
+  ctx.fillStyle = '#E5DFD1';
+  ctx.fillRect(0, 0, W, H);
+
+  let cx, cy, scale;
+  if (mode === 'setup') {
+    // Fixed camera centred at origin
+    cx = 0; cy = 0;
+    scale = (Math.min(W, H) / 2) / customCameraZoom;
+    // Draw faint origin crosshair
+    ctx.strokeStyle = 'rgba(44,40,32,0.08)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(W/2 - 20, H/2);
+    ctx.lineTo(W/2 + 20, H/2);
+    ctx.moveTo(W/2, H/2 - 20);
+    ctx.lineTo(W/2, H/2 + 20);
+    ctx.stroke();
+  } else {
+    const ext = comAndExtent();
+    cx = ext.cx; cy = ext.cy;
+    const pad = 1.4;
+    cameraTarget = Math.max(2.0, ext.maxR * pad);
+    cameraZoom = cameraZoom + (cameraTarget - cameraZoom) * 0.04;
+    scale = (Math.min(W, H) / 2) / cameraZoom;
+  }
+
+  const toScreen = (x, y) => ({
+    x: W / 2 + (x - cx) * scale,
+    y: H / 2 + (y - cy) * scale,
+  });
+
+  // Trails (run mode only)
+  if (mode !== 'setup') {
+    for (let i = 0; i < trails.length; i++) {
+      const t = trails[i];
+      if (t.length < 2) continue;
+      for (let k = 1; k < t.length; k++) {
+        const alpha = k / t.length;
+        const p0 = toScreen(t[k-1].x, t[k-1].y);
+        const p1 = toScreen(t[k].x, t[k].y);
+        ctx.strokeStyle = COL[i] + Math.floor(alpha * 180).toString(16).padStart(2, '0');
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(p0.x, p0.y);
+        ctx.lineTo(p1.x, p1.y);
+        ctx.stroke();
+      }
+    }
+  }
+
+  // Bodies to draw: either live bodies (run mode) or customBodies preview (setup)
+  const drawList = mode === 'setup' ? customBodies : bodies;
+  for (let i = 0; i < drawList.length; i++) {
+    const b = drawList[i];
+    const p = toScreen(b.x, b.y);
+    const r = 4 + Math.sqrt(b.m) * 2;
+    ctx.fillStyle = COL[i];
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+    ctx.fill();
+    // In setup mode, add a faint ring to indicate "placed and editable"
+    if (mode === 'setup') {
+      ctx.strokeStyle = COL[i] + '60';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, r + 4, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+  }
+}
+
+// ============================================================
+// Main loop
+// ============================================================
+function step() {
+  if (mode !== 'setup' && bodies.length > 0) {
+    for (let s = 0; s < SUBSTEPS; s++) {
+      rk4Step(bodies, DT);
+      simTime += DT;
+    }
+    // Append to trails once per frame
+    for (let i = 0; i < bodies.length; i++) {
+      trails[i].push({ x: bodies[i].x, y: bodies[i].y });
+      if (trails[i].length > TRAIL_MAX) trails[i].shift();
+    }
+  }
+  render();
+  document.getElementById('time-display').textContent = `t = ${simTime.toFixed(2)}`;
+  animId = requestAnimationFrame(step);
+}
+
+// ============================================================
+// Init
+// ============================================================
+window.addEventListener('resize', resize);
+resize();
+load('fig8');
+step();
+</script>
+
+</body>
+</html>
