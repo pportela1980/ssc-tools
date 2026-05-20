@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>When Societies Bifurcate — School of Systems & Complexity</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;600&family=Source+Serif+4:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #12110f;
+  --bg2: #1a1916;
+  --bg3: #222018;
+  --ink: #e6e0d0;
+  --ink-dim: #7a7468;
+  --gold: #c49a3c;
+  --gold-dim: #7a5e1e;
+  --gold-glow: rgba(196,154,60,0.12);
+  --red: #b84040;
+  --red-dim: #7a2020;
+  --green: #4a8040;
+  --border: rgba(196,154,60,0.18);
+  --border-light: rgba(196,154,60,0.08);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-weight: 300;
+  line-height: 1.8;
+  overflow-x: hidden;
+}
+
+/* ── PROGRESS BAR ── */
+#progress-bar {
+  position: fixed;
+  top: 0; left: 0;
+  height: 2px;
+  background: var(--gold);
+  width: 0%;
+  z-index: 100;
+  transition: width 0.1s;
+}
+
+/* ── CHAPTER STRUCTURE ── */
+.chapter {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 6rem 2rem;
+  position: relative;
+  border-bottom: 1px solid var(--border-light);
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.9s ease, transform 0.9s ease;
+}
+.chapter.visible { opacity: 1; transform: translateY(0); }
+
+.chapter-inner {
+  max-width: 700px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.chapter-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 2rem;
+  opacity: 0.75;
+}
+
+h1 {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: clamp(2.2rem, 5vw, 3.6rem);
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--ink);
+  margin-bottom: 0.75rem;
+  letter-spacing: -0.01em;
+}
+
+.subtitle {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-style: italic;
+  font-size: 1.1rem;
+  color: var(--ink-dim);
+  margin-bottom: 2.5rem;
+}
+
+h2 {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: clamp(1.5rem, 3vw, 2.2rem);
+  font-weight: 400;
+  line-height: 1.25;
+  color: var(--ink);
+  margin-bottom: 1.2rem;
+}
+
+p {
+  font-size: 1.05rem;
+  color: var(--ink);
+  margin-bottom: 1.3rem;
+  max-width: 64ch;
+  font-weight: 300;
+}
+
+em.highlight {
+  font-style: normal;
+  color: var(--gold);
+  font-weight: 400;
+}
+
+/* ── PULL QUOTE ── */
+.pull-quote {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-style: italic;
+  font-size: clamp(1.05rem, 2.2vw, 1.35rem);
+  color: var(--gold);
+  border-left: 2px solid var(--gold-dim);
+  padding: 1rem 0 1rem 1.8rem;
+  margin: 2.5rem 0;
+  line-height: 1.55;
+  max-width: 56ch;
+}
+
+.pull-quote cite {
+  display: block;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  margin-top: 0.6rem;
+  font-style: normal;
+}
+
+/* ── WIDGET ── */
+.widget {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  padding: 2rem;
+  margin: 2.5rem 0;
+}
+
+.widget-title {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 1.8rem;
+  opacity: 0.8;
+}
+
+/* SLIDER */
+.slider-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.5rem;
+}
+.slider-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.68rem;
+  color: var(--ink-dim);
+  letter-spacing: 0.04em;
+}
+.slider-value {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.82rem;
+  color: var(--gold);
+  font-weight: 600;
+}
+
+input[type=range] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 2px;
+  background: var(--bg3);
+  outline: none;
+  margin-bottom: 0.4rem;
+  cursor: pointer;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  background: var(--gold);
+  cursor: pointer;
+  border-radius: 50%;
+  border: 2px solid var(--bg2);
+}
+
+.slider-stops {
+  display: flex;
+  justify-content: space-between;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.55rem;
+  color: var(--ink-dim);
+  opacity: 0.55;
+  margin-bottom: 1.2rem;
+}
+
+/* REGIME NARRATIVE BOX */
+.regime-box {
+  border-left: 3px solid var(--green);
+  background: rgba(74,128,64,0.07);
+  padding: 1rem 1.3rem;
+  margin: 1rem 0 1.2rem;
+  transition: border-color 0.5s, background 0.5s;
+  min-height: 90px;
+}
+.regime-box.cycle {
+  border-color: var(--gold);
+  background: rgba(196,154,60,0.06);
+}
+.regime-box.chaos {
+  border-color: var(--red);
+  background: rgba(184,64,64,0.06);
+}
+
+.regime-tag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--green);
+  margin-bottom: 0.5rem;
+  transition: color 0.4s;
+}
+.regime-box.cycle .regime-tag { color: var(--gold); }
+.regime-box.chaos .regime-tag { color: var(--red); }
+
+.regime-box p {
+  font-size: 0.88rem;
+  margin: 0;
+  line-height: 1.65;
+  color: var(--ink);
+  font-weight: 300;
+}
+
+canvas {
+  display: block;
+  width: 100%;
+}
+
+.math-caption {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.6rem;
+  color: var(--ink-dim);
+  opacity: 0.4;
+  text-align: right;
+  margin-top: 0.6rem;
+}
+
+/* ── ASIDE / FOOTNOTE ── */
+p.aside {
+  font-size: 0.8rem;
+  color: var(--ink-dim);
+  font-style: italic;
+  border-left: 1px solid var(--border);
+  padding-left: 1.2rem;
+  margin-top: 2rem;
+  line-height: 1.65;
+  max-width: 58ch;
+  font-weight: 300;
+}
+
+/* ── BIFURCATION ── */
+.bif-wrap { margin: 2rem 0; }
+
+/* ── IMPLICATION CARDS ── */
+.cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.2rem;
+  margin: 2rem 0;
+}
+.card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  padding: 1.4rem;
+}
+.card h4 {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 0.7rem;
+}
+.card p {
+  font-size: 0.82rem;
+  color: var(--ink-dim);
+  margin: 0;
+  line-height: 1.7;
+  font-weight: 300;
+}
+
+/* ── REFERENCES ── */
+.refs {
+  background: var(--bg2);
+  border: 1px solid var(--border-light);
+  padding: 1.8rem;
+  margin: 2rem 0;
+}
+.refs h4 {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 1.2rem;
+  opacity: 0.8;
+}
+.refs ul {
+  list-style: none;
+  padding: 0;
+}
+.refs li {
+  font-size: 0.78rem;
+  color: var(--ink-dim);
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border-light);
+  line-height: 1.6;
+  font-weight: 300;
+}
+.refs li:last-child { border-bottom: none; }
+.refs li em { font-style: italic; color: var(--ink-dim); }
+
+/* ── FEIGENBAUM STRIP ── */
+.feig-strip {
+  display: flex;
+  gap: 0;
+  margin: 2rem 0;
+  border: 1px solid var(--border);
+}
+.feig-cell {
+  flex: 1;
+  padding: 1.2rem;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  text-align: center;
+}
+.feig-cell:last-child { border-right: none; }
+.feig-cell .fl { font-family:'IBM Plex Mono',monospace; font-size:0.55rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-dim); margin-bottom:0.5rem; }
+.feig-cell .fv { font-family:'IBM Plex Mono',monospace; font-size:1.2rem; color:var(--gold); font-weight:600; }
+.feig-cell .fs { font-size:0.65rem; color:var(--ink-dim); margin-top:0.4rem; line-height:1.5; font-weight:300; }
+
+/* ── SCROLL CUE ── */
+.scroll-cue {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.55rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  opacity: 0.35;
+  animation: bob 2.5s ease-in-out infinite;
+}
+@keyframes bob {
+  0%,100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(7px); }
+}
+
+footer {
+  padding: 2.5rem;
+  text-align: center;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.55rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  opacity: 0.35;
+  border-top: 1px solid var(--border-light);
+}
+
+@media (max-width: 600px) {
+  .cards { grid-template-columns: 1fr; }
+  .feig-strip { flex-direction: column; }
+  .feig-cell { border-right: none; border-bottom: 1px solid var(--border); }
+  .chapter { padding: 4rem 1.2rem; }
+}
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- CH 0 — TITLE -->
+<!-- ══════════════════════════════════════════════════════ -->
+<section class="chapter" id="ch0">
+  <div class="chapter-inner">
+    <div class="chapter-label">School of Systems & Complexity — Interactive Essay</div>
+    <h1>When Societies Bifurcate</h1>
+    <p class="subtitle">A story about conflict, polarisation, and what a simple equation reveals about why peace is so hard</p>
+
+    <p>In 2007, a team of psychologists at Columbia University made an uncomfortable claim. They argued that some conflicts — the ones we call intractable, the ones that resist every intervention — are not political failures, or failures of leadership, or failures of will. They are, in a precise mathematical sense, <em class="highlight">attractors</em>.</p>
+
+    <p>Peter Coleman, Robin Vallacher, and Andrzej Nowak had been studying dynamical systems theory and applying it to protracted social conflict. What they found was that the same mathematics used to describe populations of fish, or the oscillations of a pendulum, described the behaviour of societies locked in violence.</p>
+
+    <p>This is an exploration of that idea — using the simplest nonlinear equation in existence.</p>
+    <div class="scroll-cue">↓ scroll to continue</div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- CH 1 — THE EQUATION AND THE ANALOGY -->
+<!-- ══════════════════════════════════════════════════════ -->
+<section class="chapter" id="ch1">
+  <div class="chapter-inner">
+    <div class="chapter-label">Part I — The Equation</div>
+    <h2>Social reinforcement as a growth rate</h2>
+
+    <p>Start with a community. Imagine measuring, each month, what fraction of people hold a hostile attitude toward an outgroup — a number between 0 (no hostility) and 1 (total hostility). Call it x.</p>
+
+    <p>Now ask: what determines how that number evolves over time? Two forces are in tension. Social reinforcement — the more people around you hold a view, the more likely you are to adopt it. And a natural ceiling — a society cannot sustain hostility indefinitely at full intensity; exhaustion, social cost, and dissenting voices push back.</p>
+
+    <p>This tension produces a structure that is formally identical to the logistic map:</p>
+
+    <div class="pull-quote">
+      x<sub>n+1</sub> = r · x<sub>n</sub> · (1 − x<sub>n</sub>)
+      <cite>where r is the intensity of social reinforcement pressure</cite>
+    </div>
+
+    <p>This is not a metaphor. Nowak, Szamrej & Latané (1990) formalised exactly this structure in their dynamic theory of social impact — showing that public opinion evolves under reinforcement and resistance in ways that mirror population dynamics. The logistic map is not borrowed from biology. It is the natural shape of any process that grows under constraint.</p>
+
+    <p>What changes is what r means. In a fishery, r is reproduction rate. In a community, r is the intensity of social reinforcement — how strongly people's attitudes are shaped by those around them. The question is: what happens as r increases?</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- CH 2 — LOW r: STABLE PLURALISM -->
+<!-- ══════════════════════════════════════════════════════ -->
+<section class="chapter" id="ch2">
+  <div class="chapter-inner">
+    <div class="chapter-label">Part II — Low Reinforcement</div>
+    <h2>When societies hold their centre</h2>
+
+    <p>In a community with moderate social reinforcement — r below 3 — the system settles. Hostile attitudes may rise and fall in the short term, but the system converges to a stable level. Dissenting voices have room. Different social circles moderate each other. The conflict exists, but it is contained.</p>
+
+    <p>This is what Coleman calls a <em class="highlight">fixed-point attractor</em> for conflict: a state that the system gravitates toward and, when disturbed, returns to. It is not peace — but it is manageable. Intervention is possible. Peacebuilders have traction.</p>
+
+    <div class="widget">
+      <div class="widget-title">Interact — low social reinforcement pressure</div>
+      <div class="slider-row">
+        <span class="slider-label">Social reinforcement intensity</span>
+        <span class="slider-value" id="w1-val">r = 2.2 — moderate</span>
+      </div>
+      <input type="range" id="w1-r" min="0.5" max="3.0" step="0.05" value="2.2" oninput="updateW1()">
+      <div class="slider-stops">
+        <span>no reinforcement</span>
+        <span>moderate</span>
+        <span>strong pressure</span>
+      </div>
+      <div class="regime-box" id="w1-box">
+        <div class="regime-tag" id="w1-tag">stable equilibrium</div>
+        <p id="w1-text">Attitudes converge to a stable level. The system has memory of its starting point but settles into a fixed attractor. Peacebuilders can intervene effectively — small inputs produce lasting change.</p>
+      </div>
+      <canvas id="w1-c" height="180"></canvas>
+      <div class="math-caption" id="w1-math">fixed point x* = (r−1)/r</div>
+    </div>
+
+    <p class="aside">Coleman, P.T., Vallacher, R., Nowak, A., & Bui-Wrzosinska, L. (2007). Intractable conflict as an attractor: Presenting a model of conflict, escalation, and intractability. <em>American Behavioral Scientist, 50</em>(11), 1454–1475.</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- CH 3 — BIFURCATION: POLARISATION -->
+<!-- ══════════════════════════════════════════════════════ -->
+<section class="chapter" id="ch3">
+  <div class="chapter-inner">
+    <div class="chapter-label">Part III — The Bifurcation</div>
+    <h2>How polarisation emerges without anyone choosing it</h2>
+
+    <p>Now imagine the social reinforcement pressure increases — through social media algorithms, charismatic leaders who sharpen us-versus-them narratives, or economic shocks that intensify group competition. r crosses 3.</p>
+
+    <p>Something structural happens. The fixed point becomes unstable. The system no longer settles — it begins to <em class="highlight">oscillate</em> between two states. One month, hostility is high. The next, it retreats. Then surges again. Not randomly — in a structured cycle.</p>
+
+    <p>This is a <em class="highlight">bifurcation</em>: a qualitative change in system behaviour triggered by a quantitative change in a parameter. The same community, the same people — but a different regime. The conflict is no longer a level to be managed. It is a cycle to be escaped.</p>
+
+    <p>As r increases further, the cycle doubles: two states become four, become eight. Each doubling happens faster than the last, compressing into an accumulation point — and then something more radical happens.</p>
+
+    <div class="widget">
+      <div class="widget-title">Interact — the bifurcation zone (r between 3 and 3.57)</div>
+      <div class="slider-row">
+        <span class="slider-label">Social reinforcement intensity</span>
+        <span class="slider-value" id="w2-val">r = 3.2 — polarised</span>
+      </div>
+      <input type="range" id="w2-r" min="2.8" max="3.57" step="0.01" value="3.2" oninput="updateW2()">
+      <div class="slider-stops">
+        <span>just stable</span>
+        <span>2-cycle</span>
+        <span>4-cycle</span>
+        <span>8-cycle</span>
+      </div>
+      <div class="regime-box cycle" id="w2-box">
+        <div class="regime-tag" id="w2-tag">2-cycle — oscillating polarisation</div>
+        <p id="w2-text">The community oscillates between two states. Apparent de-escalation is followed by renewed escalation in a structural pattern. Interventions timed to the "quiet" phase may misread the attractor and fail.</p>
+      </div>
+      <canvas id="w2-c" height="180"></canvas>
+    </div>
+
+    <div class="pull-quote">
+      "Intractability happens when the many different components of the conflict collapse together into one mass, into one very simple us-versus-them story that effectively resists change."
+      <cite>Peter T. Coleman, The Five Percent (2011)</cite>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- CH 4 — CHAOS: INTRACTABILITY -->
+<!-- ══════════════════════════════════════════════════════ -->
+<section class="chapter" id="ch4">
+  <div class="chapter-inner">
+    <div class="chapter-label">Part IV — Deterministic Chaos</div>
+    <h2>The mathematics of intractability</h2>
+
+    <p>Beyond the accumulation point — at approximately r = 3.57 — the period-doubling cascade ends and something qualitatively different begins: <em class="highlight">deterministic chaos</em>. The system is still governed by the same equation. There is no randomness. But the behaviour becomes sensitive to initial conditions in a way that makes long-range prediction impossible.</p>
+
+    <p>This is the formal structure of what Coleman and colleagues describe as intractable conflict. The system is not stuck in one bad state — it is <em class="highlight">locked in an attractor</em> that constrains the space of possible states without settling into any of them. Conflict and apparent calm alternate unpredictably. Ceasefires fail not because of bad faith but because they are perturbations in a chaotic regime — they push the system away from one trajectory, but the attractor pulls it back.</p>
+
+    <p>Vallacher et al. (2010) note that in the chaotic regime, <em class="highlight">small interventions can have amplified effects</em> — for good or ill. This is not a reason for pessimism. It is a map.</p>
+
+    <div class="widget">
+      <div class="widget-title">Interact — full spectrum (drag slowly from left to right)</div>
+      <div class="slider-row">
+        <span class="slider-label">Social reinforcement intensity</span>
+        <span class="slider-value" id="w3-val">r = 3.8 — chaotic</span>
+      </div>
+      <input type="range" id="w3-r" min="0.5" max="4.0" step="0.02" value="3.8" oninput="updateW3()">
+      <div class="slider-stops">
+        <span>collapse</span>
+        <span>stable</span>
+        <span>cycles</span>
+        <span>chaos</span>
+      </div>
+      <div class="regime-box chaos" id="w3-box">
+        <div class="regime-tag" id="w3-tag">deterministic chaos</div>
+        <p id="w3-text">Unpredictable but not random. The system is governed by a deterministic rule — but sensitivity to initial conditions makes forecasting impossible beyond a few steps. Try finding the period-3 window near r = 3.83: a small island of order within the chaos.</p>
+      </div>
+      <canvas id="w3-c" height="200"></canvas>
+    </div>
+
+    <p class="aside">Vallacher, R.R., Coleman, P.T., Nowak, A., & Bui-Wrzosinska, L. (2010). Rethinking intractable conflict: The perspective of dynamical systems. <em>American Psychologist, 65</em>(4), 262–278.</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- CH 5 — BIFURCATION MAP -->
+<!-- ══════════════════════════════════════════════════════ -->
+<section class="chapter" id="ch5">
+  <div class="chapter-inner">
+    <div class="chapter-label">Part V — The Full Map</div>
+    <h2>Seeing the whole landscape at once</h2>
+
+    <p>The bifurcation diagram below shows the entire story in one image. For each value of r — each level of social reinforcement pressure — the diagram shows which states the system eventually occupies. One point means a fixed attractor. Two points means oscillation. A cloud means chaos.</p>
+
+    <p>Three features are worth noting. First, the <em class="highlight">transitions are sudden</em>: the system doesn't gradually become more unstable — it shifts regimes at a bifurcation point. Second, the bifurcation points are <em class="highlight">coloured by regime</em>: green for stable, gold for cycling, red for chaos. Third, there is a narrow band of gold inside the red — the period-3 window around r ≈ 3.83 — a small attractor of order that survives inside a chaotic landscape.</p>
+
+    <p>Coleman and colleagues call the equivalent of this window a <em class="highlight">latent attractor</em> for peace: an alternative stable state that co-exists with the destructive attractor, waiting to be activated.</p>
+
+    <div class="bif-wrap">
+      <canvas id="bif-c" height="340"></canvas>
+    </div>
+
+    <p>The vertical dashed lines mark the Feigenbaum bifurcation points — the precise values of r where each period-doubling occurs. Their spacing follows a universal law.</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- CH 6 — FEIGENBAUM -->
+<!-- ══════════════════════════════════════════════════════ -->
+<section class="chapter" id="ch6">
+  <div class="chapter-inner">
+    <div class="chapter-label">Part VI — Universality</div>
+    <h2>The constant that appears in every system</h2>
+
+    <p>In 1975, physicist Mitchell Feigenbaum noticed something strange. The ratio between successive bifurcation intervals was converging to a constant — 4.6692… He then checked whether this constant was specific to the logistic map. It wasn't. It appeared in every smooth unimodal map — the sine function, the quadratic family, any system with this shape of nonlinearity.</p>
+
+    <p>The implication is significant: <em class="highlight">the route to chaos is universal</em>. The specific mechanism — fish reproduction, opinion dynamics, market prices — doesn't matter. The structure of how order breaks down follows the same law.</p>
+
+    <div class="feig-strip">
+      <div class="feig-cell">
+        <div class="fl">Feigenbaum δ</div>
+        <div class="fv">4.6692…</div>
+        <div class="fs">Each bifurcation interval is 4.669× smaller than the previous. Universal across all unimodal maps.</div>
+      </div>
+      <div class="feig-cell">
+        <div class="fl">Accumulation point r∞</div>
+        <div class="fv">3.5699…</div>
+        <div class="fs">The limit of the period-doubling cascade. Beyond this, the system is generically chaotic.</div>
+      </div>
+      <div class="feig-cell">
+        <div class="fl">Feigenbaum α</div>
+        <div class="fv">2.5029…</div>
+        <div class="fs">Governs the scaling of the attractor branches at each bifurcation. Also universal.</div>
+      </div>
+    </div>
+
+    <p>What this means for peacebuilding: the dynamics of conflict escalation are not idiosyncratic to any particular conflict. There is a <em class="highlight">structural grammar</em> to how systems move from stability to oscillation to chaos — and that grammar is knowable.</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- CH 7 — IMPLICATIONS FOR PEACEBUILDING -->
+<!-- ══════════════════════════════════════════════════════ -->
+<section class="chapter" id="ch7">
+  <div class="chapter-inner">
+    <div class="chapter-label">Part VII — What This Means for Practice</div>
+    <h2>Navigation, not prediction</h2>
+
+    <p>If conflict dynamics follow nonlinear attractors, then the standard toolkit of peacebuilding — rational dialogue, information provision, confidence-building measures — is optimised for a regime that may not be the one you're in.</p>
+
+    <p>Coleman, Vallacher and colleagues propose three strategies that follow from the dynamical perspective. They are worth reading against the bifurcation diagram above.</p>
+
+    <div class="cards">
+      <div class="card">
+        <h4>Complicate to simplify</h4>
+        <p>Intractable conflicts are locked in an attractor partly because complexity has collapsed into a single dimension — us vs them. Restoring complexity to the conflict landscape — surfacing cross-cutting issues, non-aligned actors, ambivalent identities — is the first step to destabilising the attractor. On the bifurcation diagram: reducing r.</p>
+      </div>
+      <div class="card">
+        <h4>Build latent attractors</h4>
+        <p>The period-3 window in the chaotic regime — a small island of order — is the mathematical analogue of what Coleman calls a latent peace attractor: a stable alternative state that coexists with the destructive one. Peacebuilding is, in part, the work of building and strengthening these latent states before they are needed.</p>
+      </div>
+      <div class="card">
+        <h4>Use weak power</h4>
+        <p>Coleman, Vallacher & Bartoli's analysis of Mozambique found that the Community of Sant'Egidio succeeded partly because it operated with low coercive pressure — weak power. Strong interventions in a high-r system often reinforce the attractor. Small, well-placed perturbations can shift the system to a different basin of attraction.</p>
+      </div>
+      <div class="card">
+        <h4>Watch for critical slowing down</h4>
+        <p>Morrison, Kutz & Gabbay (2022) showed that as a system approaches a bifurcation — a tipping point toward war or peace — it exhibits critical slowing down: perturbations take longer to recover from. This is a detectable early warning signal, visible in data before the transition occurs.</p>
+      </div>
+    </div>
+
+    <div class="pull-quote">
+      "The goal is not to solve the conflict. It is to change the attractor landscape — to deconstruct attractors for destruction and build attractors for peace."
+      <cite>Vallacher, Coleman, Nowak et al., Attracted to Conflict (2013)</cite>
+    </div>
+
+    <p>John Paul Lederach, whose moral imagination framework has shaped a generation of peacebuilders, argues that transformative moments in peacebuilding resemble aesthetic rather than technical acts — moments when something "intellectually and emotionally complex is captured in an 'ah-ha' moment." The dynamical systems perspective gives that intuition a formal structure: transformation happens at bifurcation points, and recognising when a system is near one is a skill that can be cultivated.</p>
+
+    <div class="refs">
+      <h4>Key references</h4>
+      <ul>
+        <li>Coleman, P.T., Vallacher, R., Nowak, A., & Bui-Wrzosinska, L. (2007). Intractable conflict as an attractor. <em>American Behavioral Scientist, 50</em>(11), 1454–1475.</li>
+        <li>Vallacher, R.R., Coleman, P.T., Nowak, A., & Bui-Wrzosinska, L. (2010). Rethinking intractable conflict: The perspective of dynamical systems. <em>American Psychologist, 65</em>(4), 262–278.</li>
+        <li>Vallacher, R.R., Coleman, P.T., Nowak, A., et al. (2013). <em>Attracted to Conflict: Dynamic Foundations of Destructive Social Relations.</em> Springer.</li>
+        <li>Coleman, P.T. (2011). <em>The Five Percent: Finding Solutions to Seemingly Impossible Conflicts.</em> PublicAffairs.</li>
+        <li>Nowak, A., Szamrej, J., & Latané, B. (1990). From private attitude to public opinion: A dynamic theory of social impact. <em>Psychological Review, 97</em>(3), 362–376.</li>
+        <li>Morrison, M., Kutz, J.N., & Gabbay, M. (2022). Transitions between peace and systemic war as bifurcations in a signed network dynamical system. <em>arXiv:2203.04451.</em></li>
+        <li>Lederach, J.P. (2005). <em>The Moral Imagination: The Art and Soul of Building Peace.</em> Oxford University Press.</li>
+        <li>May, R.M. (1976). Simple mathematical models with very complicated dynamics. <em>Nature, 261,</em> 459–467. [foundational source for the logistic map]</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<footer>
+  School of Systems & Complexity — systemsandcomplexity.school<br>
+  Interactive essay — nonlinear dynamics applied to conflict and peacebuilding
+</footer>
+
+<script>
+// ─── CORE ────────────────────────────────────────────────
+
+function logSeq(r, x0, skip, n) {
+  let x = x0;
+  for (let i = 0; i < skip; i++) x = r * x * (1 - x);
+  const out = [];
+  for (let i = 0; i < n; i++) { x = r * x * (1 - x); out.push(x); }
+  return out;
+}
+
+function drawTS(id, seq, color) {
+  const canvas = document.getElementById(id);
+  if (!canvas) return;
+  const W = canvas.offsetWidth || 640;
+  canvas.width = W;
+  const H = canvas.height;
+  const ctx = canvas.getContext('2d');
+  const pad = { l:38, r:12, t:12, b:28 };
+  const w = W - pad.l - pad.r, h = H - pad.t - pad.b;
+  const n = seq.length;
+
+  ctx.fillStyle = '#1a1916';
+  ctx.fillRect(0, 0, W, H);
+
+  // grid
+  ctx.strokeStyle = 'rgba(196,154,60,0.07)';
+  ctx.lineWidth = 1;
+  [0, 0.25, 0.5, 0.75, 1].forEach(v => {
+    const y = pad.t + (1-v)*h;
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(pad.l+w, y); ctx.stroke();
+    ctx.fillStyle = 'rgba(122,116,104,0.45)';
+    ctx.font = '9px IBM Plex Mono';
+    ctx.fillText(v.toFixed(2), 2, y+4);
+  });
+
+  // line
+  ctx.beginPath();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1.5;
+  seq.forEach((x,i) => {
+    const px = pad.l + (i/(n-1))*w;
+    const py = pad.t + (1-x)*h;
+    i===0 ? ctx.moveTo(px,py) : ctx.lineTo(px,py);
+  });
+  ctx.stroke();
+
+  // dots
+  ctx.fillStyle = color;
+  seq.forEach((x,i) => {
+    const px = pad.l + (i/(n-1))*w;
+    const py = pad.t + (1-x)*h;
+    ctx.beginPath();
+    ctx.arc(px, py, n<60?3:1.8, 0, Math.PI*2);
+    ctx.fill();
+  });
+}
+
+// ─── REGIME CONTENT ──────────────────────────────────────
+
+const regimes = [
+  { min:0,    max:1,      cls:'',      tag:'collapse — no reinforcement',
+    text:'Hostility collapses to zero regardless of starting conditions. The community has insufficient social reinforcement to sustain any polarised state.' },
+  { min:1,    max:3,      cls:'',      tag:'stable equilibrium',
+    text:'Attitudes settle at a fixed level determined by the reinforcement pressure. The system returns to this level after disturbances. Peacebuilders have traction here — small, well-placed inputs produce lasting change.' },
+  { min:3,    max:3.449,  cls:'cycle', tag:'2-cycle — oscillating polarisation',
+    text:'The community oscillates between high and low hostility in a structured two-phase pattern. Apparent de-escalation is built into the cycle, not a genuine shift in the attractor. Interventions timed to the quiet phase may misread the system.' },
+  { min:3.449,max:3.544,  cls:'cycle', tag:'4-cycle — deepening oscillation',
+    text:'The oscillation doubles. Four distinct states alternate. Patterns are visible but harder to read without a long time horizon. Standard mediation timetables rarely span the full cycle.' },
+  { min:3.544,max:3.5699, cls:'cycle', tag:'period-doubling cascade',
+    text:'Rapid successive doublings — 8, 16, 32 cycles. The system is approaching the accumulation point. Each new cycle is harder to distinguish from randomness. Planning becomes structurally difficult.' },
+  { min:3.8284,max:3.857, cls:'cycle', tag:'period-3 window — latent order within chaos',
+    text:'A small island of structured oscillation inside the chaotic regime. Coleman calls its social equivalent a latent peace attractor: a stable alternative that coexists with the destructive attractor, accessible under the right conditions.' },
+  { min:3.5699,max:4.01,  cls:'chaos', tag:'deterministic chaos — intractable regime',
+    text:'Not random — but sensitive to initial conditions in a way that makes prediction impossible. The system visits many states unpredictably. Ceasefires and agreements are perturbations that the attractor absorbs. Small interventions can have amplified effects — this is the domain of leverage, not control.' },
+];
+
+function getRegime(r) {
+  if (r >= 3.8284 && r <= 3.857) return regimes.find(x => x.tag.includes('period-3'));
+  for (const reg of regimes) if (r >= reg.min && r < reg.max) return reg;
+  return regimes[regimes.length-1];
+}
+
+function applyRegime(r, boxId, tagId, textId) {
+  const info = getRegime(r);
+  const box = document.getElementById(boxId);
+  const tag = document.getElementById(tagId);
+  const txt = document.getElementById(textId);
+  box.className = 'regime-box ' + info.cls;
+  tag.textContent = info.tag;
+  txt.textContent = info.text;
+}
+
+// ─── WIDGET 1 ─────────────────────────────────────────────
+
+function updateW1() {
+  const r = parseFloat(document.getElementById('w1-r').value);
+  const labels = {low:'very low', 1:'low', 1.5:'low–moderate', 2:'moderate', 2.5:'moderate–high', 3:'approaching threshold'};
+  const lbl = r < 1 ? 'very low' : r < 1.8 ? 'low' : r < 2.3 ? 'moderate' : r < 2.8 ? 'moderately high' : 'approaching threshold';
+  document.getElementById('w1-val').textContent = `r = ${r.toFixed(2)} — ${lbl}`;
+  const seq = logSeq(r, 0.3, 60, 70);
+  drawTS('w1-c', seq, '#4a8040');
+  applyRegime(r, 'w1-box', 'w1-tag', 'w1-text');
+  const fp = r > 1 ? ((r-1)/r).toFixed(4) : '0';
+  document.getElementById('w1-math').textContent = `fixed point x* ≈ ${fp}   |   xₙ₊₁ = r · xₙ · (1−xₙ)`;
+}
+
+// ─── WIDGET 2 ─────────────────────────────────────────────
+
+function updateW2() {
+  const r = parseFloat(document.getElementById('w2-r').value);
+  let lbl = 'just stable';
+  if (r >= 3 && r < 3.449) lbl = '2-cycle';
+  else if (r < 3.544) lbl = '4-cycle';
+  else lbl = '8+ cycle cascade';
+  document.getElementById('w2-val').textContent = `r = ${r.toFixed(2)} — ${lbl}`;
+  const seq = logSeq(r, 0.3, 300, 80);
+  drawTS('w2-c', seq, '#c49a3c');
+  applyRegime(r, 'w2-box', 'w2-tag', 'w2-text');
+}
+
+// ─── WIDGET 3 ─────────────────────────────────────────────
+
+function updateW3() {
+  const r = parseFloat(document.getElementById('w3-r').value);
+  const info = getRegime(r);
+  document.getElementById('w3-val').textContent = `r = ${r.toFixed(2)} — ${info.tag.split(' — ')[0]}`;
+  const isChaos = r > 3.5699 && !(r >= 3.8284 && r <= 3.857);
+  const seq = logSeq(r, 0.3, 100, 120);
+  drawTS('w3-c', seq, isChaos ? '#b84040' : r < 3 ? '#4a8040' : '#c49a3c');
+  applyRegime(r, 'w3-box', 'w3-tag', 'w3-text');
+}
+
+// ─── BIFURCATION DIAGRAM ─────────────────────────────────
+
+function drawBif() {
+  const canvas = document.getElementById('bif-c');
+  if (!canvas) return;
+  const W = canvas.offsetWidth || 700;
+  canvas.width = W;
+  const H = canvas.height;
+  const ctx = canvas.getContext('2d');
+  const pad = {l:44,r:16,t:16,b:38};
+  const w = W-pad.l-pad.r, h = H-pad.t-pad.b;
+  const rMin = 2.5, rMax = 4.0;
+
+  ctx.fillStyle = '#1a1916';
+  ctx.fillRect(0,0,W,H);
+
+  // axis labels
+  ctx.fillStyle = 'rgba(122,116,104,0.45)';
+  ctx.font = '9px IBM Plex Mono';
+  [0,0.25,0.5,0.75,1].forEach(v => {
+    ctx.fillText(v.toFixed(1), 4, pad.t+(1-v)*h+4);
+  });
+  [2.5,3.0,3.5,4.0].forEach(r => {
+    const px = pad.l + ((r-rMin)/(rMax-rMin))*w;
+    ctx.fillText(r.toFixed(1), px-8, pad.t+h+20);
+  });
+  ctx.fillText('r →', pad.l+w-18, pad.t+h+34);
+
+  // plot
+  const cols = Math.floor(w*1.3);
+  for (let col = 0; col < cols; col++) {
+    const r = rMin + (col/cols)*(rMax-rMin);
+    let x = 0.5;
+    for (let i=0;i<400;i++) x = r*x*(1-x);
+
+    let color;
+    const isP3 = r>=3.8284 && r<=3.857;
+    if (r < 3) color = 'rgba(74,128,64,0.75)';
+    else if (r < 3.5699) color = 'rgba(196,154,60,0.65)';
+    else if (isP3) color = 'rgba(196,154,60,0.7)';
+    else color = 'rgba(184,64,64,0.55)';
+
+    ctx.fillStyle = color;
+    for (let i=0;i<180;i++) {
+      x = r*x*(1-x);
+      const px = pad.l+(col/cols)*w;
+      const py = pad.t+(1-x)*h;
+      ctx.fillRect(px, py, 1.2, 1);
+    }
+  }
+
+  // Feigenbaum markers
+  [3.0,3.4495,3.5441,3.5644,3.5688,3.56995].forEach(fr => {
+    const px = pad.l+((fr-rMin)/(rMax-rMin))*w;
+    ctx.beginPath();
+    ctx.strokeStyle='rgba(196,154,60,0.3)';
+    ctx.lineWidth=1;
+    ctx.setLineDash([2,3]);
+    ctx.moveTo(px,pad.t); ctx.lineTo(px,pad.t+h);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  });
+
+  // period-3 label
+  const p3x = pad.l+((3.83-rMin)/(rMax-rMin))*w;
+  ctx.fillStyle='rgba(196,154,60,0.55)';
+  ctx.font='8px IBM Plex Mono';
+  ctx.fillText('period-3', p3x-22, pad.t+12);
+}
+
+// ─── SCROLL OBSERVER ─────────────────────────────────────
+
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.1 });
+document.querySelectorAll('.chapter').forEach(ch => obs.observe(ch));
+
+// ─── PROGRESS BAR ────────────────────────────────────────
+window.addEventListener('scroll', () => {
+  const pct = window.scrollY / (document.body.scrollHeight - window.innerHeight) * 100;
+  document.getElementById('progress-bar').style.width = pct + '%';
+});
+
+// ─── INIT ────────────────────────────────────────────────
+window.addEventListener('load', () => {
+  updateW1(); updateW2(); updateW3();
+  setTimeout(drawBif, 150);
+});
+window.addEventListener('resize', () => {
+  drawBif(); updateW1(); updateW2(); updateW3();
+});
+</script>
+</body>
+</html>
