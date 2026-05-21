@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>You Are in the System — School of Systems & Complexity</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Oswald:wght@300;400&display=swap" rel="stylesheet">
+<style>
+
+/* ── PALETTE ── field notebook × 1970s scientific journal */
+:root {
+  --paper:   #f5f0e4;
+  --paper2:  #ede6d4;
+  --paper3:  #e2d9c4;
+  --ochre:   #b5773a;
+  --ochre2:  #8a5520;
+  --rust:    #9b3d2a;
+  --slate:   #2e3a42;
+  --ink:     #1e1a14;
+  --ink-mid: #4a4238;
+  --ink-dim: #8a7f70;
+  --rule:    rgba(30,26,20,0.12);
+  --rule-heavy: rgba(30,26,20,0.25);
+  --highlight: rgba(181,119,58,0.12);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Libre Baskerville', Georgia, serif;
+  font-size: 18px;
+  line-height: 1.85;
+}
+
+/* ── RULED PAPER TEXTURE ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    transparent,
+    transparent 31px,
+    rgba(30,26,20,0.04) 31px,
+    rgba(30,26,20,0.04) 32px
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── READING PROGRESS ── */
+#rp {
+  position: fixed;
+  top: 0; left: 0;
+  height: 3px;
+  background: var(--ochre);
+  width: 0%;
+  z-index: 300;
+}
+
+/* ── LEFT MARGIN RULE ── */
+.page {
+  position: relative;
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 0 3rem 0 7rem;
+  z-index: 1;
+}
+.page::before {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0;
+  left: 5.2rem;
+  width: 1px;
+  background: rgba(155,61,42,0.25);
+}
+
+/* ── NAV ── typewriter strip at top ── */
+#topbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 200;
+  background: var(--slate);
+  padding: 0.55rem 2rem;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+.tb-logo {
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  color: var(--paper2);
+  opacity: 0.7;
+  white-space: nowrap;
+}
+.tb-chapters {
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tb-chapters::-webkit-scrollbar { display: none; }
+.tb-ch {
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.55rem;
+  letter-spacing: 0.08em;
+  color: rgba(245,240,228,0.4);
+  padding: 0.25rem 0.75rem;
+  text-decoration: none;
+  white-space: nowrap;
+  border-right: 1px solid rgba(255,255,255,0.06);
+  transition: color 0.2s, background 0.2s;
+}
+.tb-ch:hover { color: var(--paper); background: rgba(255,255,255,0.06); }
+.tb-ch.active { color: var(--paper); background: var(--ochre2); }
+.tb-progress {
+  margin-left: auto;
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.55rem;
+  color: rgba(245,240,228,0.35);
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+/* ── COVER ── */
+#cover {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 7rem 0 5rem;
+  border-bottom: 2px solid var(--rule-heavy);
+}
+
+.cover-stamp {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 300;
+  font-size: 0.65rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--rust);
+  margin-bottom: 3rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.cover-stamp::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--rust);
+  opacity: 0.3;
+}
+
+h1 {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 300;
+  font-size: clamp(3rem, 9vw, 7rem);
+  line-height: 0.95;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  margin-bottom: 1.5rem;
+}
+h1 .you { color: var(--ink); }
+h1 .system {
+  color: var(--rust);
+  font-weight: 400;
+  font-style: italic;
+  font-family: 'Libre Baskerville', Georgia, serif;
+}
+
+.cover-byline {
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.72rem;
+  color: var(--ink-dim);
+  letter-spacing: 0.05em;
+  margin-bottom: 2.5rem;
+}
+
+.cover-body {
+  font-size: 1.1rem;
+  color: var(--ink-mid);
+  max-width: 52ch;
+  line-height: 1.9;
+  margin-bottom: 3rem;
+}
+
+.cover-body strong {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.begin-link {
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--paper);
+  background: var(--slate);
+  padding: 0.8rem 1.8rem;
+  text-decoration: none;
+  display: inline-block;
+  transition: background 0.2s;
+}
+.begin-link:hover { background: var(--ochre2); }
+
+/* ── CHAPTER ── */
+.chapter {
+  padding: 5rem 0;
+  border-bottom: 1px solid var(--rule);
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+.chapter.visible { opacity: 1; transform: translateY(0); }
+
+/* chapter header */
+.ch-eyebrow {
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--rust);
+  margin-bottom: 0.6rem;
+}
+
+h2 {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 400;
+  font-size: clamp(1.6rem, 4vw, 2.8rem);
+  line-height: 1.1;
+  color: var(--ink);
+  margin-bottom: 0.4rem;
+}
+
+.ch-instrument {
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  color: var(--ink-dim);
+  margin-bottom: 2.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+/* body text */
+p.body {
+  font-size: 1.05rem;
+  line-height: 1.9;
+  color: var(--ink);
+  margin-bottom: 1.4rem;
+  max-width: 58ch;
+}
+p.body em { font-style: italic; color: var(--ink-mid); }
+p.body strong { font-weight: 700; }
+
+/* pull quote — handwritten margin note feel */
+.pq {
+  position: relative;
+  margin: 2.5rem 0 2.5rem -1.5rem;
+  padding: 0.5rem 1.5rem;
+  border-left: 3px solid var(--ochre);
+  font-family: 'Libre Baskerville', Georgia, serif;
+  font-style: italic;
+  font-size: 1.15rem;
+  color: var(--ochre2);
+  line-height: 1.65;
+  max-width: 50ch;
+  background: var(--highlight);
+}
+
+/* ── IFRAME EMBED ── */
+.instrument-block {
+  margin: 2.5rem 0;
+  border: 1px solid var(--rule-heavy);
+  background: var(--paper2);
+}
+
+.instrument-header {
+  background: var(--slate);
+  padding: 0.7rem 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.instrument-number {
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.55rem;
+  letter-spacing: 0.15em;
+  color: rgba(245,240,228,0.45);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.instrument-title {
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  color: var(--paper);
+}
+.instrument-open {
+  margin-left: auto;
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.55rem;
+  letter-spacing: 0.1em;
+  color: rgba(245,240,228,0.45);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.2s;
+}
+.instrument-open:hover { color: var(--paper); }
+
+.instrument-guide {
+  padding: 0.8rem 1.2rem;
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.7rem;
+  color: var(--ink-dim);
+  line-height: 1.65;
+  border-bottom: 1px solid var(--rule);
+  background: var(--paper3);
+}
+
+iframe.tool {
+  display: block;
+  width: 100%;
+  height: 520px;
+  border: none;
+  background: white;
+}
+
+/* ── SEEING BOX ── */
+.seeing {
+  margin: 2rem 0;
+  background: var(--paper2);
+  border-top: 2px solid var(--rule-heavy);
+  border-bottom: 1px solid var(--rule);
+  padding: 1.2rem 1.4rem;
+}
+.seeing-label {
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  margin-bottom: 0.75rem;
+}
+.seeing ul { list-style: none; padding: 0; }
+.seeing li {
+  font-size: 0.9rem;
+  color: var(--ink-mid);
+  line-height: 1.7;
+  padding: 0.3rem 0 0.3rem 1.2rem;
+  border-bottom: 1px solid var(--rule);
+  position: relative;
+}
+.seeing li:last-child { border-bottom: none; }
+.seeing li::before { content: '→'; position: absolute; left: 0; color: var(--ochre); font-size: 0.8rem; }
+
+/* ── OBSERVER BOX ── */
+.observer {
+  margin: 2rem 0;
+  border: 1px solid var(--ochre);
+  padding: 1.4rem 1.6rem;
+  background: rgba(181,119,58,0.06);
+  position: relative;
+}
+.observer::before {
+  content: 'THE OBSERVER IMPLICATION';
+  position: absolute;
+  top: -0.55rem;
+  left: 1rem;
+  background: var(--paper);
+  padding: 0 0.5rem;
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.52rem;
+  letter-spacing: 0.2em;
+  color: var(--ochre2);
+}
+.observer p {
+  font-size: 1rem;
+  line-height: 1.85;
+  color: var(--ink);
+  font-style: italic;
+}
+
+/* ── QUESTION ── */
+.question {
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px dashed var(--rule-heavy);
+}
+.question-label {
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.55rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--rust);
+  margin-bottom: 0.6rem;
+}
+.question p {
+  font-size: 1.05rem;
+  font-style: italic;
+  color: var(--ink-mid);
+  max-width: 52ch;
+  line-height: 1.8;
+}
+
+/* ── EPILOGUE GRID ── */
+.ep-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--rule-heavy);
+  border: 1px solid var(--rule-heavy);
+  margin: 2rem 0;
+}
+.ep-cell {
+  background: var(--paper);
+  padding: 1.4rem;
+}
+.ep-cell h4 {
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ochre2);
+  margin-bottom: 0.6rem;
+}
+.ep-cell p {
+  font-size: 0.9rem;
+  color: var(--ink-mid);
+  line-height: 1.75;
+}
+
+/* ── FINAL LINE ── */
+.final-line {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 300;
+  font-size: clamp(1.2rem, 3vw, 1.8rem);
+  color: var(--rust);
+  margin-top: 2.5rem;
+  letter-spacing: 0.02em;
+  font-style: italic;
+}
+
+/* ── FOOTER ── */
+footer {
+  border-top: 2px solid var(--rule-heavy);
+  padding: 2rem 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+footer p {
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  color: var(--ink-dim);
+}
+footer a { color: var(--ochre2); text-decoration: none; }
+
+/* ── DIVIDER ── */
+.ch-rule {
+  border: none;
+  border-top: 1px solid var(--rule);
+  margin: 0;
+}
+
+@media(max-width:600px) {
+  .page { padding: 0 1.2rem 0 1.2rem; }
+  .page::before { display: none; }
+  #topbar { gap: 0.5rem; }
+  .tb-chapters { display: none; }
+  iframe.tool { height: 380px; }
+  .ep-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div id="rp"></div>
+
+<div id="topbar">
+  <span class="tb-logo">SSC — School of Systems & Complexity</span>
+  <div class="tb-chapters">
+    <a class="tb-ch" href="#cover">Cover</a>
+    <a class="tb-ch" href="#ch00">00 Prologue</a>
+    <a class="tb-ch" href="#ch01">01 Determinism</a>
+    <a class="tb-ch" href="#ch02">02 Sensitivity</a>
+    <a class="tb-ch" href="#ch03">03 Attractors</a>
+    <a class="tb-ch" href="#ch04">04 Bifurcations</a>
+    <a class="tb-ch" href="#ch05">05 Networks</a>
+    <a class="tb-ch" href="#ch06">06 Intervention</a>
+    <a class="tb-ch" href="#ch07">07 Epilogue</a>
+  </div>
+  <div class="tb-progress" id="tb-pct">0%</div>
+</div>
+
+<div class="page">
+
+<!-- ══════════ COVER ══════════ -->
+<section id="cover">
+  <div class="cover-stamp">School of Systems & Complexity — Guided Reading</div>
+
+  <h1>
+    <span class="you">You Are in</span><br>
+    <span class="system">the System</span>
+  </h1>
+
+  <p class="cover-byline">Seven encounters with complexity science — and what they demand of the practitioner inside them</p>
+
+  <p class="cover-body">
+    Seven ideas. Seven simulations. One argument that runs through all of them.<br><br>
+    Each encounter begins with a concept from complexity science — demonstrated in a live simulation you can interact with directly in this page. Each one ends with the same question turned inward: <strong>what does this mean for how you work?</strong><br><br>
+    Read slowly. Use the simulations. Sit with the questions. This is not material to be consumed — it is material to be encountered.
+  </p>
+
+  <a class="begin-link" href="#ch00">Begin →</a>
+</section>
+
+<hr class="ch-rule">
+
+<!-- ══════════ CH 00 ══════════ -->
+<article class="chapter" id="ch00">
+  <div class="ch-eyebrow">00 — Prologue</div>
+  <h2>The Clockwork That Wasn't</h2>
+  <div class="ch-instrument">No instrument — the problem itself</div>
+
+  <p class="body">
+    In 1687, Isaac Newton published the <em>Principia Mathematica</em> and handed Western thought 
+    something it had never possessed before: a complete, testable account of how the universe moves. 
+    Three laws. One equation for gravity. Suddenly the orbits of planets, 
+    the arc of cannonballs, and the swing of pendulums all yielded to the same mathematics. 
+    The universe was a machine. And machines, once understood, are predictable.
+  </p>
+
+  <p class="body">
+    The consequences spread far beyond physics. By the nineteenth century, 
+    the clockwork metaphor had colonised medicine, economics, 
+    political philosophy, and eventually management theory. 
+    Understand the parts, understand the whole. 
+    Identify the cause, engineer the effect. 
+    Intervene correctly, and the system responds as intended.
+  </p>
+
+  <div class="pq">
+    The assumption was not that the world was simple. It was that the world was, 
+    in principle, fully knowable — and therefore controllable — by a sufficiently rational observer.
+  </div>
+
+  <p class="body">
+    In 1887, Henri Poincaré was working on a prize competition: prove that the solar system is stable. 
+    He could not prove it. What he found instead was something that shook the Newtonian world: 
+    even a system of just three bodies, each obeying Newton's laws perfectly, 
+    produces behaviour that is impossible to predict over long time horizons. 
+    Not because of randomness. Not because of missing information. 
+    Because of the mathematical structure of the problem itself.
+  </p>
+
+  <p class="body">
+    Poincaré's discovery sat largely unnoticed for most of the twentieth century. 
+    Then, in the 1960s and 70s, researchers in meteorology, biology, 
+    mathematics, and physics began finding the same thing in very different systems: 
+    deterministic rules, unpredictable behaviour. Order and chaos, coexisting. 
+    The clockwork had cracks in it. The observer was not in control.
+  </p>
+
+  <p class="body">
+    What follows is seven encounters with the ideas that emerged from those decades of work — 
+    each one demonstrated by a simulation you can play with directly, 
+    each one aimed at the same uncomfortable conclusion: 
+    that the practitioner who believes they are observing a complex system from the outside 
+    is mistaken. And that this mistake has consequences.
+  </p>
+
+  <div class="question">
+    <div class="question-label">Before you continue</div>
+    <p>When you enter a complex situation professionally — a conflict, an organisation, 
+    a community — what do you assume about your own position in relation to that system? 
+    Are you inside it, or outside it?</p>
+  </div>
+</article>
+
+<hr class="ch-rule">
+
+<!-- ══════════ CH 01 ══════════ -->
+<article class="chapter" id="ch01">
+  <div class="ch-eyebrow">01 — First Encounter</div>
+  <h2>Determinism ≠ Predictability</h2>
+  <div class="ch-instrument">Instrument: Three-Body Problem</div>
+
+  <p class="body">
+    Start here, because this is where the crack appeared first.
+  </p>
+
+  <p class="body">
+    Take three objects in space. Give each a mass, a position, a velocity. 
+    Apply Newton's laws — deterministic, exact, verified to extraordinary precision. 
+    Now ask: where will these objects be in a hundred years?
+  </p>
+
+  <p class="body">
+    The question has no general answer. Not because of measurement error. 
+    Not because Newton's laws are incomplete. But because the mathematical structure 
+    of three mutually interacting bodies does not admit a closed-form solution. 
+    Poincaré proved this. The system is deterministic — every future state 
+    is fixed in principle by the current state — but it is not predictable. 
+    These are not the same thing.
+  </p>
+
+  <div class="pq">
+    Determinism tells you the universe follows rules. 
+    Predictability would tell you what comes next. 
+    The three-body problem proves that the first does not guarantee the second.
+  </div>
+
+  <p class="body">
+    This distinction is not a technical footnote. 
+    It is a rupture in the foundation of how most institutions think about planning, 
+    intervention, and strategy. The assumption embedded in most theories of change, 
+    log frames, and strategic plans is not just that systems follow rules — 
+    it is that those rules can be used to engineer outcomes. 
+    Poincaré showed that this assumption fails even for three idealised point masses 
+    obeying the simplest possible physics.
+  </p>
+
+  <div class="instrument-block">
+    <div class="instrument-header">
+      <span class="instrument-number">Instrument 01</span>
+      <span class="instrument-title">Three-Body Problem</span>
+      <a class="instrument-open" href="https://tools.systemsandcomplexity.school/threebody_bites.html" target="_blank">open full screen ↗</a>
+    </div>
+    <div class="instrument-guide">
+      Watch three bodies interact under Newtonian gravity. Notice how quickly the trajectories become impossible to anticipate — not because of randomness, but because of the sensitivity of the system to its own configuration. Change the starting conditions slightly. Watch what happens.
+    </div>
+    <iframe class="tool" src="https://tools.systemsandcomplexity.school/threebody_bites.html" loading="lazy" title="Three-Body Problem simulator"></iframe>
+  </div>
+
+  <div class="seeing">
+    <div class="seeing-label">What you are seeing</div>
+    <ul>
+      <li>Three bodies following exact, deterministic laws — no randomness anywhere</li>
+      <li>Trajectories that rapidly become impossible to track or anticipate intuitively</li>
+      <li>The system is fully specified — and yet its future is effectively opaque</li>
+      <li>Small changes in starting position producing radically different long-term behaviour</li>
+    </ul>
+  </div>
+
+  <div class="observer">
+    <p>
+      Most practitioners operate with an implicit theory: if I understand how the system works — 
+      its rules, its dynamics, its actors — I can predict what my intervention will produce. 
+      The three-body problem is a formal proof that this theory fails even for the simplest 
+      possible systems. Your model of the system is not the system. 
+      And the gap between them is not a problem to be solved with better data — it is structural.
+    </p>
+  </div>
+
+  <div class="question">
+    <div class="question-label">Sit with this before continuing</div>
+    <p>What theory of change are you currently working with? 
+    At what point does it assume predictability — and what happens to the theory 
+    if that assumption is removed?</p>
+  </div>
+</article>
+
+<hr class="ch-rule">
+
+<!-- ══════════ CH 02 ══════════ -->
+<article class="chapter" id="ch02">
+  <div class="ch-eyebrow">02 — Second Encounter</div>
+  <h2>The Same Start, Two Worlds</h2>
+  <div class="ch-instrument">Instrument: Double Pendulum</div>
+
+  <p class="body">
+    A single pendulum is one of the first things a physics student learns to solve. 
+    It swings in a regular arc, loses energy to friction, comes to rest. 
+    Everything about it is predictable.
+  </p>
+
+  <p class="body">
+    Attach a second pendulum to the end of the first. Give the system a push.
+  </p>
+
+  <p class="body">
+    The behaviour changes completely. The double pendulum swings, flips, reverses, pauses, lurches. 
+    Run it again from what appears to be the same starting position: 
+    you get a different trajectory. After a short time, 
+    two apparently identical starting conditions produce outcomes with no resemblance to each other.
+  </p>
+
+  <p class="body">
+    This is sensitive dependence on initial conditions. 
+    Popular science calls it the butterfly effect, 
+    though that name understates how deep the phenomenon goes. 
+    In certain classes of systems, arbitrarily small differences in starting conditions 
+    grow exponentially over time, making long-range prediction impossible in principle, 
+    regardless of how good your model is.
+  </p>
+
+  <div class="instrument-block">
+    <div class="instrument-header">
+      <span class="instrument-number">Instrument 02</span>
+      <span class="instrument-title">The Pendulum Simulator</span>
+      <a class="instrument-open" href="https://pportela1980.github.io/pendulum/" target="_blank">open full screen ↗</a>
+    </div>
+    <div class="instrument-guide">
+      Begin with a single pendulum — observe the regularity. Then switch to the double pendulum. Run it twice from nearly identical starting conditions. The point is not the chaos itself. It is the gap between what you expected and what happened.
+    </div>
+    <iframe class="tool" src="https://pportela1980.github.io/pendulum/" loading="lazy" title="Pendulum simulator"></iframe>
+  </div>
+
+  <div class="seeing">
+    <div class="seeing-label">What you are seeing</div>
+    <ul>
+      <li>A single pendulum: predictable, periodic — the Newtonian world</li>
+      <li>A double pendulum: deterministic physics producing behaviour impossible to anticipate</li>
+      <li>Exponential divergence of nearly identical trajectories over time</li>
+      <li>No randomness — only sensitivity to the precision of starting conditions</li>
+    </ul>
+  </div>
+
+  <div class="pq">
+    You never enter a system at a known starting condition. 
+    You enter it mid-swing, in the middle of dynamics you did not initiate, 
+    at a moment you did not choose.
+  </div>
+
+  <div class="observer">
+    <p>
+      Every intervention enters a system at a specific moment, with conditions never fully known. 
+      The practitioner who believes they are controlling for initial conditions — 
+      through assessment, diagnosis, baseline surveys — 
+      is measuring the pendulum's position to three decimal places 
+      in a system where the fourth decimal place determines everything. 
+      This is not an argument against rigour. 
+      It is an argument for holding your predictions more lightly 
+      than your institutions currently require you to.
+    </p>
+  </div>
+
+  <div class="question">
+    <div class="question-label">Sit with this before continuing</div>
+    <p>Think of an intervention you have designed or implemented. 
+    What was already in motion when you entered — 
+    that you could not, and did not, fully account for?</p>
+  </div>
+</article>
+
+<hr class="ch-rule">
+
+<!-- ══════════ CH 03 ══════════ -->
+<article class="chapter" id="ch03">
+  <div class="ch-eyebrow">03 — Third Encounter</div>
+  <h2>The Shape of What You Cannot Know</h2>
+  <div class="ch-instrument">Instrument: Lorenz Attractor</div>
+
+  <p class="body">
+    In 1963, meteorologist Edward Lorenz was re-running a weather simulation. 
+    To save time, he re-entered values from a printout — rounding them slightly, 
+    from six decimal places to three. The simulation diverged completely. 
+    A difference of 0.000127 in a starting value produced, over time, 
+    an entirely different weather pattern.
+  </p>
+
+  <p class="body">
+    But Lorenz did not stop at the observation that the system was sensitive. 
+    He kept looking. The trajectories never repeated, never converged — 
+    and yet they did not wander randomly through all possible states. 
+    They stayed within a bounded region. They traced a shape: 
+    a double-lobed structure now called the Lorenz attractor, 
+    folding back on itself endlessly without ever crossing.
+  </p>
+
+  <p class="body">
+    A <em>strange attractor</em>: a region of phase space that a chaotic system inhabits 
+    without ever settling. The system has structure — you can describe the territory it lives in — 
+    but you cannot predict where within that territory it will be at any moment.
+  </p>
+
+  <div class="pq">
+    You can know the shape of the space a system inhabits 
+    without being able to predict its path through that space. 
+    This is a different kind of knowledge — 
+    and a more honest one than most institutions demand.
+  </div>
+
+  <div class="instrument-block">
+    <div class="instrument-header">
+      <span class="instrument-number">Instrument 03</span>
+      <span class="instrument-title">Attractors and Chaos</span>
+      <a class="instrument-open" href="https://pportela1980.github.io/ssc-tools/lorenz.html" target="_blank">open full screen ↗</a>
+    </div>
+    <div class="instrument-guide">
+      Watch the Lorenz attractor form in real time. The trajectory never repeats — but never escapes the attractor either. Explore the different scenarios and parameters. Ask: what would it mean to understand a system at this level — knowing its attractor, without knowing its path?
+    </div>
+    <iframe class="tool" src="https://pportela1980.github.io/ssc-tools/lorenz.html" loading="lazy" title="Lorenz attractor simulator"></iframe>
+  </div>
+
+  <div class="seeing">
+    <div class="seeing-label">What you are seeing</div>
+    <ul>
+      <li>A chaotic trajectory that never repeats — and never escapes its attractor</li>
+      <li>Structure at the level of the whole; unpredictability at the level of the moment</li>
+      <li>How parameter changes shift the system between different attractor regimes</li>
+      <li>The difference between knowing a system's territory and knowing its path</li>
+    </ul>
+  </div>
+
+  <div class="observer">
+    <p>
+      The practitioner trained in linear thinking asks: what will this system do next? 
+      The practitioner who has encountered strange attractors asks a different question: 
+      what is the shape of the space this system is moving through? 
+      What regime is it in? What are its boundaries? 
+      These questions are answerable in ways the first question is not — 
+      and they are more useful. Regime recognition, not point prediction, 
+      is what complexity science offers the practitioner.
+    </p>
+  </div>
+
+  <div class="question">
+    <div class="question-label">Sit with this before continuing</div>
+    <p>Is there a system you work with where you can describe the territory — 
+    the range of states it moves through — even if you cannot predict its next move? 
+    What would change in how you work if you made that distinction explicit?</p>
+  </div>
+</article>
+
+<hr class="ch-rule">
+
+<!-- ══════════ CH 04 ══════════ -->
+<article class="chapter" id="ch04">
+  <div class="ch-eyebrow">04 — Fourth Encounter</div>
+  <h2>The Moment Before the Tipping Point</h2>
+  <div class="ch-instrument">Instrument: Social Bifurcations</div>
+
+  <p class="body">
+    The logistic map — the simplest nonlinear equation in existence — 
+    demonstrates something that the previous three encounters did not: 
+    not how systems behave within a regime, but how they move between regimes. 
+    As a single parameter increases, the system's behaviour changes qualitatively. 
+    A stable equilibrium begins to oscillate. The oscillation doubles its period. 
+    Doubles again. At a precise threshold, the system enters chaos. 
+    Same equation, same structure — a different world.
+  </p>
+
+  <p class="body">
+    Coleman, Vallacher, and Nowak demonstrated formally that opinion dynamics, 
+    conflict escalation, and polarisation follow exactly this kind of nonlinear 
+    attractor dynamic — with bifurcation points. 
+    The community that appeared stable last year may be in a different regime today, 
+    not because anything dramatic happened, but because a parameter crossed a threshold.
+  </p>
+
+  <div class="pq">
+    The system you designed your intervention for may no longer exist. 
+    The same community, the same actors, the same issues — but a different regime. 
+    And regime shifts do not announce themselves in advance.
+  </div>
+
+  <div class="instrument-block">
+    <div class="instrument-header">
+      <span class="instrument-number">Instrument 04</span>
+      <span class="instrument-title">Social Bifurcations — When Societies Bifurcate</span>
+      <a class="instrument-open" href="https://tools.systemsandcomplexity.school/conflict-dynamics-story.html" target="_blank">open full screen ↗</a>
+    </div>
+    <div class="instrument-guide">
+      Follow the narrative from stable equilibrium through cycles of polarisation into deterministic chaos. Move the slider slowly. Pay attention to the moment of qualitative change — the bifurcation point where the system's behaviour is no longer the same kind of thing it was before.
+    </div>
+    <iframe class="tool" src="https://tools.systemsandcomplexity.school/conflict-dynamics-story.html" loading="lazy" title="Social bifurcations simulator" style="height:600px;"></iframe>
+  </div>
+
+  <div class="seeing">
+    <div class="seeing-label">What you are seeing</div>
+    <ul>
+      <li>The same equation producing qualitatively different behaviour as one parameter changes</li>
+      <li>Bifurcation points — thresholds where regime shifts occur suddenly, not gradually</li>
+      <li>Period-doubling cascades accelerating toward the onset of chaos</li>
+      <li>Islands of order inside the chaotic regime — latent attractors that persist</li>
+    </ul>
+  </div>
+
+  <div class="observer">
+    <p>
+      Experience is the practitioner's most valued asset — and one of their greatest liabilities. 
+      Experience is a map drawn from past regimes. When a system bifurcates, 
+      the map stops matching the territory. The practitioner who does not recognise the shift 
+      will apply last year's solutions to this year's different system — 
+      with confidence, because the confidence comes from the experience, 
+      not from reading the current situation. 
+      Bifurcation theory does not make this problem disappear. 
+      It makes it nameable — which is the first step.
+    </p>
+  </div>
+
+  <div class="question">
+    <div class="question-label">Sit with this before continuing</div>
+    <p>Has a system you work with ever changed regime without you recognising it immediately? 
+    What did that feel like from the inside — 
+    and how long did it take before the shift became legible?</p>
+  </div>
+</article>
+
+<hr class="ch-rule">
+
+<!-- ══════════ CH 05 ══════════ -->
+<article class="chapter" id="ch05">
+  <div class="ch-eyebrow">05 — Fifth Encounter</div>
+  <h2>You Are a Node</h2>
+  <div class="ch-instrument">Instrument: Network Science Simulator</div>
+
+  <p class="body">
+    Everything so far has concerned how systems behave over time. 
+    This encounter concerns something different: how the structure of a system 
+    shapes what is possible within it — independently of the intentions or capabilities 
+    of any individual actor.
+  </p>
+
+  <p class="body">
+    Network science's central finding is both simple and radical: 
+    the topology of a network — how nodes are connected, not who or what those nodes are — 
+    determines what can spread through the network, what can be blocked, 
+    what can cascade, and what remains isolated. 
+    A bridge between two otherwise disconnected clusters 
+    carries information that neither cluster can generate internally, 
+    regardless of how sophisticated the actors within each cluster are. 
+    Structure constrains and enables independently of content.
+  </p>
+
+  <div class="instrument-block">
+    <div class="instrument-header">
+      <span class="instrument-number">Instrument 05</span>
+      <span class="instrument-title">Network Science Simulator</span>
+      <a class="instrument-open" href="https://pportela1980.github.io/networks/networks.html" target="_blank">open full screen ↗</a>
+    </div>
+    <div class="instrument-guide">
+      Explore topology, diffusion, centrality, weak ties, and cascades across five lenses. Pay attention to how the same information spreads differently across different network structures — and to what happens when highly connected nodes are removed. Notice which nodes are structurally irreplaceable, regardless of their individual characteristics.
+    </div>
+    <iframe class="tool" src="https://pportela1980.github.io/networks/networks.html" loading="lazy" title="Network science simulator" style="height:580px;"></iframe>
+  </div>
+
+  <div class="seeing">
+    <div class="seeing-label">What you are seeing</div>
+    <ul>
+      <li>How network topology determines the speed and reach of diffusion</li>
+      <li>The structural power of bridges between disconnected clusters</li>
+      <li>How cascade failures propagate — and which nodes are most critical</li>
+      <li>The difference between degree centrality and betweenness centrality as forms of influence</li>
+    </ul>
+  </div>
+
+  <div class="pq">
+    Your position in a network shapes what you can see, what you can reach, 
+    and what remains structurally invisible to you — 
+    regardless of how experienced or perceptive you are.
+  </div>
+
+  <div class="observer">
+    <p>
+      The practitioner is always a node — never a view from nowhere. 
+      Your position in the network determines what information reaches you, 
+      whose perspective you hear, which problems become visible, 
+      and which remain in your structural blind spot. 
+      This is not a problem of bias in the ordinary sense — 
+      it is a structural feature of every network position. 
+      The question is not how to escape your position, 
+      but how to become aware of what it systematically obscures.
+    </p>
+  </div>
+
+  <div class="question">
+    <div class="question-label">Sit with this before continuing</div>
+    <p>In the networks you work within — professional, community, institutional — 
+    where are you structurally? Hub, bridge, peripheral node? 
+    What does your position make visible — and what does it make invisible?</p>
+  </div>
+</article>
+
+<hr class="ch-rule">
+
+<!-- ══════════ CH 06 ══════════ -->
+<article class="chapter" id="ch06">
+  <div class="ch-eyebrow">06 — Sixth Encounter</div>
+  <h2>The Programme That Worked</h2>
+  <div class="ch-instrument">Instrument: Conflict System Dynamics</div>
+
+  <p class="body">
+    This is the sharpest encounter. Not because the ideas are more complex — 
+    but because they point most directly at the practitioner themselves.
+  </p>
+
+  <p class="body">
+    The programme reduced conflict. The metrics improved. 
+    The log frame was satisfied. By any standard evaluation framework, 
+    the intervention was a success — within the boundaries that the evaluation 
+    was designed to see.
+  </p>
+
+  <p class="body">
+    What the evaluation did not see: the programme had quietly built dependency 
+    in the communities it served. Local mechanisms for managing conflict — 
+    informal, imperfect, but self-sustaining — had atrophied, 
+    because the programme had taken over their function. 
+    The rights dispute that had generated the conflict in the first place 
+    was left structurally untouched, because addressing it was outside scope. 
+    When funding ended, the system had less capacity to hold itself together 
+    than before the intervention arrived.
+  </p>
+
+  <div class="pq">
+    The intervener's assumptions — about what counts as success, 
+    about the boundary of the system, about what is inside and outside scope — 
+    are not neutral observations. They are causal variables. 
+    They shape the system they claim to be observing.
+  </div>
+
+  <div class="instrument-block">
+    <div class="instrument-header">
+      <span class="instrument-number">Instrument 06</span>
+      <span class="instrument-title">Conflict System Dynamics — The Aravane Case</span>
+      <a class="instrument-open" href="https://pportela1980.github.io/aravane-sd/aravane_oscillator.html" target="_blank">open full screen ↗</a>
+    </div>
+    <div class="instrument-guide">
+      Follow the Aravane case through seven variables and five scenarios. Read the case brief. Pay attention not just to the dynamics of the conflict system — but to the moment when the programme itself becomes a variable within that system. Notice what the log frame was designed to see, and what it was structurally unable to see.
+    </div>
+    <iframe class="tool" src="https://pportela1980.github.io/aravane-sd/aravane_oscillator.html" loading="lazy" title="Conflict system dynamics simulator" style="height:600px;"></iframe>
+  </div>
+
+  <div class="seeing">
+    <div class="seeing-label">What you are seeing</div>
+    <ul>
+      <li>Feedback loops between the intervention and the system it is acting within</li>
+      <li>Unintended consequences that emerge from the structure of the programme itself</li>
+      <li>The gap between the system boundary drawn by the log frame and the actual system</li>
+      <li>How dependency, legitimacy, and root causes interact over time</li>
+    </ul>
+  </div>
+
+  <div class="observer">
+    <p>
+      Your theory of change, your funding logic, your evaluation framework, 
+      your professional identity, your assumptions about what constitutes progress — 
+      all of these are inside the system you are working with. 
+      They shape what you see, what you fund, what you measure, 
+      and what you leave structurally untouched. 
+      The practitioner who cannot see themselves as a variable 
+      in the systems they work within is not practising complexity science. 
+      They are practising a more sophisticated version of linear thinking, 
+      dressed in complexity language.
+    </p>
+  </div>
+
+  <div class="question">
+    <div class="question-label">Sit with this before continuing</div>
+    <p>In a programme or intervention you have been part of: 
+    where were your own assumptions encoded in the design? 
+    What did the evaluation framework make it structurally impossible to see?</p>
+  </div>
+</article>
+
+<hr class="ch-rule">
+
+<!-- ══════════ CH 07 ══════════ -->
+<article class="chapter" id="ch07">
+  <div class="ch-eyebrow">07 — Epilogue</div>
+  <h2>What the Practitioner Does With This</h2>
+  <div class="ch-instrument">No instrument — the practitioner themselves</div>
+
+  <p class="body">
+    None of what you have encountered here is an argument for paralysis. 
+    The three-body problem does not mean you should stop trying to understand systems. 
+    Sensitive dependence does not mean interventions are pointless. 
+    Strange attractors do not mean strategy is futile. 
+    Bifurcations do not mean experience is worthless. 
+    Network structure does not mean position is destiny. 
+    And the intervener-as-variable does not mean practitioners should step aside.
+  </p>
+
+  <p class="body">
+    It means something more demanding. It means the practitioner must hold 
+    a more honest relationship with what they can and cannot know — 
+    and with how their own presence, assumptions, and framing 
+    are shaping the system they claim to be serving. 
+    Seriously engaged, these seven encounters produce four practical shifts:
+  </p>
+
+  <div class="ep-grid">
+    <div class="ep-cell">
+      <h4>From prediction to regime recognition</h4>
+      <p>Stop asking: what will this system do next? Start asking: what kind of system is this? What regime is it in? What are the boundaries of the space it moves through? These questions are answerable — and more useful.</p>
+    </div>
+    <div class="ep-cell">
+      <h4>From control to robustness</h4>
+      <p>Stop optimising for a single predicted outcome. Start building for robustness across multiple possible futures. The system will surprise you. The question is whether your design can absorb the surprise without collapsing.</p>
+    </div>
+    <div class="ep-cell">
+      <h4>From certainty to early warning</h4>
+      <p>Stop demanding confidence intervals on outcomes. Start building sensitivity to weak signals, to critical slowing down near bifurcation points, to the early signs of regime shift. The signal is often there before the transition.</p>
+    </div>
+    <div class="ep-cell">
+      <h4>From observer to participant-observer</h4>
+      <p>Stop treating your position as a view from nowhere. Start asking what your position structurally obscures. This is not just an epistemic shift — it is a developmental one. It requires a different quality of attention to oneself.</p>
+    </div>
+  </div>
+
+  <p class="body" style="margin-top:2rem;">
+    That last shift is the one most complexity frameworks leave out. 
+    They describe the system. They do not describe the practitioner inside it. 
+    But the practitioner's interior — their assumptions, their certainties, 
+    their blind spots, their need for control — is not separate from the work. 
+    It is part of the causal structure. Which means that the development of the practitioner 
+    is not a soft addendum to complexity practice. It is a core competence.
+  </p>
+
+  <div class="final-line">Complexity without interiority is just a prettier spreadsheet.</div>
+
+  <div class="question" style="margin-top:3rem;">
+    <div class="question-label">The final question</div>
+    <p>After these seven encounters: what do you now see in your own practice 
+    that you did not see before? And what would it take to act from that seeing?</p>
+  </div>
+</article>
+
+<footer>
+  <p>School of Systems & Complexity — <a href="https://systemsandcomplexity.school">systemsandcomplexity.school</a></p>
+  <p>Tools at <a href="https://tools.systemsandcomplexity.school">tools.systemsandcomplexity.school</a></p>
+</footer>
+
+</div><!-- /page -->
+
+<script>
+// reading progress
+window.addEventListener('scroll', () => {
+  const pct = Math.round(window.scrollY / (document.body.scrollHeight - window.innerHeight) * 100);
+  document.getElementById('rp').style.width = pct + '%';
+  document.getElementById('tb-pct').textContent = pct + '%';
+});
+
+// chapter fade-in
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.06 });
+document.querySelectorAll('.chapter').forEach(ch => obs.observe(ch));
+
+// active nav
+const ids = ['cover','ch00','ch01','ch02','ch03','ch04','ch05','ch06','ch07'];
+const links = document.querySelectorAll('.tb-ch');
+const navObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      links.forEach(l => l.classList.remove('active'));
+      const l = document.querySelector(`.tb-ch[href="#${e.target.id}"]`);
+      if (l) l.classList.add('active');
+    }
+  });
+}, { threshold: 0.25 });
+ids.forEach(id => { const el = document.getElementById(id); if (el) navObs.observe(el); });
+</script>
+</body>
+</html>
