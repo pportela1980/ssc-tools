@@ -435,6 +435,7 @@
       <button class="toggle-btn"        id="btn-pyth"   onclick="load('pyth')">Pythagorean</button>
       <button class="toggle-btn"        id="btn-chaos"  onclick="load('chaos')">Chaos</button>
       <button class="toggle-btn"        id="btn-custom" onclick="load('custom')">Custom</button>
+      <button class="toggle-btn"        id="btn-solar"  onclick="load('solar')">Solar system</button>
     </div>
     <button class="reset-btn" id="btn-reset" onclick="resetCurrent()">Reset</button>
   </div>
@@ -470,11 +471,37 @@
     <button class="action-btn" onclick="pauseAndEdit()">Pause and edit</button>
   </div>
 
+  <div class="setup-panel" id="solar-panel">
+    <div class="setup-instructions">
+      A stylised star system in stable hierarchy — the Sun holds everything in orbit.
+      Drag the sliders to make a body massive enough to <strong>break the hierarchy</strong>
+      and watch the chaos arrive. <span style="color:var(--muted)">(Distances and masses are
+      stylised for clarity, not to scale.)</span>
+    </div>
+    <div class="mass-controls">
+      <div class="mass-group">
+        <span class="mass-label" style="color:#B8860B">● Jupiter mass</span>
+        <input type="range" min="1" max="80" value="1" step="0.5" id="sl-jup" oninput="onSolarChange('jup', this.value)"/>
+        <span class="mass-val" id="val-jup">1×</span>
+      </div>
+      <div class="mass-group">
+        <span class="mass-label" style="color:#888070">● Moon mass</span>
+        <input type="range" min="0.05" max="12" value="0.05" step="0.05" id="sl-moon" oninput="onSolarChange('moon', this.value)"/>
+        <span class="mass-val" id="val-moon">0.1×</span>
+      </div>
+    </div>
+    <div class="setup-actions">
+      <button class="action-btn primary" id="btn-solar-reset" onclick="loadSolar()">Reset to stable</button>
+    </div>
+  </div>
+
   <canvas id="c" height="500"></canvas>
   <div class="legend">
-    <div class="legend-item"><span class="legend-dot" style="background:#8C3A1E"></span> Body 1</div>
-    <div class="legend-item"><span class="legend-dot" style="background:#2A5A8C"></span> Body 2</div>
-    <div class="legend-item"><span class="legend-dot" style="background:#2A7A5A"></span> Body 3</div>
+    <div id="legend-items" style="display:flex; gap:1.4rem; align-items:center;">
+      <div class="legend-item"><span class="legend-dot" style="background:#8C3A1E"></span> Body 1</div>
+      <div class="legend-item"><span class="legend-dot" style="background:#2A5A8C"></span> Body 2</div>
+      <div class="legend-item"><span class="legend-dot" style="background:#2A7A5A"></span> Body 3</div>
+    </div>
     <div class="legend-item" style="margin-left:auto"><span id="time-display">t = 0.00</span></div>
   </div>
   <div class="status-bar" id="status">Figure-8 — three equal masses chase each other along a single closed curve. A rare periodic solution.</div>
@@ -513,6 +540,10 @@
       <div class="fact-block">
         <h4>Custom</h4>
         <p>Place three bodies anywhere on the canvas. Set their masses. Press Run. The bodies start at rest — gravity does all the work. Try placing them in a perfectly symmetric triangle and watch what happens. Try one heavy body and two light ones. Try three bodies in a near-collinear arrangement. Almost every configuration ends the same way: ejection, with a tight binary left behind. The exceptions are vanishingly rare. This is the parameter space Poincaré was talking about.</p>
+      </div>
+      <div class="fact-block">
+        <h4>Solar system</h4>
+        <p>The inverse experiment. A stylised star system — one dominant Sun, a handful of light planets, a moon — sits in stable hierarchy and will happily orbit indefinitely. Then you break it on purpose. Raise Jupiter's mass until it rivals what holds the inner planets in place, and the system that looked permanent unravels in seconds. Raise the Moon's mass past its planet's and the Earth-Moon binary inverts. Masses and distances are stylised for visibility, not drawn to scale: the point is the <em>mechanism</em>, not the numbers. Stability was never structural — it was hierarchical, and the hierarchy was yours to dismantle.</p>
       </div>
     </div>
   </div>
@@ -558,6 +589,9 @@ const SOFT = 0.02;          // softening to avoid singularities at close approac
 const TRAIL_MAX = 800;
 const SUBSTEPS = 4;
 const COL = ['#8C3A1E', '#2A5A8C', '#2A7A5A'];
+// Solar-system palette (Sun, Mercury, Venus, Earth, Mars, Jupiter, Moon)
+const SOLAR_COL = ['#C9821E', '#8C7A5A', '#A8762E', '#2A5A8C', '#8C3A1E', '#B8860B', '#888070'];
+const SOLAR_NAMES = ['Sun', 'Mercury', 'Venus', 'Earth', 'Mars', 'Jupiter', 'Moon'];
 
 let W, H;
 let bodies = [];
@@ -625,20 +659,121 @@ const scenarios = {
 // ============================================================
 // Custom mode state
 // ============================================================
-let mode = 'preset';            // 'preset' | 'setup' | 'run'
+let mode = 'preset';            // 'preset' | 'setup' | 'run' | 'solar'
 let customBodies = [];          // bodies placed so far in setup
 let customMasses = [1.0, 1.0, 1.0];
 let customCameraZoom = 4.0;     // fixed zoom in setup mode so placement is predictable
 
+// ============================================================
+// Solar system mode state (stylised — tuned for stability + dramatic break)
+// ============================================================
+const SOLAR_MSUN = 500;
+const SOLAR_EARTH_M = 0.3;
+const SOLAR_MOON_R = 0.07;      // tight orbit, safely inside Earth's Hill sphere
+let solarJupiterMass = 1.0;
+let solarMoonMass = 0.05;
+
+function vcirc(M, r) { return Math.sqrt(G * M / r); }
+
+function buildSolarSystem() {
+  const sun = { m: SOLAR_MSUN, x: 0, y: 0, vx: 0, vy: 0 };
+  const mk = (r, m) => ({ m, x: r, y: 0, vx: 0, vy: vcirc(SOLAR_MSUN, r) });
+  const mercury = mk(0.9, 0.02);
+  const venus   = mk(1.4, 0.04);
+  const earth   = mk(2.0, SOLAR_EARTH_M);
+  const mars    = mk(2.7, 0.02);
+  const jupiter = mk(3.8, solarJupiterMass);
+  const moon = {
+    m: solarMoonMass,
+    x: earth.x + SOLAR_MOON_R, y: earth.y,
+    vx: earth.vx, vy: earth.vy + vcirc(SOLAR_EARTH_M, SOLAR_MOON_R),
+  };
+  const bs = [sun, mercury, venus, earth, mars, jupiter, moon];
+  // Remove net momentum so the whole system doesn't drift off-screen
+  let px = 0, py = 0, M = 0;
+  for (const b of bs) { px += b.m * b.vx; py += b.m * b.vy; M += b.m; }
+  for (const b of bs) { b.vx -= px / M; b.vy -= py / M; }
+  return bs;
+}
+
+function loadSolar() {
+  bodies = buildSolarSystem();
+  trails = bodies.map(() => []);
+  simTime = 0;
+  cameraZoom = 6.0;
+  cameraTarget = 6.0;
+  mode = 'solar';
+  document.getElementById('sl-jup').value = solarJupiterMass;
+  document.getElementById('sl-moon').value = solarMoonMass;
+  document.getElementById('val-jup').textContent = solarJupiterMass.toFixed(0) + '×';
+  document.getElementById('val-moon').textContent = (solarMoonMass / SOLAR_EARTH_M).toFixed(1) + '× Earth';
+  document.getElementById('status').textContent =
+    'Stylised star system — stable hierarchy. Raise a mass enough and the hierarchy breaks.';
+}
+
+function resetSolarMasses() {
+  solarJupiterMass = 1.0;
+  solarMoonMass = 0.05;
+}
+
+function onSolarChange(which, val) {
+  const v = parseFloat(val);
+  if (which === 'jup') {
+    solarJupiterMass = v;
+    document.getElementById('val-jup').textContent = v.toFixed(0) + '×';
+  } else {
+    solarMoonMass = v;
+    // Show the Moon's mass relative to its planet (Earth = SOLAR_EARTH_M)
+    document.getElementById('val-moon').textContent = (v / SOLAR_EARTH_M).toFixed(1) + '× Earth';
+  }
+  // Rebuild live so the change takes effect immediately, restarting the run
+  bodies = buildSolarSystem();
+  trails = bodies.map(() => []);
+  simTime = 0;
+  cameraZoom = 6.0;
+  cameraTarget = 6.0;
+  const heavy = solarJupiterMass > 6 || solarMoonMass > 1.5;
+  document.getElementById('status').textContent = heavy
+    ? 'Hierarchy broken — a body is now comparable to what holds it. Watch the chaos assert itself.'
+    : 'Stylised star system — stable hierarchy. Raise a mass enough and the hierarchy breaks.';
+}
+
+function updateLegend(name) {
+  const el = document.getElementById('legend-items');
+  if (name === 'solar') {
+    el.innerHTML = SOLAR_NAMES.map((nm, i) =>
+      `<div class="legend-item"><span class="legend-dot" style="background:${SOLAR_COL[i]}"></span> ${nm}</div>`
+    ).join('');
+  } else {
+    el.innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#8C3A1E"></span> Body 1</div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#2A5A8C"></span> Body 2</div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#2A7A5A"></span> Body 3</div>';
+  }
+}
+
 function load(name) {
   current = name;
+  updateLegend(name);
   document.getElementById('btn-fig8').classList.toggle('active', name === 'fig8');
   document.getElementById('btn-pyth').classList.toggle('active', name === 'pyth');
   document.getElementById('btn-chaos').classList.toggle('active', name === 'chaos');
   document.getElementById('btn-custom').classList.toggle('active', name === 'custom');
+  document.getElementById('btn-solar').classList.toggle('active', name === 'solar');
+
+  // Always hide the solar panel unless we're entering solar mode
+  document.getElementById('solar-panel').classList.remove('visible');
 
   if (name === 'custom') {
     enterSetupMode();
+  } else if (name === 'solar') {
+    document.getElementById('setup-panel').classList.remove('visible');
+    document.getElementById('run-panel').classList.remove('visible');
+    canvas.classList.remove('placing');
+    document.getElementById('solar-panel').classList.add('visible');
+    document.getElementById('btn-reset').textContent = 'Reset';
+    resetSolarMasses();
+    loadSolar();
   } else {
     mode = 'preset';
     document.getElementById('setup-panel').classList.remove('visible');
@@ -662,6 +797,9 @@ function resetCurrent() {
     } else {
       clearCustom();
     }
+  } else if (current === 'solar') {
+    resetSolarMasses();
+    loadSolar();
   } else {
     load(current);
   }
@@ -869,6 +1007,14 @@ function render() {
     ctx.moveTo(W/2, H/2 - 20);
     ctx.lineTo(W/2, H/2 + 20);
     ctx.stroke();
+  } else if (mode === 'solar') {
+    // Keep the Sun roughly centred and hold a steady frame; expand only
+    // gently, and cap it so an ejected body leaving doesn't shrink the system to a dot.
+    const ext = comAndExtent();
+    cx = ext.cx * 0.3; cy = ext.cy * 0.3;   // bias toward origin (the Sun)
+    cameraTarget = Math.min(Math.max(5.0, ext.maxR * 1.15), 9.0);
+    cameraZoom = cameraZoom + (cameraTarget - cameraZoom) * 0.03;
+    scale = (Math.min(W, H) / 2) / cameraZoom;
   } else {
     const ext = comAndExtent();
     cx = ext.cx; cy = ext.cy;
@@ -883,6 +1029,9 @@ function render() {
     y: H / 2 + (y - cy) * scale,
   });
 
+  // Colour helper: solar mode uses its own 7-colour palette
+  const colorFor = (i) => (mode === 'solar' ? SOLAR_COL[i] : COL[i]);
+
   // Trails (run mode only)
   if (mode !== 'setup') {
     for (let i = 0; i < trails.length; i++) {
@@ -892,7 +1041,7 @@ function render() {
         const alpha = k / t.length;
         const p0 = toScreen(t[k-1].x, t[k-1].y);
         const p1 = toScreen(t[k].x, t[k].y);
-        ctx.strokeStyle = COL[i] + Math.floor(alpha * 180).toString(16).padStart(2, '0');
+        ctx.strokeStyle = colorFor(i) + Math.floor(alpha * 180).toString(16).padStart(2, '0');
         ctx.lineWidth = 1.2;
         ctx.beginPath();
         ctx.moveTo(p0.x, p0.y);
@@ -907,8 +1056,11 @@ function render() {
   for (let i = 0; i < drawList.length; i++) {
     const b = drawList[i];
     const p = toScreen(b.x, b.y);
-    const r = 4 + Math.sqrt(b.m) * 2;
-    ctx.fillStyle = COL[i];
+    // Cap radius growth so the heavy Sun / heavy Jupiter don't dominate the frame
+    const r = mode === 'solar'
+      ? Math.min(4 + Math.sqrt(b.m) * 1.6, 18)
+      : 4 + Math.sqrt(b.m) * 2;
+    ctx.fillStyle = colorFor(i);
     ctx.beginPath();
     ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
     ctx.fill();
