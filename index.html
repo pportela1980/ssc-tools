@@ -45,7 +45,7 @@ a:focus-visible {
   margin:auto;
   padding:0 32px
 }
-.eyebrow,.nav,.section-label,.count,.tool-tag,.tool-cta,.source-link,footer {
+.eyebrow,.nav,.section-label,.count,.tool-tag,.tool-cta,footer {
   font-family:'IBM Plex Mono',monospace
 }
 .eyebrow,.section-label,.tool-tag {
@@ -249,7 +249,6 @@ main {
 .card-actions {
   margin-top:auto;
   display:flex;
-  justify-content:space-between;
   align-items:center;
   gap:12px
 }
@@ -259,12 +258,7 @@ main {
   text-decoration:none;
   font-weight:500
 }
-.source-link {
-  font-size:.7rem;
-  color:var(--soft);
-  text-decoration:none
-}
-.tool-cta:hover,.source-link:hover {
+.tool-cta:hover {
   text-decoration:underline
 }
 .about {
@@ -378,7 +372,7 @@ footer a {
 </style>
 </head>
 <body>
-<div class="topbar"><div class="wrap topbar-inner"><a class="brand" href="https://systemsandcomplexity.school/" aria-label="School of Systems and Complexity home"><span>SSC</span> · School of Systems &amp; Complexity</a><nav class="nav" aria-label="Page navigation"><a href="#instruments">Instruments</a><a href="#about">About</a><a href="https://github.com/pportela1980/ssc-tools">GitHub ↗</a></nav></div></div>
+<div class="topbar"><div class="wrap topbar-inner"><a class="brand" href="https://systemsandcomplexity.school/" aria-label="School of Systems and Complexity home"><span>SSC</span> · School of Systems &amp; Complexity</a><nav class="nav" aria-label="Page navigation"><a href="#instruments">Instruments</a><a href="#about">About</a></nav></div></div>
 <header class="wrap hero"><div><p class="eyebrow">An open collection of interactive tools</p><h1>Instruments<br>for <em>Complexity</em></h1><p class="hero-copy">Explore how systems move, connect and change. These browser-based instruments help make assumptions visible and open better conversations about complex situations.</p></div><div class="hero-aside"><strong>For practitioners and facilitators</strong>Use a simulation to test an intuition, compare scenarios or start a discussion. The tools are aids to thinking, not predictions.</div></header>
 <main class="wrap"><section class="reading" aria-labelledby="reading-title"><div><p class="eyebrow">Start here · Guided reading</p><h2 id="reading-title">You Are in the System</h2><p>Seven encounters with complexity science, with simulations woven into one argument about the practitioner’s place inside the system.</p></div><a class="button" href="/you-are-in-the-system-v2.html">Begin reading →</a></section>
 <div class="catalog-head" id="instruments"><h2>Explore the instruments</h2><p>Choose a theme, open a tool and experiment in your browser. Each instrument can be used on its own.</p></div>
@@ -388,17 +382,17 @@ footer a {
       <span class="tool-tag">Physical dynamics</span>
       <h4>The Pendulum</h4>
       <p>Compare a single and double pendulum to see how predictable motion gives way to chaos.</p>
-      <div class="card-actions"><a class="tool-cta" href="https://pportela1980.github.io/pendulum/">Open instrument →</a><a class="source-link" href="https://github.com/pportela1980/pendulum">Source ↗</a></div>
+      <div class="card-actions"><a class="tool-cta" href="https://pportela1980.github.io/pendulum/">Open instrument →</a></div>
     </article><article class="tool-card">
       <span class="tool-tag">Attractors</span>
       <h4>Attractors and Chaos</h4>
       <p>Change the parameters of the Lorenz system and explore its trajectories.</p>
-      <div class="card-actions"><a class="tool-cta" href="/lorenz.html">Open instrument →</a><a class="source-link" href="https://github.com/pportela1980/ssc-tools/blob/main/lorenz.html">Source ↗</a></div>
+      <div class="card-actions"><a class="tool-cta" href="/lorenz.html">Open instrument →</a></div>
     </article><article class="tool-card">
       <span class="tool-tag">Unpredictability</span>
       <h4>Three-Body Problem</h4>
       <p>Follow three interacting bodies and see why simple laws can produce unpredictable paths.</p>
-      <div class="card-actions"><a class="tool-cta" href="/threebody_bites.html">Open instrument →</a><a class="source-link" href="https://github.com/pportela1980/ssc-tools/blob/main/threebody_bites.html">Source ↗</a></div>
+      <div class="card-actions"><a class="tool-cta" href="/threebody_bites.html">Open instrument →</a></div>
     </article></div>
     </section>
 <section class="tool-section" aria-labelledby="section-2">
@@ -407,17 +401,17 @@ footer a {
       <span class="tool-tag">Opinion dynamics</span>
       <h4>Polarisation Dynamics</h4>
       <p>Explore opinion landscapes, echo chambers and interventions in a changing social system.</p>
-      <div class="card-actions"><a class="tool-cta" href="/polarisation.html">Open instrument →</a><a class="source-link" href="https://github.com/pportela1980/ssc-tools/blob/main/polarisation.html">Source ↗</a></div>
+      <div class="card-actions"><a class="tool-cta" href="/polarisation.html">Open instrument →</a></div>
     </article><article class="tool-card">
       <span class="tool-tag">System dynamics</span>
       <h4>Conflict System Dynamics</h4>
       <p>Explore how an intervention can reduce visible conflict while changing dependency and local capacity.</p>
-      <div class="card-actions"><a class="tool-cta" href="https://pportela1980.github.io/aravane-sd/aravane_oscillator.html">Open instrument →</a><a class="source-link" href="https://github.com/pportela1980/aravane-sd">Source ↗</a></div>
+      <div class="card-actions"><a class="tool-cta" href="https://pportela1980.github.io/aravane-sd/aravane_oscillator.html">Open instrument →</a></div>
     </article><article class="tool-card">
       <span class="tool-tag">Bifurcations</span>
       <h4>When Societies Bifurcate</h4>
       <p>Use the logistic map to examine how social reinforcement can change patterns of conflict.</p>
-      <div class="card-actions"><a class="tool-cta" href="/conflict-dynamics-story.html">Open instrument →</a><a class="source-link" href="https://github.com/pportela1980/ssc-tools/blob/main/conflict-dynamics-story.html">Source ↗</a></div>
+      <div class="card-actions"><a class="tool-cta" href="/conflict-dynamics-story.html">Open instrument →</a></div>
     </article></div>
     </section>
 <section class="tool-section" aria-labelledby="section-3">
@@ -426,9 +420,9 @@ footer a {
       <span class="tool-tag">Network science</span>
       <h4>Network Science Simulator</h4>
       <p>Investigate topology, centrality and weak ties to see how structure shapes outcomes.</p>
-      <div class="card-actions"><a class="tool-cta" href="https://pportela1980.github.io/networks/networks.html">Open instrument →</a><a class="source-link" href="https://github.com/pportela1980/networks">Source ↗</a></div>
+      <div class="card-actions"><a class="tool-cta" href="https://pportela1980.github.io/networks/networks.html">Open instrument →</a></div>
     </article></div>
     </section>
 <section class="about" id="about" aria-label="About the collection"><div><h3>How to use these tools</h3><p>Open an instrument, change one parameter at a time and compare what happens. Use the results to ask better questions; the simulations are simplified views of the world.</p></div><div><h3>About SSC</h3><p>The School of Systems &amp; Complexity works with practitioners in governance, peacebuilding and organisational change. <a href="https://systemsandcomplexity.school/">Learn more ↗</a></p></div></section></main>
-<footer><div class="wrap footer-inner"><span>© School of Systems &amp; Complexity</span><a href="https://github.com/pportela1980/ssc-tools">View this collection on GitHub ↗</a></div></footer>
+<footer><div class="wrap footer-inner"><span>© School of Systems &amp; Complexity</span><a href="https://systemsandcomplexity.school/">School of Systems &amp; Complexity ↗</a></div></footer>
 </body></html>
