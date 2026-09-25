@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Aravane — Oscillator</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#F2EEE6;color:#1C1C1C;font-family:Georgia,serif;font-size:13px}
+.page{display:flex;flex-direction:column;min-height:100vh}
+
+/* HEADER */
+.hdr{background:#1C1C1C;padding:13px 22px;flex-shrink:0}
+.hdr-title{font-size:13px;font-weight:bold;color:#F2EEE6;letter-spacing:1px;font-family:'Courier New',monospace}
+.hdr-sub{font-size:10px;color:#555;letter-spacing:2px;margin-top:2px;font-family:'Courier New',monospace}
+
+/* CONTROLS */
+.ctl{background:#E4DED4;border-bottom:2px solid #C4BCB0;padding:10px 22px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;flex-shrink:0}
+.btn{padding:7px 16px;border:2px solid #888;background:#F2EEE6;color:#1C1C1C;cursor:pointer;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;border-radius:3px;white-space:nowrap}
+.btn:hover{background:#1C1C1C;color:#F2EEE6;border-color:#1C1C1C}
+.btn-run{border-color:#286040;color:#286040}
+.btn-run:hover,.btn-run.on{background:#286040;color:#fff;border-color:#286040}
+.btn-nl{border-color:#503878;color:#503878}
+.btn-nl:hover,.btn-nl.on{background:#503878;color:#fff;border-color:#503878}
+.btn-reset{border-color:#605028;color:#605028}
+.btn-reset:hover{background:#605028;color:#fff;border-color:#605028}
+.ctl-div{width:1px;height:26px;background:#C4BCB0;flex-shrink:0}
+.sp-wrap{display:flex;align-items:center;gap:5px}
+.sp-lbl{font-size:10px;color:#888;font-family:'Courier New',monospace;letter-spacing:1px}
+.spb{padding:5px 11px;border:1.5px solid #C4BCB0;background:#F2EEE6;color:#888;cursor:pointer;font-family:'Courier New',monospace;font-size:10px;border-radius:2px}
+.spb:hover{border-color:#888;color:#1C1C1C}
+.spb.on{border-color:#503878;background:#503878;color:#fff}
+.ticker{font-size:11px;color:#AAA;font-family:'Courier New',monospace;min-width:56px}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#CCC;vertical-align:middle;margin-right:4px}
+.dot.on{background:#286040;animation:blink 1s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* BODY */
+.body{flex:1;display:grid;grid-template-columns:210px 1fr 218px;min-height:0}
+
+/* LEFT */
+.left{background:#EAE4DA;border-right:1px solid #C4BCB0;padding:14px;overflow-y:auto}
+.sec{font-size:9px;color:#888;letter-spacing:3px;font-family:'Courier New',monospace;margin-bottom:9px;margin-top:2px;display:block;text-transform:uppercase}
+.sc-btn{display:block;width:100%;text-align:left;padding:8px 10px;margin-bottom:4px;border:1.5px solid #C4BCB0;background:transparent;cursor:pointer;border-radius:3px;font-family:Georgia,serif;transition:all 0.1s}
+.sc-btn:hover{background:#F2EEE6}
+.sc-btn.on{background:#F2EEE6;border-left:4px solid #286040;border-color:#286040}
+.sc-name{font-size:12px;font-weight:bold;color:#1C1C1C;display:block}
+.sc-btn.on .sc-name{color:#1A4A30}
+.sc-desc{font-size:10px;color:#888;margin-top:2px;display:block;font-family:'Courier New',monospace}
+.div{border:none;border-top:1px solid #C4BCB0;margin:12px 0}
+.sl-row{margin-bottom:12px}
+.sl-hdr{display:flex;justify-content:space-between;margin-bottom:4px}
+.sl-k{font-size:10px;color:#666;font-family:'Courier New',monospace}
+.sl-v{font-size:10px;font-weight:bold;font-family:'Courier New',monospace}
+input[type=range]{width:100%;cursor:pointer;accent-color:#286040;height:4px}
+.note-small{font-size:10px;color:#AAA;line-height:1.6;font-family:'Courier New',monospace;margin-top:4px}
+
+/* CENTRE */
+.centre{display:flex;flex-direction:column;background:#F8F4EE;overflow:hidden;position:relative}
+.phase-wrap{flex:1;position:relative;min-height:0}
+#cPhase{position:absolute;top:0;left:0}
+.time-wrap{height:150px;flex-shrink:0;border-top:1px solid #C4BCB0;position:relative}
+#cTime{position:absolute;top:0;left:0}
+
+/* RIGHT */
+.right{background:#EAE4DA;border-left:1px solid #C4BCB0;padding:14px;overflow-y:auto;display:flex;flex-direction:column;gap:12px}
+.card{background:#F2EEE6;border:1.5px solid #C4BCB0;border-radius:3px;padding:11px}
+.card-lbl{font-size:9px;color:#888;letter-spacing:2px;font-family:'Courier New',monospace;margin-bottom:6px;display:block;text-transform:uppercase}
+.big-val{font-size:32px;font-weight:bold;font-family:'Courier New',monospace;line-height:1}
+.state-lbl{font-size:9px;font-weight:bold;letter-spacing:2px;margin-top:3px;font-family:'Courier New',monospace}
+.bar-bg{height:4px;background:#D8D2C8;border-radius:2px;margin-top:9px;overflow:hidden}
+.bar-fill{height:100%;border-radius:2px;transition:width 0.1s,background 0.1s}
+.card-note{font-size:10px;color:#888;line-height:1.5;margin-top:7px;font-family:'Courier New',monospace}
+.vr{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #E4DED4}
+.vr:last-child{border-bottom:none}
+.vr-lbl{font-size:10px;color:#888;font-family:'Courier New',monospace}
+.vr-barwrap{width:72px;height:3px;background:#D8D2C8;border-radius:1px;margin-top:3px;overflow:hidden}
+.vr-bar{height:100%;border-radius:1px;transition:width 0.08s}
+.vr-val{font-size:12px;font-weight:bold;font-family:'Courier New',monospace;min-width:36px;text-align:right}
+.info{font-size:10px;color:#666;line-height:1.8;font-family:'Courier New',monospace;padding:9px;background:#F2EEE6;border:1.5px solid #C4BCB0;border-left:3px solid #503878;border-radius:0 3px 3px 0}
+.info .hi{color:#1A4A30;font-weight:bold}
+.info .hi2{color:#503878;font-weight:bold}
+
+/* TABS */
+.tab-bar{background:#DDD8CE;border-bottom:2px solid #C4BCB0;display:flex;gap:0;flex-shrink:0}
+.tab{padding:10px 22px;border:none;background:transparent;cursor:pointer;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:2px;color:#888;border-bottom:3px solid transparent;transition:all 0.12s;text-transform:uppercase}
+.tab:hover{color:#1C1C1C;background:#E4DED4}
+.tab.on{color:#1C1C1C;border-bottom-color:#1C1C1C;background:#F2EEE6}
+.tab-panel{flex:1;overflow:hidden;display:flex;flex-direction:column;min-height:0}
+
+/* DOC PANEL */
+.doc-wrap{overflow-y:auto;padding:32px;background:#F8F4EE;flex:1}
+.doc-section{max-width:860px;margin:0 auto 48px;border-bottom:1px solid #D8D2C8;padding-bottom:40px}
+.doc-section:last-child{border-bottom:none}
+.doc-section h2{font-size:18px;font-weight:bold;color:#1C1C1C;margin-bottom:14px;font-family:Georgia,serif}
+.doc-section p{font-size:13px;color:#444;line-height:1.8;margin-bottom:12px;font-family:Georgia,serif}
+.doc-section p:last-child{margin-bottom:0}
+.doc-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+.doc-card{background:#F2EEE6;border:1.5px solid #C8C2B8;border-radius:3px;padding:14px}
+.doc-card-title{font-size:11px;font-weight:bold;color:#1C1C1C;font-family:'Courier New',monospace;letter-spacing:1px;margin-bottom:8px;text-transform:uppercase}
+.doc-card p{font-size:12px;color:#555;line-height:1.7;margin:0;font-family:Georgia,serif}
+.doc-eq{background:#1C1C1C;color:#C8C4BC;font-family:'Courier New',monospace;font-size:12px;padding:14px 18px;border-radius:3px;margin:14px 0;line-height:2}
+.doc-refs{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.doc-ref{font-size:12px;color:#555;line-height:1.7;padding:10px 12px;background:#F2EEE6;border:1px solid #C8C2B8;border-radius:2px;font-family:Georgia,serif}
+.doc-ref strong{color:#1C1C1C}
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="hdr">
+  <div class="hdr-title">ARAVANE — CONFLICT OSCILLATOR</div>
+  <div class="hdr-sub">TRUST · CONFLICT · LIMIT CYCLE · PHASE PORTRAIT</div>
+</div>
+
+<div class="ctl">
+  <span class="dot" id="dot"></span>
+  <span class="ticker" id="ticker">t = 0</span>
+  <button class="btn btn-run" id="btnRun" onclick="toggleRun()">▶ RUN</button>
+  <button class="btn btn-reset" onclick="doReset()">↺ RESET</button>
+  <div class="ctl-div"></div>
+  <button class="btn btn-nl" id="btnNL" onclick="toggleNL()">⊛ LINEAR</button>
+  <div class="ctl-div"></div>
+  <div class="sp-wrap">
+    <span class="sp-lbl">SPEED</span>
+    <button class="spb on" id="sp1" onclick="setSp(1)">1×</button>
+    <button class="spb" id="sp4" onclick="setSp(4)">4×</button>
+    <button class="spb" id="sp12" onclick="setSp(12)">12×</button>
+  </div>
+</div>
+
+<div class="tab-bar">
+  <button class="tab on" id="tab-sim" onclick="switchTab('sim')">SIMULATION</button>
+  <button class="tab" id="tab-doc" onclick="switchTab('doc')">MODEL DOCUMENTATION</button>
+</div>
+
+<div id="panel-sim" class="tab-panel">
+<div class="body">
+
+  <div class="left">
+    <span class="sec">Scenarios</span>
+    <button class="sc-btn on" id="s-base" onclick="loadSc('base')">
+      <span class="sc-name">Baseline</span>
+      <span class="sc-desc">Chronic oscillation. No equilibrium.</span>
+    </button>
+    <button class="sc-btn" id="s-prog" onclick="loadSc('prog')">
+      <span class="sc-name">Programme active</span>
+      <span class="sc-desc">Orbit shifts — centre moves.</span>
+    </button>
+    <button class="sc-btn" id="s-exit" onclick="loadSc('exit')">
+      <span class="sc-name">Programme exits</span>
+      <span class="sc-desc">Orbit returns toward baseline.</span>
+    </button>
+    <button class="sc-btn" id="s-drought" onclick="loadSc('drought')">
+      <span class="sc-name">Drought</span>
+      <span class="sc-desc">Larger orbit. Deeper conflict cycles.</span>
+    </button>
+    <button class="sc-btn" id="s-rights" onclick="loadSc('rights')">
+      <span class="sc-name">Rights reform</span>
+      <span class="sc-desc">Centre shifts structurally. Orbit shrinks.</span>
+    </button>
+
+    <div class="div"></div>
+    <span class="sec">Parameters</span>
+    <div class="sl-row">
+      <div class="sl-hdr"><span class="sl-k">Programme</span><span class="sl-v" id="lp" style="color:#286040">0%</span></div>
+      <input type="range" min="0" max="100" step="1" id="slp" value="0" oninput="onSl()">
+    </div>
+    <div class="sl-row">
+      <div class="sl-hdr"><span class="sl-k">Water availability</span><span class="sl-v" id="lw" style="color:#285880">45%</span></div>
+      <input type="range" min="0" max="100" step="1" id="slw" value="45" oninput="onSl()">
+    </div>
+    <div class="sl-row">
+      <div class="sl-hdr"><span class="sl-k">Pastoralist rights</span><span class="sl-v" id="lr" style="color:#806020">20%</span></div>
+      <input type="range" min="0" max="100" step="1" id="slr" value="20" oninput="onSl()">
+    </div>
+    <div class="note-small">Change parameters while running to watch the orbit shift in real time.</div>
+  </div>
+
+  <div class="centre">
+    <div class="phase-wrap" id="phaseWrap">
+      <canvas id="cPhase"></canvas>
+    </div>
+    <div class="time-wrap" id="timeWrap">
+      <canvas id="cTime"></canvas>
+    </div>
+  </div>
+
+  <div class="right">
+    <div class="card">
+      <span class="card-lbl">Conflict level</span>
+      <div class="big-val" id="cfVal">—</div>
+      <div class="state-lbl" id="cfState">—</div>
+      <div class="bar-bg"><div class="bar-fill" id="cfBar" style="width:0%"></div></div>
+      <div class="card-note">Top of iceberg. Oscillates — no stable equilibrium.</div>
+    </div>
+
+    <div class="card">
+      <span class="card-lbl">Live state</span>
+      <div class="vr">
+        <div><div class="vr-lbl">Trust (T)</div><div class="vr-barwrap"><div class="vr-bar" id="vbT" style="background:#286040"></div></div></div>
+        <div class="vr-val" id="vvT" style="color:#286040">—</div>
+      </div>
+      <div class="vr">
+        <div><div class="vr-lbl">Conflict (C)</div><div class="vr-barwrap"><div class="vr-bar" id="vbC" style="background:#803030"></div></div></div>
+        <div class="vr-val" id="vvC" style="color:#803030">—</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <span class="card-lbl">Cycle average</span>
+      <div class="vr">
+        <div><div class="vr-lbl">T equilibrium</div><div class="vr-barwrap"><div class="vr-bar" id="vbTeq" style="background:#AAA"></div></div></div>
+        <div class="vr-val" id="vvTeq" style="color:#888">—</div>
+      </div>
+      <div class="vr">
+        <div><div class="vr-lbl">C equilibrium</div><div class="vr-barwrap"><div class="vr-bar" id="vbCeq" style="background:#AAA"></div></div></div>
+        <div class="vr-val" id="vvCeq" style="color:#888">—</div>
+      </div>
+      <div class="card-note">Mean trust and conflict over the last 40 steps of the orbit. Changes visibly when parameters shift.</div>
+    </div>
+
+    <div class="info">
+      <span class="hi">What this shows:</span><br>
+      The system has no stable peace and no stable conflict. It oscillates perpetually — trust and conflict chase each other in cycles.<br><br>
+      <span class="hi2">Non-linear mode</span> adds frequency modulation: the orbit speeds up near peak conflict and slows near peak trust.<br><br>
+      <span class="hi">Drought</span> expands the orbit — deeper conflict cycles, higher peaks. <span class="hi">Rights reform</span> shifts the centre and shrinks the orbit.
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+var nl=false, running=false, speed=1, animId=null;
+var T, C, t, traj=[], MAX_TRAJ=400;
+
+var SC={
+  base:    {p:0,  w:45, r:20},
+  prog:    {p:80, w:50, r:20},
+  exit:    {p:5,  w:48, r:20},
+  drought: {p:70, w:10, r:20},
+  rights:  {p:70, w:50, r:80},
+};
+
+function getP(){
+  return{
+    p:parseInt(document.getElementById('slp').value)/100,
+    w:parseInt(document.getElementById('slw').value)/100,
+    r:parseInt(document.getElementById('slr').value)/100,
+  };
+}
+
+function makeEq(p,w,r){
+  var pressure=0.7*(1-w);
+  var a=0.50; var b=0.90;
+  var c=0.20+pressure-0.18*p;   // programme reduces conflict pressure → lowers Teq
+  var d=0.70+0.50*r;             // rights amplify trust power → lowers Teq further
+  var Teq=Math.min(0.88,Math.max(0.15,c/d));
+  var Ceq=Math.min(0.88,Math.max(0.15,a/b));
+  return[Teq,Ceq];
+}
+
+function stepModel(Tv,Cv,par){
+  var dt=0.08;
+  var p=par.p,w=par.w,r=par.r;
+  var eq=makeEq(p,w,r);
+  var Teq=eq[0],Ceq=eq[1];
+  var u=Tv-Teq, v=Cv-Ceq;
+  var R2=u*u+v*v;
+  // Orbit size: water stress expands it, rights partially buffer it
+  // No water + no rights = largest orbit; max water + max rights = tightest
+  var waterStress=0.9*(1-w);
+  var rightsBuffer=0.35*r;
+  var netStress=Math.max(0,waterStress-rightsBuffer);
+  var R0sq=Math.pow(0.08+0.28*netStress,2);
+  var omega=nl?(0.28+0.15*Cv):0.28;
+  var mu=0.55;
+  if(nl&&Tv<0.20) mu*=0.3;
+  var damp=mu*(R0sq-R2);
+  var du=omega*v+damp*u;
+  var dv=-omega*u+damp*v;
+  return[
+    Math.max(0.05,Math.min(0.95,Tv+dt*du)),
+    Math.max(0.05,Math.min(0.95,Cv+dt*dv))
+  ];
+}
+
+// ── PHASE PORTRAIT ──────────────────────────────────────────
+function drawPhase(){
+  var wrap=document.getElementById('phaseWrap');
+  var cv=document.getElementById('cPhase');
+  cv.width=wrap.clientWidth; cv.height=wrap.clientHeight;
+  var ctx=cv.getContext('2d');
+  var W=cv.width,H=cv.height;
+  var pad={l:44,r:20,t:28,b:46};
+  var iw=W-pad.l-pad.r,ih=H-pad.t-pad.b;
+  if(iw<10||ih<10)return;
+
+  function tx(v){return pad.l+v*iw;}
+  function ty(v){return pad.t+(1-v)*ih;}
+
+  ctx.fillStyle='#F8F4EE'; ctx.fillRect(0,0,W,H);
+
+  // Conflict gradient — green (low C) at bottom, red (high C) at top
+  var grad=ctx.createLinearGradient(0,pad.t,0,pad.t+ih);
+  grad.addColorStop(0,   'rgba(180,60,60,0.13)');   // top = high conflict
+  grad.addColorStop(0.4, 'rgba(200,160,60,0.08)');  // middle = tension
+  grad.addColorStop(1,   'rgba(60,140,80,0.10)');   // bottom = low conflict
+  ctx.fillStyle=grad;
+  ctx.fillRect(pad.l,pad.t,iw,ih);
+
+  // Grid
+  [0,0.25,0.5,0.75,1].forEach(function(v){
+    ctx.strokeStyle='rgba(0,0,0,0.07)'; ctx.lineWidth=0.5;
+    ctx.beginPath(); ctx.moveTo(pad.l,ty(v)); ctx.lineTo(pad.l+iw,ty(v)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(tx(v),pad.t); ctx.lineTo(tx(v),pad.t+ih); ctx.stroke();
+    ctx.fillStyle='#BBB'; ctx.font='10px Courier New';
+    ctx.textAlign='right'; ctx.fillText(Math.round(v*100),pad.l-5,ty(v)+3);
+    ctx.textAlign='center'; ctx.fillText(Math.round(v*100),tx(v),pad.t+ih+16);
+  });
+
+  // Orbit background — compute expected orbit
+  var par=getP();
+  var eq=makeEq(par.p,par.w,par.r);
+  // Draw equilibrium point
+  ctx.fillStyle='rgba(80,56,120,0.15)';
+  ctx.beginPath(); ctx.arc(tx(eq[0]),ty(eq[1]),8,0,6.28); ctx.fill();
+  ctx.fillStyle='rgba(80,56,120,0.5)';
+  ctx.beginPath(); ctx.arc(tx(eq[0]),ty(eq[1]),3,0,6.28); ctx.fill();
+  // Equilibrium label
+  ctx.fillStyle='rgba(80,56,120,0.6)'; ctx.font='9px Courier New'; ctx.textAlign='left';
+  ctx.fillText('unstable eq.',tx(eq[0])+8,ty(eq[1])-4);
+
+  // NL note
+  if(nl){
+    ctx.fillStyle='rgba(80,56,120,0.5)'; ctx.font='9px Courier New'; ctx.textAlign='left';
+    ctx.fillText('non-linear: frequency modulation active',pad.l,18);
+  } else {
+    ctx.fillStyle='#CCC'; ctx.font='9px Courier New'; ctx.textAlign='left';
+    ctx.fillText('PHASE PORTRAIT · LINEAR MODE',pad.l,18);
+  }
+
+  // Trajectory
+  if(traj.length>1){
+    var n=traj.length;
+    // Full trail with colour showing direction (age)
+    for(var i=1;i<n;i++){
+      var age=(n-i)/n;  // 0=recent, 1=old
+      // Recent = dark ink, old = faded
+      var alpha=Math.pow(1-age,0.6)*0.9+0.05;
+      ctx.strokeStyle='rgba(28,28,28,'+alpha.toFixed(2)+')';
+      ctx.lineWidth=1.8;
+      ctx.beginPath();
+      ctx.moveTo(tx(traj[i-1].T),ty(traj[i-1].C));
+      ctx.lineTo(tx(traj[i].T),ty(traj[i].C));
+      ctx.stroke();
+    }
+    // Directional arrows every ~60 steps
+    for(var ai=60;ai<traj.length-4;ai+=70){
+      var p1=traj[ai-4],p2=traj[ai];
+      var ang=Math.atan2(ty(p2.C)-ty(p1.C),tx(p2.T)-tx(p1.T));
+      var ax=tx(p2.T),ay=ty(p2.C);
+      ctx.fillStyle='rgba(28,28,28,0.5)';
+      ctx.beginPath();
+      ctx.moveTo(ax+Math.cos(ang)*6,ay+Math.sin(ang)*6);
+      ctx.lineTo(ax+Math.cos(ang+2.5)*5,ay+Math.sin(ang+2.5)*5);
+      ctx.lineTo(ax+Math.cos(ang-2.5)*5,ay+Math.sin(ang-2.5)*5);
+      ctx.fill();
+    }
+    // Current dot
+    var cur=traj[n-1];
+    ctx.fillStyle='#1C1C1C';
+    ctx.beginPath(); ctx.arc(tx(cur.T),ty(cur.C),7,0,6.28); ctx.fill();
+    ctx.fillStyle='#F2EEE6';
+    ctx.beginPath(); ctx.arc(tx(cur.T),ty(cur.C),3,0,6.28); ctx.fill();
+  }
+
+  // Axes labels
+  ctx.fillStyle='#888'; ctx.font='11px Georgia';
+  ctx.textAlign='center'; ctx.fillText('minimum trust required →',pad.l+iw/2,H-4);
+  ctx.save(); ctx.translate(14,pad.t+ih/2); ctx.rotate(-Math.PI/2);
+  ctx.fillText('conflict intensity →',0,0); ctx.restore();
+  // Axis interpretation hints
+  ctx.fillStyle='rgba(42,112,80,0.5)'; ctx.font='9px Courier New';
+  ctx.textAlign='left'; ctx.fillText('← more resilient (less trust needed)',pad.l+3,pad.t+ih+26);
+  ctx.fillStyle='rgba(160,60,60,0.5)';
+  ctx.textAlign='right'; ctx.fillText('more fragile (more trust needed) →',pad.l+iw-3,pad.t+ih+26);
+}
+
+// ── TIME SERIES ─────────────────────────────────────────────
+function drawTime(){
+  var wrap=document.getElementById('timeWrap');
+  var cv=document.getElementById('cTime');
+  cv.width=wrap.clientWidth; cv.height=wrap.clientHeight;
+  var ctx=cv.getContext('2d');
+  var W=cv.width,H=cv.height;
+  var pad={l:44,r:50,t:12,b:22};
+  var iw=W-pad.l-pad.r,ih=H-pad.t-pad.b;
+  ctx.fillStyle='#F2EEE6'; ctx.fillRect(0,0,W,H);
+  if(traj.length<2)return;
+  var n=traj.length;
+  function tx2(i){return pad.l+(i/(MAX_TRAJ-1))*iw;}
+  function ty2(v){return pad.t+(1-v)*ih;}
+  // Grid
+  [0,0.5,1].forEach(function(v){
+    ctx.strokeStyle='rgba(0,0,0,0.06)'; ctx.lineWidth=0.5;
+    ctx.beginPath(); ctx.moveTo(pad.l,ty2(v)); ctx.lineTo(pad.l+iw,ty2(v)); ctx.stroke();
+    ctx.fillStyle='#BBB'; ctx.font='9px Courier New'; ctx.textAlign='right';
+    ctx.fillText(Math.round(v*100),pad.l-4,ty2(v)+3);
+  });
+  // T
+  ctx.strokeStyle='#286040'; ctx.lineWidth=2; ctx.beginPath();
+  traj.forEach(function(d,i){i===0?ctx.moveTo(tx2(i),ty2(d.T)):ctx.lineTo(tx2(i),ty2(d.T));});
+  ctx.stroke();
+  // C
+  ctx.strokeStyle='#803030'; ctx.lineWidth=2; ctx.beginPath();
+  traj.forEach(function(d,i){i===0?ctx.moveTo(tx2(i),ty2(d.C)):ctx.lineTo(tx2(i),ty2(d.C));});
+  ctx.stroke();
+  // Labels
+  var last=traj[n-1],lx=tx2(n-1);
+  ctx.font='10px Courier New'; ctx.textAlign='left';
+  ctx.fillStyle='#286040'; ctx.fillText('T '+Math.round(last.T*100)+'%',lx+5,ty2(last.T)+3);
+  ctx.fillStyle='#803030'; ctx.fillText('C '+Math.round(last.C*100)+'%',lx+5,ty2(last.C)+3);
+  ctx.fillStyle='#CCC'; ctx.textAlign='center';
+  ctx.fillText('time →',pad.l+iw/2,H-3);
+}
+
+// ── READOUT ──────────────────────────────────────────────────
+function updateReadout(){
+  if(!traj.length)return;
+  var d=traj[traj.length-1];
+  var pct=Math.round(d.C*100);
+  var col=d.C>0.65?'#803030':d.C>0.45?'#806020':'#286040';
+  var lbl=d.C>0.65?'HIGH CONFLICT':d.C>0.45?'TENSION':'LOW CONFLICT';
+  document.getElementById('cfVal').textContent=pct+'%';
+  document.getElementById('cfVal').style.color=col;
+  document.getElementById('cfState').textContent=lbl;
+  document.getElementById('cfState').style.color=col;
+  document.getElementById('cfBar').style.width=pct+'%';
+  document.getElementById('cfBar').style.background=col;
+  var Tp=Math.round(d.T*100),Cp=Math.round(d.C*100);
+  document.getElementById('vvT').textContent=Tp+'%';
+  document.getElementById('vvC').textContent=Cp+'%';
+  document.getElementById('vbT').style.width=Tp+'%';
+  document.getElementById('vbC').style.width=Cp+'%';
+  // Show mean T and C from recent trajectory — not the unstable fixed point
+  var recent=traj.length>40?traj.slice(-40):traj;
+  var meanT=Math.round(recent.reduce(function(s,d){return s+d.T;},0)/recent.length*100);
+  var meanC=Math.round(recent.reduce(function(s,d){return s+d.C;},0)/recent.length*100);
+  document.getElementById('vvTeq').textContent=meanT+'%';
+  document.getElementById('vvCeq').textContent=meanC+'%';
+  document.getElementById('vbTeq').style.width=meanT+'%';
+  document.getElementById('vbCeq').style.width=meanC+'%';
+}
+
+// ── SIM ──────────────────────────────────────────────────────
+function tick(){
+  var par=getP();
+  for(var i=0;i<speed;i++){
+    var r=stepModel(T,C,par);
+    T=r[0]; C=r[1]; t++;
+    if(traj.length>=MAX_TRAJ) traj.shift();
+    traj.push({T:T,C:C});
+  }
+  document.getElementById('ticker').textContent='t = '+t;
+  drawPhase(); drawTime(); updateReadout();
+  if(running) animId=requestAnimationFrame(tick);
+}
+
+function toggleRun(){
+  running=!running;
+  var btn=document.getElementById('btnRun');
+  var dot=document.getElementById('dot');
+  if(running){
+    btn.textContent='■ STOP'; btn.classList.add('on'); dot.classList.add('on'); tick();
+  } else {
+    cancelAnimationFrame(animId);
+    btn.textContent='▶ RUN'; btn.classList.remove('on'); dot.classList.remove('on');
+  }
+}
+
+function doReset(){
+  if(running) toggleRun();
+  T=0.35; C=0.65; t=0; traj=[{T:T,C:C}];
+  document.getElementById('ticker').textContent='t = 0';
+  drawPhase(); drawTime(); updateReadout();
+}
+
+function setSp(s){
+  speed=s;
+  [1,4,12].forEach(function(v){
+    document.getElementById('sp'+v).className='spb'+(v===s?' on':'');
+  });
+}
+
+function toggleNL(){
+  nl=!nl;
+  var btn=document.getElementById('btnNL');
+  btn.textContent=nl?'⊛ NON-LINEAR':'⊛ LINEAR';
+  btn.className='btn btn-nl'+(nl?' on':'');
+  drawPhase();
+}
+
+function onSl(){
+  var par=getP();
+  document.getElementById('lp').textContent=Math.round(par.p*100)+'%';
+  document.getElementById('lw').textContent=Math.round(par.w*100)+'%';
+  document.getElementById('lr').textContent=Math.round(par.r*100)+'%';
+  Object.keys(SC).forEach(function(k){
+    var sc=SC[k];
+    var m=sc.p===Math.round(par.p*100)&&sc.w===Math.round(par.w*100)&&sc.r===Math.round(par.r*100);
+    document.getElementById('s-'+k).className='sc-btn'+(m?' on':'');
+  });
+  updateReadout(); drawPhase();
+}
+
+function loadSc(key){
+  var sc=SC[key];
+  document.getElementById('slp').value=sc.p;
+  document.getElementById('slw').value=sc.w;
+  document.getElementById('slr').value=sc.r;
+  document.getElementById('lp').textContent=sc.p+'%';
+  document.getElementById('lw').textContent=sc.w+'%';
+  document.getElementById('lr').textContent=sc.r+'%';
+  Object.keys(SC).forEach(function(k){
+    document.getElementById('s-'+k).className='sc-btn'+(k===key?' on':'');
+  });
+  updateReadout(); drawPhase();
+}
+
+window.addEventListener('load',function(){doReset();});
+window.addEventListener('resize',function(){drawPhase();drawTime();});
+
+function switchTab(tab){
+  document.getElementById('panel-sim').style.display=tab==='sim'?'contents':'none';
+  document.getElementById('panel-doc').style.display=tab==='doc'?'flex':'none';
+  document.getElementById('tab-sim').className='tab'+(tab==='sim'?' on':'');
+  document.getElementById('tab-doc').className='tab'+(tab==='doc'?' on':'');
+  if(tab==='sim'){drawPhase();drawTime();}
+}
+</script>
+
+<div id="panel-doc" class="tab-panel" style="display:none;flex:1;overflow:hidden;flex-direction:column;min-height:0">
+<div class="doc-wrap">
+
+<div class="doc-section">
+  <h2>What this model is</h2>
+  <p>This is a <strong>non-linear dynamical systems model</strong> of water conflict in a fictional fragile context. It represents two forces — inter-community trust and conflict — that drive each other in cycles. It is built not to predict, but to demonstrate: complex social systems can produce persistent oscillation, path dependence, and sensitivity to timing in ways that linear planning tools cannot capture.</p>
+  <p>The model is a teaching tool, not a simulation of a real place. Every parameter and equation reflects a theoretical claim about how these forces interact, not an empirical measurement.</p>
+</div>
+
+<div class="doc-section">
+  <h2>The two state variables</h2>
+  <div class="doc-grid">
+    <div class="doc-card">
+      <div class="doc-card-title">T — Minimum trust threshold</div>
+      <p>This is not "how much trust exists." It is the trust level at which conflict stops growing — the minimum trust needed for stability. When the orbit centre moves left on the horizontal axis, this threshold has dropped: the system is more resilient, needing less trust to keep conflict in check.</p>
+    </div>
+    <div class="doc-card">
+      <div class="doc-card-title">C — Conflict intensity</div>
+      <p>The frequency and intensity of active water disputes. This is the visible variable — the top of the iceberg. What evaluations measure. What log frames track. It oscillates continuously because the structural conditions generating it are never fully resolved — only cycled through.</p>
+    </div>
+  </div>
+</div>
+
+<div class="doc-section">
+  <h2>The mathematical structure</h2>
+  <p>The model is a <strong>Hopf bifurcation oscillator</strong> — a Van der Pol variant applied to a social system. Written in deviation coordinates u = T − Teq and v = C − Ceq:</p>
+  <div class="doc-eq">dT/dt = ω·v + μ·(R₀² − R²)·u<br>dC/dt = −ω·u + μ·(R₀² − R²)·v</div>
+  <p>The term <strong>μ·(R₀² − R²)</strong> is the limit cycle mechanism. When the trajectory is inside the target orbit (R &lt; R₀), this is positive — it pushes the trajectory outward. When outside (R &gt; R₀), it is negative — it pulls inward. Every trajectory, from any starting point, converges to the same closed orbit. This is what makes it a <strong>limit cycle</strong> rather than a centre.</p>
+  <p>ω is the oscillation frequency. μ is the damping strength — how quickly trajectories are attracted to the orbit. R₀ is the target orbit radius, determined by water stress and rights recognition.</p>
+</div>
+
+<div class="doc-section">
+  <h2>Attractors, repellers, and limit cycles</h2>
+  <p>In dynamical systems, an <strong>attractor</strong> is a set of states the system tends toward over time. This model has one attractor: the limit cycle — the closed orbit itself. Every trajectory spirals toward it and stays.</p>
+  <p>At the centre of the orbit sits an <strong>unstable equilibrium</strong> — technically a repeller. This is where dT/dt = 0 and dC/dt = 0 simultaneously. The system could theoretically stay here forever, but any perturbation sends it into orbit. It is marked as a purple dot on the phase portrait. It represents the theoretical "stable peace" that planning frameworks assume is achievable. The model says: you cannot reach that point. You can only change the size and centre of the orbit around it.</p>
+  <p>This contrasts with the previous two-attractor model, which had a stable peace fixed point and a conflict trap fixed point. That model asked: which basin does the system fall into? This model asks a different question: given that the system will always oscillate, how do we make the orbit smaller and the cycles less severe?</p>
+</div>
+
+<div class="doc-section">
+  <h2>What shifts the orbit</h2>
+  <p>The orbit radius is determined by water stress buffered by rights:</p>
+  <div class="doc-eq">netStress = max(0, 0.9·(1−water) − 0.35·rights)<br>R₀ = 0.08 + 0.28·netStress</div>
+  <p>The orbit centre (Teq, Ceq) is determined by the programme and rights parameters. <strong>Programme</strong> reduces conflict pressure, lowering Teq — the system needs less trust to stay stable. <strong>Rights reform</strong> strengthens how effectively trust suppresses conflict (raises d in Teq = c/d), also lowering Teq. <strong>Drought</strong> raises conflict pressure, raising Teq — more trust is required just to maintain the cycle.</p>
+  <div class="doc-grid">
+    <div class="doc-card">
+      <div class="doc-card-title">Large orbit — high vulnerability</div>
+      <p>Swings between very high conflict and very low trust. Communities experience severe recurring crises. Characteristic of: drought, absent rights, no coordination support. The orbit may push against the state-space boundaries, producing asymmetric cycles.</p>
+    </div>
+    <div class="doc-card">
+      <div class="doc-card-title">Small orbit — low vulnerability</div>
+      <p>Oscillates within a narrow band. Conflict peaks are lower, trust troughs shallower. Communities can function even during conflict phases. Characteristic of: adequate water, recognised rights, active programme support working with the cycle rather than against it.</p>
+    </div>
+  </div>
+</div>
+
+<div class="doc-section">
+  <h2>Path dependence and timing</h2>
+  <p>Because the system oscillates, <strong>when you intervene matters as much as what you do</strong>. The same intervention — activating the programme at 80% — produces different trajectories depending on where the system is in its cycle at the moment of activation.</p>
+  <div class="doc-grid">
+    <div class="doc-card">
+      <div class="doc-card-title">Intervene at peak conflict</div>
+      <p>The system is at the top of its orbit. Activating the programme shifts the orbit centre and shrinks R₀, but the system must first complete the remainder of the conflict arc before trust begins recovering. Things get worse before they get better. An evaluation at t+6 months may conclude the programme is failing — when it is simply poorly timed.</p>
+    </div>
+    <div class="doc-card">
+      <div class="doc-card-title">Intervene at peak trust</div>
+      <p>The system is at the bottom of its orbit. The same programme shift now works with the cycle's momentum. Trust continues rising, the orbit tightens, conflict peaks drop faster. An evaluation at t+6 months shows improvement. Same programme. Different timing. Completely different apparent outcome.</p>
+    </div>
+  </div>
+  <p style="margin-top:16px">This is <strong>path dependence</strong>: the history of the system — specifically, where it is in its cycle at the moment of intervention — determines how the intervention propagates forward. A Theory of Change that does not account for cycle position will misattribute outcomes. It will conclude that a programme succeeded or failed based on timing, not quality. This is one of the most common sources of false learning in development evaluation.</p>
+</div>
+
+<div class="doc-section">
+  <h2>Honest limitations</h2>
+  <p>This model is deliberately simple. It has two state variables and three parameters. It does not model individual agents, heterogeneous communities, spatial dynamics, political identity, institutional memory, or the specific history of Aravane. It produces one oscillating orbit per parameter set — not the complex multi-frequency dynamics of real conflict systems.</p>
+  <p>It is not empirically validated. The equations and parameters were calibrated to produce pedagogically useful behaviour: visible orbits, intuitive parameter sensitivity, meaningful scenario comparisons. The coefficients are theoretical claims, not measurements.</p>
+  <p>What it demonstrates — mathematically and rigorously — are three claims that are difficult to make with linear models: that some social systems oscillate rather than converge; that structural interventions change orbit geometry rather than just current state; and that timing of interventions matters because history shapes trajectory. These claims hold even when this specific model is a simplification.</p>
+</div>
+
+<div class="doc-section">
+  <h2>Key references</h2>
+  <div class="doc-refs">
+    <div class="doc-ref"><strong>Van der Pol, B. (1926)</strong> — On relaxation oscillations. The foundational paper on limit cycle oscillators. The mathematical structure of this model is a direct descendant.</div>
+    <div class="doc-ref"><strong>Strogatz, S. (1994)</strong> — Nonlinear Dynamics and Chaos. The standard graduate text on dynamical systems. Chapters 7–8 cover limit cycles, the Hopf bifurcation, and the Van der Pol oscillator in detail.</div>
+    <div class="doc-ref"><strong>Lotka, A.J. (1925) / Volterra, V. (1926)</strong> — The predator-prey equations that inspired the trust-conflict dynamic. The conceptual ancestor of the oscillatory structure used here.</div>
+    <div class="doc-ref"><strong>Ostrom, E. (1990)</strong> — Governing the Commons. The empirical foundation for the claim that community trust and institutional legitimacy determine whether shared resource management succeeds or collapses.</div>
+    <div class="doc-ref"><strong>Homer-Dixon, T. (1994)</strong> — Environmental Scarcity and Violent Conflict. The empirical basis for the water-conflict relationship modelled in the pressure term.</div>
+    <div class="doc-ref"><strong>Lederach, J.P. (2005)</strong> — The Moral Imagination. The peacebuilding framework that grounds the relational interpretation of the trust variable and the cyclical nature of conflict transformation.</div>
+  </div>
+</div>
+
+<div style="text-align:center;padding:20px 0 8px;font-size:10px;color:#AAA;font-family:'Courier New',monospace">
+  Aravane is a fictional case constructed for teaching purposes &middot; School of Systems &amp; Complexity &middot; systemsandcomplexity.school
+</div>
+
+</div>
+</div>
+</body>
+</html>
