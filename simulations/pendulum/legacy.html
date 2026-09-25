@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Pendulum Simulator</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Serif+Display&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0e0e0f;
+    --surface: #17171a;
+    --border: rgba(255,255,255,0.08);
+    --border-mid: rgba(255,255,255,0.14);
+    --text: #e8e6e0;
+    --muted: #7a7870;
+    --accent: #c8b89a;
+    --teal: #5DCAA5;
+    --blue: #85B7EB;
+    --purple: #9f98e8;
+    --amber: #EF9F27;
+    --mono: 'DM Mono', monospace;
+    --serif: 'DM Serif Display', serif;
+  }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    min-height: 100vh;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 3rem 1.5rem 4rem;
+  }
+
+  header {
+    width: 100%;
+    max-width: 780px;
+    margin-bottom: 2.5rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 2rem;
+  }
+
+  .label {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.6rem;
+  }
+
+  h1 {
+    font-family: var(--serif);
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 400;
+    color: var(--text);
+    line-height: 1.1;
+    margin-bottom: 1.2rem;
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .description {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-top: 1.4rem;
+  }
+
+  @media (max-width: 560px) {
+    .description { grid-template-columns: 1fr; }
+  }
+
+  .desc-block {
+    border-left: 1px solid var(--border-mid);
+    padding-left: 1rem;
+  }
+
+  .desc-block h3 {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+  }
+
+  .desc-block p {
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--muted);
+  }
+
+  .simulator {
+    width: 100%;
+    max-width: 780px;
+  }
+
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding: 0.8rem 1rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+  }
+
+  .toggle-group {
+    display: flex;
+    border: 1px solid var(--border-mid);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .toggle-btn {
+    padding: 5px 14px;
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--muted);
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .toggle-btn.active {
+    background: var(--accent);
+    color: #0e0e0f;
+  }
+
+  .slider-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 150px;
+  }
+
+  .slider-label {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .slider-val {
+    font-size: 12px;
+    font-weight: 500;
+    min-width: 38px;
+    color: var(--accent);
+    text-align: right;
+  }
+
+  input[type=range] {
+    -webkit-appearance: none;
+    appearance: none;
+    flex: 1;
+    height: 2px;
+    background: var(--border-mid);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+  }
+
+  input[type=range]::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: none;
+    cursor: pointer;
+  }
+
+  .reset-btn {
+    padding: 5px 12px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: transparent;
+    border: 1px solid var(--border-mid);
+    border-radius: 4px;
+    cursor: pointer;
+    color: var(--muted);
+    transition: border-color 0.15s, color 0.15s;
+  }
+
+  .reset-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* --- explanatory content --- */
+  .explainer {
+    width: 100%;
+    max-width: 780px;
+    margin-top: 3.5rem;
+    border-top: 1px solid var(--border);
+    padding-top: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+  }
+
+  .explainer-section .section-label {
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.75rem;
+  }
+
+  .explainer-section h2 {
+    font-family: var(--serif);
+    font-size: clamp(1.4rem, 3vw, 2rem);
+    font-weight: 400;
+    color: var(--text);
+    line-height: 1.2;
+    margin-bottom: 1.25rem;
+  }
+
+  .explainer-section h2 em { font-style: italic; color: var(--accent); }
+
+  .explainer-section p {
+    font-size: 14px;
+    line-height: 1.85;
+    color: var(--muted);
+    margin-bottom: 1rem;
+    max-width: 68ch;
+  }
+
+  .explainer-section p:last-of-type { margin-bottom: 0; }
+
+  .explainer-section p strong { color: var(--text); font-weight: 500; }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-top: 1.5rem;
+  }
+
+  @media (max-width: 560px) { .two-col { grid-template-columns: 1fr; } }
+
+  .fact-block {
+    border-left: 1px solid var(--border-mid);
+    padding-left: 1.25rem;
+  }
+
+  .fact-block h4 {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.6rem;
+  }
+
+  .fact-block p {
+    font-size: 13px;
+    line-height: 1.75;
+    color: var(--muted);
+    margin-bottom: 0;
+  }
+
+  .equation {
+    display: inline-block;
+    margin: 1rem 0;
+    padding: 0.6rem 1rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 13px;
+    color: var(--accent);
+    letter-spacing: 0.04em;
+  }
+
+  .ssc-block {
+    width: 100%;
+    max-width: 780px;
+    margin-top: 3rem;
+    border: 1px solid var(--border-mid);
+    border-radius: 8px;
+    padding: 2rem 2rem 1.75rem;
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .ssc-eyebrow {
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .ssc-block h2 {
+    font-family: var(--serif);
+    font-size: clamp(1.3rem, 3vw, 1.8rem);
+    font-weight: 400;
+    color: var(--text);
+    line-height: 1.25;
+  }
+
+  .ssc-block h2 em { font-style: italic; color: var(--accent); }
+
+  .ssc-block p {
+    font-size: 13.5px;
+    line-height: 1.8;
+    color: var(--muted);
+    max-width: 64ch;
+  }
+
+  .ssc-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 0.5rem;
+    padding: 8px 18px;
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: #0e0e0f;
+    background: var(--accent);
+    border-radius: 4px;
+    transition: opacity 0.15s;
+    align-self: flex-start;
+  }
+
+  .ssc-link:hover { opacity: 0.85; }
+
+  canvas {
+    display: block;
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: #0a0a0b;
+  }
+
+  footer {
+    margin-top: 3rem;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  footer a { color: var(--muted); text-decoration: underline; text-underline-offset: 3px; }
+</style>
+</head>
+<body>
+
+<header>
+  <p class="label">Interactive physics</p>
+  <h1>The <em>Pendulum</em></h1>
+
+  <div class="description">
+    <div class="desc-block">
+      <h3>Single pendulum</h3>
+      <p>A mass on a fixed arm governed by gravity. At small angles it approximates simple harmonic motion. As the angle increases, nonlinearity stretches the period — the swing grows slower and asymmetric.</p>
+    </div>
+    <div class="desc-block">
+      <h3>Double pendulum</h3>
+      <p>Two linked arms, each with its own mass. A canonical example of deterministic chaos: the equations are exact, yet above ~60° the motion becomes practically unpredictable. Infinitesimally different starting conditions diverge exponentially.</p>
+    </div>
+  </div>
+</header>
+
+<div class="simulator">
+  <div class="controls">
+    <div class="toggle-group">
+      <button class="toggle-btn active" id="btn-single" onclick="setMode('single')">Single</button>
+      <button class="toggle-btn" id="btn-double" onclick="setMode('double')">Double</button>
+    </div>
+    <div class="toggle-group">
+      <button class="toggle-btn active" id="btn-trail-off" onclick="setTrail(false)">Trails off</button>
+      <button class="toggle-btn" id="btn-trail-on" onclick="setTrail(true)">Trails on</button>
+    </div>
+    <div class="slider-group">
+      <span class="slider-label">Angle</span>
+      <input type="range" min="5" max="175" value="45" step="1" id="angle-slider" oninput="onAngleChange(this.value)" />
+      <span class="slider-val" id="angle-val">45°</span>
+    </div>
+    <div class="slider-group">
+      <span class="slider-label">Speed</span>
+      <input type="range" min="1" max="20" value="5" step="1" id="speed-slider" oninput="onSpeedChange(this.value)" />
+      <span class="slider-val" id="speed-val">5×</span>
+    </div>
+    <button class="reset-btn" onclick="resetSim()">Reset</button>
+  </div>
+  <canvas id="c" height="480"></canvas>
+</div>
+
+<div class="explainer">
+
+  <div class="explainer-section">
+    <p class="section-label">The physics</p>
+    <h2>Complicated vs. <em>Complex</em></h2>
+    <p>The single pendulum is <strong>complicated</strong>. It has one moving part, governed by one rule: gravity pulls the bob back toward centre. Given the starting angle, you can predict exactly where it will be at any point in the future. It is analysable, controllable, and fully knowable. Engineers love it.</p>
+    <p>The double pendulum is <strong>complex</strong>. A second arm is attached to the end of the first. The rules are still exact — nothing random is happening — but the two arms interact with each other in ways that make the overall behaviour impossible to predict beyond a short time horizon. Start it twice from nearly identical positions and the paths will diverge completely within seconds. This is called <em>deterministic chaos</em>: governed by laws, but not by forecasts.</p>
+    <p>Turn on <strong>Trails</strong> and increase the starting angle above 90°. The single pendulum draws the same clean arc, over and over. The double pendulum fills the canvas with a pattern that never repeats. Same simulation engine. Same physical laws. Fundamentally different kind of system.</p>
+    <div class="two-col">
+      <div class="fact-block">
+        <h4>Why this matters beyond physics</h4>
+        <p>Most of our planning tools — logframes, theories of change, causal models — are built for complicated systems. They assume that if you understand the parts, you can predict the whole. The double pendulum is a reminder that this assumption breaks down as soon as components interact in non-trivial ways. Social systems, organisations, and communities in transition behave much more like the double pendulum than the single one.</p>
+      </div>
+      <div class="fact-block">
+        <h4>Sensitive dependence</h4>
+        <p>In a complex system, small differences in starting conditions compound over time. This is not a flaw or a gap in knowledge — it is a structural property of the system. It means that two communities receiving identical interventions can produce very different outcomes, not because one "worked" and one didn't, but because the systems they were embedded in were not identical — and never could be.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="ssc-block">
+  <p class="ssc-eyebrow">About this resource</p>
+  <h2>School of Systems<br>&amp; <em>Complexity</em></h2>
+  <p>This simulation is part of a series of interactive teaching resources produced by the School of Systems and Complexity (SSC) — a practitioner school working at the intersection of systems thinking, complexity science, and organisational change. SSC develops education, advisory practice, and community of practice programmes for those navigating environments where the complicated and the complex meet.</p>
+  <p>If you are a practitioner, educator, researcher, or leader working with systems that resist straightforward analysis — this is the work we do.</p>
+  <a class="ssc-link" href="https://systemsandcomplexity.school" target="_blank">Visit systemsandcomplexity.school &#8599;</a>
+</div>
+
+<footer>
+  Built with vanilla JS &amp; Canvas API &mdash; a resource by <a href="https://systemsandcomplexity.school" target="_blank">SSC</a>
+</footer>
+
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+
+let mode = 'single';
+let startAngle = 45;
+let simSpeed = 5;
+let showTrails = false;
+let animId;
+
+const L1 = 130, L2 = 105;
+const g = 9.81;
+const BASE_DT = 0.016;
+
+let state;
+let bobTrail1 = [], bobTrail2 = [];
+const MAX_FADE = 220;
+const MAX_PERSIST = 8000;
+
+function initState() {
+  const a = startAngle * Math.PI / 180;
+  state = { a1: a, a2: a, v1: 0, v2: 0 };
+  bobTrail1 = []; bobTrail2 = [];
+}
+
+function stepSingle(dt) {
+  state.v1 += -(g / L1) * Math.sin(state.a1) * dt;
+  state.v1 *= 0.9999;
+  state.a1 += state.v1 * dt;
+}
+
+function stepDouble(dt) {
+  const { a1, a2, v1, v2 } = state;
+  const s = Math.sin(a1 - a2);
+  const c = Math.cos(a1 - a2);
+  const denom = 2 - Math.cos(2 * (a1 - a2));
+  const acc1 = (
+    -g * 3 * Math.sin(a1) - g * Math.sin(a1 - 2 * a2)
+    - 2 * s * (v2 * v2 * L2 + v1 * v1 * L1 * c)
+  ) / (L1 * denom);
+  const acc2 = (
+    2 * s * (v1 * v1 * L1 * 2 + g * 2 * Math.cos(a1) + v2 * v2 * L2 * c)
+  ) / (L2 * denom);
+  state.v1 += acc1 * dt; state.v2 += acc2 * dt;
+  state.v1 *= 0.9999; state.v2 *= 0.9999;
+  state.a1 += state.v1 * dt; state.a2 += state.v2 * dt;
+}
+
+function getBobPositions(ox, oy) {
+  const x1 = ox + L1 * Math.sin(state.a1);
+  const y1 = oy + L1 * Math.cos(state.a1);
+  const x2 = x1 + L2 * Math.sin(state.a2);
+  const y2 = y1 + L2 * Math.cos(state.a2);
+  return { x1, y1, x2, y2 };
+}
+
+function drawFadedTrail(trail, r, g2, b) {
+  if (trail.length < 2) return;
+  const len = trail.length;
+  const start = showTrails ? Math.max(0, len - MAX_FADE) : 0;
+  for (let i = start + 1; i < len; i++) {
+    const t = (i - start) / (len - start);
+    ctx.strokeStyle = `rgba(${r},${g2},${b},${t * 0.8})`;
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(trail[i-1][0], trail[i-1][1]);
+    ctx.lineTo(trail[i][0], trail[i][1]);
+    ctx.stroke();
+  }
+}
+
+function drawPersistTrail(trail, r, g2, b) {
+  if (trail.length < 2) return;
+  ctx.beginPath();
+  ctx.moveTo(trail[0][0], trail[0][1]);
+  for (let i = 1; i < trail.length; i++) ctx.lineTo(trail[i][0], trail[i][1]);
+  ctx.strokeStyle = `rgba(${r},${g2},${b},0.45)`;
+  ctx.lineWidth = 1;
+  ctx.stroke();
+}
+
+function draw() {
+  const W = canvas.offsetWidth;
+  const H = 480;
+  if (canvas.width !== W * devicePixelRatio || canvas.height !== H * devicePixelRatio) {
+    canvas.width = W * devicePixelRatio;
+    canvas.height = H * devicePixelRatio;
+    canvas.style.height = H + 'px';
+    ctx.scale(devicePixelRatio, devicePixelRatio);
+  }
+
+  ctx.clearRect(0, 0, W, H);
+
+  const ox = W / 2;
+  const oy = H * 0.27;
+
+  for (let i = 0; i < simSpeed; i++) {
+    if (mode === 'single') {
+      stepSingle(BASE_DT);
+      const { x1, y1 } = getBobPositions(ox, oy);
+      bobTrail1.push([x1, y1]);
+      if (showTrails) { if (bobTrail1.length > MAX_PERSIST) bobTrail1.shift(); }
+      else { if (bobTrail1.length > MAX_FADE) bobTrail1.shift(); }
+    } else {
+      stepDouble(BASE_DT);
+      const { x1, y1, x2, y2 } = getBobPositions(ox, oy);
+      bobTrail1.push([x1, y1]);
+      bobTrail2.push([x2, y2]);
+      if (showTrails) {
+        if (bobTrail1.length > MAX_PERSIST) bobTrail1.shift();
+        if (bobTrail2.length > MAX_PERSIST) bobTrail2.shift();
+      } else {
+        if (bobTrail1.length > MAX_FADE) bobTrail1.shift();
+        if (bobTrail2.length > MAX_FADE) bobTrail2.shift();
+      }
+    }
+  }
+
+  const { x1, y1, x2, y2 } = getBobPositions(ox, oy);
+
+  if (showTrails) {
+    if (mode === 'single') {
+      drawPersistTrail(bobTrail1, 93, 202, 165);
+    } else {
+      drawPersistTrail(bobTrail1, 133, 183, 235);
+      drawPersistTrail(bobTrail2, 159, 148, 232);
+    }
+  } else {
+    if (mode === 'single') {
+      drawFadedTrail(bobTrail1, 93, 202, 165);
+    } else {
+      drawFadedTrail(bobTrail1, 133, 183, 235);
+      drawFadedTrail(bobTrail2, 159, 148, 232);
+    }
+  }
+
+  // pivot
+  ctx.beginPath(); ctx.arc(ox, oy, 4, 0, Math.PI*2);
+  ctx.fillStyle = 'rgba(200,184,154,0.3)'; ctx.fill();
+
+  if (mode === 'single') {
+    ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(x1, y1);
+    ctx.strokeStyle = 'rgba(200,184,154,0.35)';
+    ctx.lineWidth = 1.5; ctx.stroke();
+
+    ctx.beginPath(); ctx.arc(x1, y1, 14, 0, Math.PI*2);
+    ctx.fillStyle = '#5DCAA5'; ctx.fill();
+  } else {
+    ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(x1, y1); ctx.lineTo(x2, y2);
+    ctx.strokeStyle = 'rgba(200,184,154,0.35)';
+    ctx.lineWidth = 1.5; ctx.stroke();
+
+    ctx.beginPath(); ctx.arc(x1, y1, 11, 0, Math.PI*2);
+    ctx.fillStyle = '#85B7EB'; ctx.fill();
+
+    ctx.beginPath(); ctx.arc(x2, y2, 14, 0, Math.PI*2);
+    ctx.fillStyle = '#9f98e8'; ctx.fill();
+  }
+
+  animId = requestAnimationFrame(draw);
+}
+
+function setMode(m) {
+  mode = m;
+  document.getElementById('btn-single').classList.toggle('active', m === 'single');
+  document.getElementById('btn-double').classList.toggle('active', m === 'double');
+  resetSim();
+}
+
+function setTrail(on) {
+  showTrails = on;
+  document.getElementById('btn-trail-off').classList.toggle('active', !on);
+  document.getElementById('btn-trail-on').classList.toggle('active', on);
+  resetSim();
+}
+
+function onAngleChange(v) {
+  startAngle = parseInt(v);
+  document.getElementById('angle-val').textContent = v + '°';
+  resetSim();
+}
+
+function onSpeedChange(v) {
+  simSpeed = parseInt(v);
+  document.getElementById('speed-val').textContent = v + '×';
+}
+
+function resetSim() {
+  cancelAnimationFrame(animId);
+  initState();
+  draw();
+}
+
+initState();
+draw();
+</script>
+</body>
+</html>
