@@ -16,14 +16,14 @@ This repository publishes [tools.systemsandcomplexity.school](https://tools.syst
 
 The earlier pendulum variant is preserved at `/simulations/pendulum/legacy.html`, corresponding to the extensionless `index` file in the original repository. It is not the version linked from the catalogue.
 
-`you-are-in-the-system-v2.html` is the guided reading experience and embeds six simulations. The root HTML files remain at their published URLs for existing links. Keep those paths working when changing the canonical simulation pages.
+`you-are-in-the-system-v2.html` is the guided reading experience and embeds six simulations. The original root simulation URLs remain available as redirects to the canonical pages. Keep those redirects working for existing links.
 
 `hormuz_cascade.html` is an embeddable fragment, not a complete standalone page. `threshold_diagnostic_v1.html` is a separate diagnostic with external integrations. Both remain available at their original paths and are not listed in the catalogue.
 
 ## Maintaining the site
 
 1. Edit `index.html` to update catalogue text and links. Cards are grouped by theme; update the section count when adding a card.
-2. Edit the canonical HTML file under `simulations/<name>/`. If its corresponding root-level legacy file should reflect the same change, update that copy as well until a deliberate redirect is introduced.
+2. Edit the canonical HTML file under `simulations/<name>/`. The original root URLs redirect to the canonical pages; maintain only the canonical simulation code.
 3. Keep the guided reading iframe and full-screen links in sync with the canonical paths.
 4. Check the catalogue, each changed simulation, the guided reading embeds, and the legacy URLs after deployment. The site is also published at `https://complexitytools.netlify.app/`; verify that deployment separately.
 
