@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Network Science — SSC</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Serif+Display&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #F5F0E8;
+  --surface: #EDE8DC;
+  --surface2: #E4DDD0;
+  --border: rgba(44,40,32,0.12);
+  --border-mid: rgba(44,40,32,0.22);
+  --text: #2C2820;
+  --muted: #888070;
+  --accent: #8C3A1E;
+  --mono: 'DM Mono', monospace;
+  --serif: 'DM Serif Display', serif;
+  --node-default: #A09888;
+  --edge-default: rgba(44,40,32,0.15);
+}
+html, body { background: var(--bg); color: var(--text); font-family: var(--mono); min-height: 100vh; }
+body { display: flex; flex-direction: column; align-items: center; padding: 3rem 1.5rem 4rem; }
+
+header { width: 100%; max-width: 860px; margin-bottom: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 2rem; }
+.label { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.6rem; }
+h1 { font-family: var(--serif); font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 400; line-height: 1.1; margin-bottom: 0.5rem; }
+h1 em { font-style: italic; color: var(--accent); }
+.subtitle { font-size: 13px; color: var(--muted); line-height: 1.7; max-width: 60ch; }
+
+.page { width: 100%; max-width: 860px; }
+
+/* tabs */
+.tabs { display: flex; gap: 2px; margin-bottom: 0; border-bottom: 1px solid var(--border); }
+.tab-btn {
+  padding: 8px 16px; font-family: var(--mono); font-size: 11px; font-weight: 500;
+  letter-spacing: 0.08em; text-transform: uppercase; background: transparent;
+  border: none; border-bottom: 2px solid transparent; margin-bottom: -1px;
+  cursor: pointer; color: var(--muted); transition: color 0.15s, border-color 0.15s;
+}
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* canvas area */
+.canvas-wrap {
+  position: relative; width: 100%; background: #EDE8DC;
+  border: 1px solid var(--border); border-top: none; border-radius: 0 0 6px 6px;
+  overflow: hidden;
+}
+canvas { display: block; width: 100%; }
+
+/* controls row */
+.ctrl-row {
+  display: flex; flex-direction: column; gap: 0;
+  background: var(--surface);
+  border: 1px solid var(--border); border-bottom: none;
+}
+.ctrl-top {
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+  padding: 0.65rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+.ctrl-bottom {
+  display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
+  padding: 0.55rem 1rem;
+}
+.ctrl-bottom:empty { display: none; }
+.toggle-group { display: flex; border: 1px solid var(--border-mid); border-radius: 4px; overflow: hidden; }
+.tog {
+  padding: 4px 12px; font-family: var(--mono); font-size: 11px; font-weight: 500;
+  background: transparent; border: none; cursor: pointer; color: var(--muted);
+  letter-spacing: 0.04em; transition: background 0.12s, color 0.12s;
+}
+.tog.active { background: var(--accent); color: #F5F0E8; }
+.sl-group { display: flex; align-items: center; gap: 7px; flex: 1; min-width: 160px; }
+.sl-label { font-size: 11px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+.sl-val { font-size: 11px; font-weight: 500; min-width: 42px; color: var(--accent); text-align: right; white-space: nowrap; }
+input[type=range] { -webkit-appearance: none; appearance: none; flex: 1; height: 2px; background: var(--border-mid); border-radius: 2px; outline: none; cursor: pointer; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 13px; height: 13px; border-radius: 50%; background: var(--accent); cursor: pointer; }
+input[type=range]::-moz-range-thumb { width: 13px; height: 13px; border-radius: 50%; background: var(--accent); border: none; cursor: pointer; }
+.btn { padding: 4px 12px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.07em; text-transform: uppercase; background: transparent; border: 1px solid var(--border-mid); border-radius: 4px; cursor: pointer; color: var(--muted); white-space: nowrap; transition: border-color 0.12s, color 0.12s; }
+.btn:hover { border-color: var(--accent); color: var(--accent); }
+.btn.primary { border-color: var(--accent); color: var(--accent); }
+
+/* info + legend */
+.info-row {
+  display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-start;
+  padding: 0.9rem 1rem; background: var(--surface);
+  border: 1px solid var(--border); border-top: none;
+  border-radius: 0 0 6px 6px;
+}
+.info-text { font-size: 12px; line-height: 1.75; color: var(--muted); flex: 1; min-width: 220px; }
+.info-text strong { color: var(--text); font-weight: 500; }
+.legend { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; font-size: 11px; color: var(--muted); }
+.leg-item { display: flex; align-items: center; gap: 5px; }
+.leg-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+
+/* explainer blocks below each tab */
+.explainer {
+  margin-top: 2rem; border-top: 1px solid var(--border); padding-top: 1.75rem;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;
+}
+@media (max-width: 560px) { .explainer { grid-template-columns: 1fr; } .tabs { flex-wrap: wrap; } }
+.exp-block { border-left: 1px solid var(--border-mid); padding-left: 1rem; }
+.exp-block h4 { font-size: 11px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.5rem; }
+.exp-block p { font-size: 13px; line-height: 1.75; color: var(--muted); }
+.exp-block p strong { color: var(--text); font-weight: 500; }
+
+/* SSC block */
+.ssc-block {
+  width: 100%; max-width: 860px; margin-top: 3rem;
+  border: 1px solid var(--border-mid); border-radius: 8px;
+  padding: 2rem; background: var(--surface);
+  display: flex; flex-direction: column; gap: 0.9rem;
+}
+.ssc-block h2 { font-family: var(--serif); font-size: clamp(1.3rem, 3vw, 1.8rem); font-weight: 400; }
+.ssc-block h2 em { font-style: italic; color: var(--accent); }
+.ssc-block p { font-size: 13.5px; line-height: 1.8; color: var(--muted); max-width: 64ch; }
+.ssc-link { display: inline-flex; align-items: center; gap: 8px; margin-top: 0.4rem; padding: 8px 18px; font-family: var(--mono); font-size: 12px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none; color: #F5F0E8; background: var(--accent); border-radius: 4px; transition: opacity 0.15s; align-self: flex-start; }
+.ssc-link:hover { opacity: 0.85; }
+footer { margin-top: 2rem; font-size: 11px; letter-spacing: 0.08em; color: var(--muted); text-align: center; }
+footer a { color: var(--muted); text-decoration: underline; text-underline-offset: 3px; }
+</style>
+</head>
+<body>
+
+<header>
+  <p class="label">Interactive · Social Network Science</p>
+  <h1>How <em>Networks</em> Work</h1>
+  <p class="subtitle">Five simulations exploring how structure shapes everything — who hears what, who matters most, what spreads, and what gets stuck. Click nodes to intervene. Watch what happens.</p>
+</header>
+
+<div class="page">
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('topology')">Topology</button>
+    <button class="tab-btn" onclick="switchTab('diffusion')">Diffusion</button>
+    <button class="tab-btn" onclick="switchTab('centrality')">Centrality</button>
+    <button class="tab-btn" onclick="switchTab('weakties')">Weak Ties</button>
+    <button class="tab-btn" onclick="switchTab('cascade')">Cascades</button>
+  </div>
+
+  <!-- ═══ TAB 1: TOPOLOGY ═══ -->
+  <div id="tab-topology" class="tab-panel active">
+    <div class="ctrl-row">
+      <div class="ctrl-top">
+        <div class="toggle-group">
+          <button class="tog active" onclick="setTopo('random')">Random</button>
+          <button class="tog" onclick="setTopo('smallworld')">Small-world</button>
+          <button class="tog" onclick="setTopo('scalefree')">Scale-free</button>
+          <button class="tog" onclick="setTopo('lattice')">Lattice</button>
+        </div>
+        <button class="btn" onclick="initTopo()" style="margin-left:auto;">Regenerate</button>
+      </div>
+      <div class="ctrl-bottom">
+        <div class="sl-group">
+          <span class="sl-label">Nodes</span>
+          <input type="range" min="10" max="60" value="35" step="1" id="topo-n" oninput="onTopoN(this.value)" />
+          <span class="sl-val" id="topo-n-val">35</span>
+        </div>
+      </div>
+    </div>
+    <div class="canvas-wrap"><canvas id="c-topo" height="420"></canvas></div>
+    <div class="info-row">
+      <div class="info-text" id="topo-info">Select a topology above.</div>
+      <div class="legend" id="topo-legend">
+        <div class="leg-item"><div class="leg-dot" style="background:#8C3A1E"></div>hub (&gt;avg degree)</div>
+        <div class="leg-item"><div class="leg-dot" style="background:#A09888"></div>regular node</div>
+      </div>
+    </div>
+    <div class="explainer">
+      <div class="exp-block">
+        <h4>Why topology matters</h4>
+        <p>The same 35 people, connected differently, produce radically different systems. <strong>Random networks</strong> are democratic but slow to spread information. <strong>Scale-free networks</strong> — where a few hubs have many connections — are efficient but fragile: remove a hub and the network fragments. <strong>Small-world networks</strong> combine tight local clusters with a few long-range bridges, achieving both cohesion and reach. Real social networks almost always look like this last type.</p>
+      </div>
+      <div class="exp-block">
+        <h4>For practitioners</h4>
+        <p>Before designing an intervention, ask: what is the topology of the network you are working in? A programme that works by reaching hubs will fail in a lattice. A programme that builds local trust clusters will be ineffective in a scale-free network if the hubs are bypassed. <strong>Structure is not neutral.</strong> It is the medium through which everything else travels.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ TAB 2: DIFFUSION ═══ -->
+  <div id="tab-diffusion" class="tab-panel">
+    <div class="ctrl-row">
+      <div class="ctrl-top">
+        <div class="toggle-group">
+          <button class="tog active" onclick="setDiffTopo('random')">Random</button>
+          <button class="tog" onclick="setDiffTopo('smallworld')">Small-world</button>
+          <button class="tog" onclick="setDiffTopo('scalefree')">Scale-free</button>
+        </div>
+        <button class="btn primary" onclick="seedDiffusion()" style="margin-left:auto;">Seed random</button>
+        <button class="btn" onclick="initDiff()">Reset</button>
+      </div>
+      <div class="ctrl-bottom">
+        <div class="sl-group">
+          <span class="sl-label">Spread rate</span>
+          <input type="range" min="0.05" max="0.9" value="0.3" step="0.05" id="diff-rate" oninput="onDiffRate(this.value)" />
+          <span class="sl-val" id="diff-rate-val">0.30</span>
+        </div>
+        <div class="sl-group">
+          <span class="sl-label">Recovery</span>
+          <input type="range" min="0" max="0.3" value="0.05" step="0.01" id="diff-rec" oninput="onDiffRec(this.value)" />
+          <span class="sl-val" id="diff-rec-val">0.05</span>
+        </div>
+      </div>
+    </div>
+    <div class="canvas-wrap"><canvas id="c-diff" height="420"></canvas></div>
+    <div class="info-row">
+      <div class="info-text">Click any node to seed diffusion from it. Watch how topology shapes the spread. <span id="diff-stats" style="color:var(--accent)"></span></div>
+      <div class="legend">
+        <div class="leg-item"><div class="leg-dot" style="background:#e07a5f"></div>infected</div>
+        <div class="leg-item"><div class="leg-dot" style="background:#81b29a"></div>recovered</div>
+        <div class="leg-item"><div class="leg-dot" style="background:#A09888"></div>susceptible</div>
+      </div>
+    </div>
+    <div class="explainer">
+      <div class="exp-block">
+        <h4>What spreads through networks</h4>
+        <p>Information, norms, rumours, disease, innovation — all travel through social networks by the same basic mechanism: contact between connected nodes. <strong>Topology determines reach.</strong> Seed a scale-free network at a hub and watch the whole system light up within seconds. Seed it at a peripheral node and it may never spread at all. This asymmetry — invisible from aggregate data — is one of the most important structural facts about social change.</p>
+      </div>
+      <div class="exp-block">
+        <h4>Recovery and resilience</h4>
+        <p>The recovery slider introduces a simple SIR model — nodes can move from infected back to resistant. A high recovery rate produces short bursts that die out. A low one produces endemic spread. Notice that on a small-world network, the initial spread is fast (bridges carry it across clusters) but it can also be contained if bridges are cut early. <strong>Timing matters as much as topology.</strong></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ TAB 3: CENTRALITY ═══ -->
+  <div id="tab-centrality" class="tab-panel">
+    <div class="ctrl-row">
+      <div class="ctrl-top">
+        <div class="toggle-group">
+          <button class="tog active" onclick="setCentMeasure('degree')">Degree</button>
+          <button class="tog" onclick="setCentMeasure('betweenness')">Betweenness</button>
+          <button class="tog" onclick="setCentMeasure('closeness')">Closeness</button>
+          <button class="tog" onclick="setCentMeasure('eigenvector')">Eigenvector</button>
+        </div>
+        <button class="btn" onclick="initCent()" style="margin-left:auto;">New network</button>
+      </div>
+    </div>
+    <div class="canvas-wrap"><canvas id="c-cent" height="420"></canvas></div>
+    <div class="info-row">
+      <div class="info-text" id="cent-info">Node size and colour show relative centrality. Click a node to see its scores.</div>
+      <div class="legend">
+        <div class="leg-item"><div class="leg-dot" style="background:#e07a5f"></div>high centrality</div>
+        <div class="leg-item"><div class="leg-dot" style="background:#85b7eb"></div>medium</div>
+        <div class="leg-item"><div class="leg-dot" style="background:#A09888"></div>low</div>
+      </div>
+    </div>
+    <div class="explainer">
+      <div class="exp-block">
+        <h4>Four ways to be important</h4>
+        <p><strong>Degree:</strong> most connections — the obvious measure, but misleading in sparse networks. <strong>Betweenness:</strong> sits on the most shortest paths between others — the broker, the gatekeeper. <strong>Closeness:</strong> shortest average path to everyone else — the best position to spread something fast. <strong>Eigenvector:</strong> connected to well-connected people — influence by proximity to power. Switch between them and watch how the "most important" node changes completely.</p>
+      </div>
+      <div class="exp-block">
+        <h4>For funding and strategy</h4>
+        <p>The question "who should we fund?" often defaults to degree centrality — who has the most connections. But in many change processes, <strong>betweenness centrality</strong> is more relevant: who sits between communities that don't otherwise talk? Cutting that node — through funding withdrawal, burnout, or relocation — doesn't just remove one actor. It severs the bridge entirely.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ TAB 4: WEAK TIES ═══ -->
+  <div id="tab-weakties" class="tab-panel">
+    <div class="ctrl-row">
+      <div class="ctrl-top">
+        <button class="btn primary" id="wt-spread-btn" onclick="startWTSpread()">Spread from cluster A</button>
+        <button class="btn" onclick="initWT()">Reset</button>
+      </div>
+      <div class="ctrl-bottom">
+        <div class="sl-group">
+          <span class="sl-label">Bridge strength</span>
+          <input type="range" min="0" max="1" value="0.5" step="0.01" id="wt-strength" oninput="onWTStrength(this.value)" />
+          <span class="sl-val" id="wt-val">0.50</span>
+        </div>
+      </div>
+    </div>
+    <div class="canvas-wrap"><canvas id="c-wt" height="420"></canvas></div>
+    <div class="info-row">
+      <div class="info-text" id="wt-info">The dashed lines are <strong>weak ties</strong> — bridges between clusters. The bridge strength slider controls how likely information is to cross them. Watch what happens when bridges are weak or absent.</div>
+      <div class="legend">
+        <div class="leg-item"><div class="leg-dot" style="background:#e07a5f"></div>cluster A</div>
+        <div class="leg-item"><div class="leg-dot" style="background:#6fa3d0"></div>cluster B</div>
+        <div class="leg-item"><div class="leg-dot" style="background:#81b29a"></div>cluster C</div>
+        <div class="leg-item"><div class="leg-dot" style="background:#8C3A1E; width:24px; height:2px; border-radius:0;"></div>weak tie</div>
+      </div>
+    </div>
+    <div class="explainer">
+      <div class="exp-block">
+        <h4>Granovetter's insight</h4>
+        <p>In 1973, Mark Granovetter showed that people find jobs more often through <em>acquaintances</em> than through close friends. The reason: your close friends move in the same circles you do — they know what you know. Your acquaintances connect you to worlds you don't have access to. <strong>Weak ties carry novel information. Strong ties carry trust.</strong> Both are necessary. Neither is sufficient.</p>
+      </div>
+      <div class="exp-block">
+        <h4>Bridges and fragility</h4>
+        <p>Drag the bridge strength slider to zero. Notice that information from cluster A never reaches B or C — not because it's not spreading, but because there's no path for it. This is the structural isolation that many marginalised communities face: not a lack of internal cohesion, but a <strong>deficit of bridges</strong> to networks where resources, decisions, and opportunities are concentrated. The problem isn't effort. It's topology.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ TAB 5: CASCADE ═══ -->
+  <div id="tab-cascade" class="tab-panel">
+    <div class="ctrl-row">
+      <div class="ctrl-top">
+        <button class="btn primary" onclick="seedCascade()">Seed one adopter</button>
+        <button class="btn" onclick="reseedCascade()">Try same network</button>
+        <button class="btn" onclick="initCascade()">New network</button>
+      </div>
+      <div class="ctrl-bottom">
+        <div class="sl-group">
+          <span class="sl-label">Avg threshold</span>
+          <input type="range" min="0.1" max="0.8" value="0.3" step="0.05" id="cas-thresh" oninput="onCasThresh(this.value)" />
+          <span class="sl-val" id="cas-thresh-val">30%</span>
+        </div>
+        <div class="sl-group">
+          <span class="sl-label">Variation</span>
+          <input type="range" min="0" max="0.3" value="0.1" step="0.01" id="cas-var" oninput="onCasVar(this.value)" />
+          <span class="sl-val" id="cas-var-val">0.10</span>
+        </div>
+      </div>
+    </div>
+    <div class="canvas-wrap"><canvas id="c-cas" height="420"></canvas></div>
+    <div class="info-row">
+      <div class="info-text">Each node adopts when enough of its neighbours have. Node colour shows threshold — <span style="color:#6fa3d0">blue = easy to convince</span>, <span style="color:#e07a5f">red = hard to convince</span>. <span id="cas-stats" style="color:var(--accent)"></span></div>
+      <div class="legend">
+        <div class="leg-item"><div class="leg-dot" style="background:#8C3A1E"></div>adopted</div>
+        <div class="leg-item"><div class="leg-dot" style="background:#6fa3d0"></div>low threshold</div>
+        <div class="leg-item"><div class="leg-dot" style="background:#e8c84a"></div>medium</div>
+        <div class="leg-item"><div class="leg-dot" style="background:#e07a5f"></div>high threshold</div>
+      </div>
+    </div>
+    <div class="explainer">
+      <div class="exp-block">
+        <h4>Granovetter's threshold model</h4>
+        <p>People don't adopt behaviours in isolation — they watch others first. Each person has a threshold: the proportion of their peers who must act before they will. A crowd riot, a norm shift, a technology adoption, a political movement — all follow this logic. <strong>Run the simulation twice with identical settings.</strong> Because the network structure interacts with the threshold distribution, seemingly similar conditions can produce complete cascade or total stall — with no obvious explanation from aggregate data alone.</p>
+      </div>
+      <div class="exp-block">
+        <h4>The tipping point problem</h4>
+        <p>Notice that lowering the average threshold doesn't guarantee a full cascade — it depends on <em>who</em> has a low threshold and how they are positioned in the network. A cluster of low-threshold nodes isolated from the rest does nothing. One low-threshold node sitting between clusters can unlock the whole system. This is why <strong>aggregate statistics about attitudes or readiness tell you very little</strong> about whether change will actually happen. Position is everything.</p>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end .page -->
+
+<div class="ssc-block">
+  <p class="label">About this resource</p>
+  <h2>School of Systems<br>&amp; <em>Complexity</em></h2>
+  <p>These simulations are produced by the School of Systems and Complexity (SSC) — a practitioner school working at the intersection of systems thinking, complexity science, and organisational change. We build education, advisory practice, and community of practice programmes for those navigating environments where structure, emergence, and power intersect.</p>
+  <a class="ssc-link" href="https://systemsandcomplexity.school" target="_blank">Visit systemsandcomplexity.school &#8599;</a>
+</div>
+
+<footer>
+  Built with vanilla JS &amp; Canvas API &mdash; a resource by <a href="https://systemsandcomplexity.school" target="_blank">SSC</a>
+</footer>
+
+<script>
+// ─────────────────────────────────────────────
+// SHARED UTILITIES
+// ─────────────────────────────────────────────
+const TAU = Math.PI * 2;
+
+function rnd(a, b) { return a + Math.random() * (b - a); }
+function rndInt(a, b) { return Math.floor(rnd(a, b + 1)); }
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+// Force-directed layout (simple Fruchterman-Reingold)
+function forceLayout(nodes, edges, W, H, iterations = 120) {
+  const k = Math.sqrt((W * H) / nodes.length) * 0.85;
+  const margin = 32;
+  for (let iter = 0; iter < iterations; iter++) {
+    const temp = k * (1 - iter / iterations) * 0.5;
+    // repulsion
+    for (let i = 0; i < nodes.length; i++) {
+      nodes[i].dx = 0; nodes[i].dy = 0;
+      for (let j = 0; j < nodes.length; j++) {
+        if (i === j) continue;
+        const dx = nodes[i].x - nodes[j].x;
+        const dy = nodes[i].y - nodes[j].y;
+        const d = Math.max(1, Math.sqrt(dx*dx + dy*dy));
+        const f = (k * k) / d;
+        nodes[i].dx += (dx / d) * f;
+        nodes[i].dy += (dy / d) * f;
+      }
+    }
+    // attraction
+    for (const e of edges) {
+      const a = nodes[e[0]], b = nodes[e[1]];
+      const dx = a.x - b.x, dy = a.y - b.y;
+      const d = Math.max(1, Math.sqrt(dx*dx + dy*dy));
+      const f = (d * d) / k;
+      const fx = (dx / d) * f, fy = (dy / d) * f;
+      a.dx -= fx; a.dy -= fy;
+      b.dx += fx; b.dy += fy;
+    }
+    // apply
+    for (const n of nodes) {
+      const d = Math.sqrt(n.dx*n.dx + n.dy*n.dy);
+      if (d > 0) {
+        n.x += (n.dx / d) * Math.min(d, temp);
+        n.y += (n.dy / d) * Math.min(d, temp);
+      }
+      n.x = clamp(n.x, margin, W - margin);
+      n.y = clamp(n.y, margin, H - margin);
+    }
+  }
+}
+
+function setupCanvas(id, H) {
+  const c = document.getElementById(id);
+  const W = c.parentElement.offsetWidth;
+  const dpr = devicePixelRatio || 1;
+  c.width = W * dpr; c.height = H * dpr;
+  c.style.width = W + 'px'; c.style.height = H + 'px';
+  const ctx = c.getContext('2d');
+  ctx.scale(dpr, dpr);
+  return { c, ctx, W, H };
+}
+
+function drawEdge(ctx, a, b, color, width, dashed) {
+  ctx.beginPath();
+  if (dashed) ctx.setLineDash([4, 4]); else ctx.setLineDash([]);
+  ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y);
+  ctx.strokeStyle = color; ctx.lineWidth = width; ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+function drawNode(ctx, n, color, r, label) {
+  ctx.beginPath(); ctx.arc(n.x, n.y, r, 0, TAU);
+  ctx.fillStyle = color; ctx.fill();
+  if (label) {
+    ctx.font = `500 9px 'DM Mono', monospace`;
+    ctx.fillStyle = 'rgba(44,40,32,0.5)';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(label, n.x, n.y);
+  }
+}
+
+function lerp(a, b, t) { return a + (b - a) * t; }
+function lerpColor(c1, c2, t) {
+  return `rgb(${Math.round(lerp(c1[0],c2[0],t))},${Math.round(lerp(c1[1],c2[1],t))},${Math.round(lerp(c1[2],c2[2],t))})`;
+}
+
+// BFS shortest path
+function bfsDistances(nodes, adj, src) {
+  const dist = new Array(nodes.length).fill(Infinity);
+  dist[src] = 0;
+  const q = [src];
+  while (q.length) {
+    const u = q.shift();
+    for (const v of adj[u]) {
+      if (dist[v] === Infinity) { dist[v] = dist[u] + 1; q.push(v); }
+    }
+  }
+  return dist;
+}
+
+// ─────────────────────────────────────────────
+// TAB SWITCHING
+// ─────────────────────────────────────────────
+let activeTab = 'topology';
+function switchTab(name) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    if (b.textContent.toLowerCase().replace(/\s/g,'') === name.replace(/\s/g,'').toLowerCase() ||
+        b.onclick.toString().includes("'" + name + "'")) b.classList.add('active');
+  });
+  activeTab = name;
+  if (name === 'topology')  { initTopo(); }
+  if (name === 'diffusion') { initDiff(); }
+  if (name === 'centrality'){ initCent(); }
+  if (name === 'weakties')  { initWT(); }
+  if (name === 'cascade')   { initCascade(); }
+}
+
+// fix tab button active state
+document.querySelectorAll('.tab-btn').forEach(b => {
+  b.addEventListener('click', function() {
+    document.querySelectorAll('.tab-btn').forEach(x => x.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+
+// ─────────────────────────────────────────────
+// GRAPH GENERATORS
+// ─────────────────────────────────────────────
+function makeNodes(N, W, H) {
+  const margin = 40;
+  return Array.from({length: N}, (_, i) => ({
+    id: i, x: rnd(margin, W - margin), y: rnd(margin, H - margin), dx: 0, dy: 0
+  }));
+}
+
+function randomGraph(N, W, H, p) {
+  const nodes = makeNodes(N, W, H);
+  const edges = [];
+  for (let i = 0; i < N; i++)
+    for (let j = i + 1; j < N; j++)
+      if (Math.random() < p) edges.push([i, j]);
+  return { nodes, edges };
+}
+
+function smallWorldGraph(N, W, H, k, beta) {
+  // Watts-Strogatz
+  const nodes = makeNodes(N, W, H);
+  const edges = [];
+  const edgeSet = new Set();
+  const addEdge = (a, b) => {
+    if (a === b) return;
+    const key = Math.min(a,b) + '_' + Math.max(a,b);
+    if (!edgeSet.has(key)) { edgeSet.add(key); edges.push([a, b]); }
+  };
+  // ring
+  for (let i = 0; i < N; i++)
+    for (let j = 1; j <= k/2; j++) addEdge(i, (i + j) % N);
+  // rewire
+  for (let i = 0; i < N; i++)
+    for (let j = 1; j <= k/2; j++) {
+      if (Math.random() < beta) {
+        const newJ = Math.floor(Math.random() * N);
+        addEdge(i, newJ);
+      }
+    }
+  return { nodes, edges };
+}
+
+function scaleFreeGraph(N, W, H, m) {
+  const nodes = makeNodes(N, W, H);
+  const edges = [];
+  const deg = new Array(N).fill(0);
+  // seed
+  for (let i = 0; i < Math.min(m + 1, N); i++)
+    for (let j = 0; j < i; j++) { edges.push([i, j]); deg[i]++; deg[j]++; }
+  // preferential attachment
+  for (let i = m + 1; i < N; i++) {
+    const totalDeg = deg.reduce((a, b) => a + b, 0) || 1;
+    const targets = new Set();
+    let attempts = 0;
+    while (targets.size < m && attempts < 1000) {
+      attempts++;
+      let r = Math.random() * totalDeg, cum = 0;
+      for (let j = 0; j < i; j++) {
+        cum += deg[j];
+        if (r < cum) { targets.add(j); break; }
+      }
+    }
+    for (const t of targets) { edges.push([i, t]); deg[i]++; deg[t]++; }
+  }
+  return { nodes, edges };
+}
+
+function latticeGraph(N, W, H) {
+  const cols = Math.ceil(Math.sqrt(N));
+  const rows = Math.ceil(N / cols);
+  const nodes = [];
+  const mx = W * 0.1, my = H * 0.1;
+  const sx = (W - 2*mx) / Math.max(cols - 1, 1);
+  const sy = (H - 2*my) / Math.max(rows - 1, 1);
+  for (let i = 0; i < N; i++) {
+    const c = i % cols, r = Math.floor(i / cols);
+    nodes.push({ id: i, x: mx + c * sx, y: my + r * sy, dx: 0, dy: 0 });
+  }
+  const edges = [];
+  for (let i = 0; i < N; i++) {
+    const c = i % cols, r = Math.floor(i / cols);
+    if (c + 1 < cols && i + 1 < N) edges.push([i, i + 1]);
+    if (r + 1 < rows && i + cols < N) edges.push([i, i + cols]);
+  }
+  return { nodes, edges };
+}
+
+function buildAdj(N, edges) {
+  const adj = Array.from({length: N}, () => []);
+  for (const [a, b] of edges) { adj[a].push(b); adj[b].push(a); }
+  return adj;
+}
+
+// ─────────────────────────────────────────────
+// TAB 1 — TOPOLOGY
+// ─────────────────────────────────────────────
+let topoType = 'random', topoN = 35;
+let topoG = null, topoAnimId = null;
+let topoCtx, topoW, topoH, topoCanvas;
+
+const topoInfos = {
+  random:     '<strong>Random network</strong> (Erdős–Rényi) — each pair of nodes is connected with equal probability. No node is inherently more important. Information spreads slowly and evenly. Robust to targeted attacks, but inefficient.',
+  smallworld: '<strong>Small-world network</strong> (Watts–Strogatz) — mostly local clusters, with a few random long-range bridges. High clustering coefficient, short average path length. Most real social networks look like this.',
+  scalefree:  '<strong>Scale-free network</strong> (Barabási–Albert) — grown by preferential attachment: new nodes connect to already well-connected nodes. A few hubs dominate. Highly efficient for spread, but fragile — remove a hub and the network fractures.',
+  lattice:    '<strong>Lattice network</strong> — each node connects only to immediate neighbours. Perfectly regular, high local cohesion, very long paths across the network. Information spreads slowly; distant communities are effectively isolated.'
+};
+
+function setTopo(t) {
+  topoType = t;
+  document.querySelectorAll('#tab-topology .tog').forEach((b, i) => {
+    b.classList.toggle('active', ['random','smallworld','scalefree','lattice'][i] === t);
+  });
+  initTopo();
+}
+
+function onTopoN(v) { topoN = parseInt(v); document.getElementById('topo-n-val').textContent = v; initTopo(); }
+
+function initTopo() {
+  cancelAnimationFrame(topoAnimId);
+  const setup = setupCanvas('c-topo', 420);
+  topoCtx = setup.ctx; topoW = setup.W; topoH = setup.H; topoCanvas = setup.c;
+  const N = topoN;
+  if (topoType === 'random')      topoG = randomGraph(N, topoW, topoH, 0.12);
+  else if (topoType === 'smallworld') topoG = smallWorldGraph(N, topoW, topoH, 4, 0.15);
+  else if (topoType === 'scalefree')  topoG = scaleFreeGraph(N, topoW, topoH, 2);
+  else                               topoG = latticeGraph(N, topoW, topoH);
+
+  if (topoType !== 'lattice') forceLayout(topoG.nodes, topoG.edges, topoW, topoH);
+
+  // compute avg degree for hub highlight
+  const deg = new Array(N).fill(0);
+  for (const [a, b] of topoG.edges) { deg[a]++; deg[b]++; }
+  const avgDeg = deg.reduce((s,d)=>s+d,0) / N;
+  topoG.nodes.forEach((n, i) => { n.deg = deg[i]; n.isHub = deg[i] > avgDeg * 1.4; });
+
+  document.getElementById('topo-info').innerHTML = topoInfos[topoType] +
+    ` <span style="color:var(--muted)"> &mdash; ${N} nodes, ${topoG.edges.length} edges, avg degree ${avgDeg.toFixed(1)}</span>`;
+
+  renderTopo();
+}
+
+function renderTopo() {
+  const { ctx, nodes, edges } = { ctx: topoCtx, ...topoG };
+  topoCtx.clearRect(0, 0, topoW, topoH);
+  for (const [a, b] of edges) drawEdge(topoCtx, nodes[a], nodes[b], 'rgba(44,40,32,0.15)', 1, false);
+  for (const n of nodes) {
+    const r = n.isHub ? 9 : 5;
+    const col = n.isHub ? '#8C3A1E' : '#A09888';
+    drawNode(topoCtx, n, col, r);
+  }
+}
+
+// ─────────────────────────────────────────────
+// TAB 2 — DIFFUSION (SIR)
+// ─────────────────────────────────────────────
+let diffTopo = 'random', diffRate = 0.3, diffRec = 0.05;
+let diffG = null, diffAnimId = null;
+let diffCtx, diffW, diffH, diffCanvas;
+const S = 0, I = 1, R = 2;
+
+function setDiffTopo(t) {
+  diffTopo = t;
+  document.querySelectorAll('#tab-diffusion .tog').forEach((b, i) => {
+    b.classList.toggle('active', ['random','smallworld','scalefree'][i] === t);
+  });
+  initDiff();
+}
+function onDiffRate(v) { diffRate = parseFloat(v); document.getElementById('diff-rate-val').textContent = parseFloat(v).toFixed(2); }
+function onDiffRec(v) { diffRec = parseFloat(v); document.getElementById('diff-rec-val').textContent = parseFloat(v).toFixed(2); }
+
+function initDiff() {
+  cancelAnimationFrame(diffAnimId);
+  const setup = setupCanvas('c-diff', 420);
+  diffCtx = setup.ctx; diffW = setup.W; diffH = setup.H; diffCanvas = setup.c;
+  const N = 40;
+  if (diffTopo === 'random') diffG = randomGraph(N, diffW, diffH, 0.1);
+  else if (diffTopo === 'smallworld') diffG = smallWorldGraph(N, diffW, diffH, 4, 0.15);
+  else diffG = scaleFreeGraph(N, diffW, diffH, 2);
+  forceLayout(diffG.nodes, diffG.edges, diffW, diffH);
+  diffG.adj = buildAdj(N, diffG.edges);
+  diffG.nodes.forEach(n => { n.state = S; n.timer = 0; });
+  diffG.deg = new Array(N).fill(0);
+  for (const [a,b] of diffG.edges) { diffG.deg[a]++; diffG.deg[b]++; }
+  document.getElementById('diff-stats').textContent = '';
+  diffCanvas.onclick = (e) => { const n = pickNode(e, diffCanvas, diffG.nodes); if (n) infectNode(n); };
+  renderDiff();
+  runDiff();
+}
+
+function infectNode(n) { if (n.state === S) { n.state = I; n.timer = 0; } }
+
+function seedDiffusion() {
+  if (!diffG) return;
+  diffG.nodes.forEach(n => { n.state = S; n.timer = 0; });
+  const idx = Math.floor(Math.random() * diffG.nodes.length);
+  infectNode(diffG.nodes[idx]);
+}
+
+function pickNode(e, canvas, nodes) {
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.offsetWidth / rect.width;
+  const mx = (e.clientX - rect.left) * scaleX;
+  const my = (e.clientY - rect.top) * scaleX;
+  let best = null, bestD = 20;
+  for (const n of nodes) {
+    const d = Math.hypot(n.x - mx, n.y - my);
+    if (d < bestD) { bestD = d; best = n; }
+  }
+  return best;
+}
+
+let diffStep = 0;
+function runDiff() {
+  diffStep++;
+  if (diffStep % 6 === 0) stepSIR();
+  renderDiff();
+  updateDiffStats();
+  diffAnimId = requestAnimationFrame(runDiff);
+}
+
+function stepSIR() {
+  if (!diffG) return;
+  const nodes = diffG.nodes, adj = diffG.adj;
+  const next = nodes.map(n => n.state);
+  for (let i = 0; i < nodes.length; i++) {
+    if (nodes[i].state === I) {
+      for (const j of adj[i]) {
+        if (nodes[j].state === S && Math.random() < diffRate) next[j] = I;
+      }
+      if (Math.random() < diffRec) next[i] = R;
+    }
+  }
+  nodes.forEach((n, i) => { n.state = next[i]; });
+}
+
+function renderDiff() {
+  if (!diffG) return;
+  diffCtx.clearRect(0, 0, diffW, diffH);
+  const { nodes, edges } = diffG;
+  for (const [a, b] of edges) drawEdge(diffCtx, nodes[a], nodes[b], 'rgba(44,40,32,0.12)', 1, false);
+  for (const n of nodes) {
+    const col = n.state === I ? '#e07a5f' : n.state === R ? '#81b29a' : '#A09888';
+    const r = 5 + (diffG.deg[n.id] || 0) * 0.6;
+    drawNode(diffCtx, n, col, Math.min(r, 14));
+    if (n.state === I) {
+      diffCtx.beginPath(); diffCtx.arc(n.x, n.y, Math.min(r, 14) + 4, 0, TAU);
+      diffCtx.strokeStyle = 'rgba(224,122,95,0.3)'; diffCtx.lineWidth = 1.5; diffCtx.stroke();
+    }
+  }
+}
+
+function updateDiffStats() {
+  if (!diffG) return;
+  const counts = [0,0,0];
+  diffG.nodes.forEach(n => counts[n.state]++);
+  const N = diffG.nodes.length;
+  document.getElementById('diff-stats').textContent =
+    `infected ${counts[1]} (${Math.round(counts[1]/N*100)}%) · recovered ${counts[2]} (${Math.round(counts[2]/N*100)}%)`;
+}
+
+// ─────────────────────────────────────────────
+// TAB 3 — CENTRALITY
+// ─────────────────────────────────────────────
+let centMeasure = 'degree';
+let centG = null, centAnimId = null;
+let centCtx, centW, centH, centCanvas;
+let centScores = [];
+
+function setCentMeasure(m) {
+  centMeasure = m;
+  document.querySelectorAll('#tab-centrality .tog').forEach((b, i) => {
+    b.classList.toggle('active', ['degree','betweenness','closeness','eigenvector'][i] === m);
+  });
+  if (centG) { computeCentrality(); renderCent(); }
+}
+
+function initCent() {
+  cancelAnimationFrame(centAnimId);
+  const setup = setupCanvas('c-cent', 420);
+  centCtx = setup.ctx; centW = setup.W; centH = setup.H; centCanvas = setup.c;
+  const N = 38;
+  centG = smallWorldGraph(N, centW, centH, 4, 0.2);
+  forceLayout(centG.nodes, centG.edges, centW, centH);
+  centG.adj = buildAdj(N, centG.edges);
+  computeCentrality();
+  centCanvas.onclick = (e) => {
+    const n = pickNode(e, centCanvas, centG.nodes);
+    if (n) {
+      const s = centScores[n.id];
+      document.getElementById('cent-info').innerHTML =
+        `Node ${n.id} &mdash; degree <span style="color:var(--accent)">${s.degree.toFixed(3)}</span> · betweenness <span style="color:var(--accent)">${s.betweenness.toFixed(3)}</span> · closeness <span style="color:var(--accent)">${s.closeness.toFixed(3)}</span> · eigenvector <span style="color:var(--accent)">${s.eigenvector.toFixed(3)}</span>`;
+    }
+  };
+  renderCent();
+}
+
+function computeCentrality() {
+  const { nodes, edges, adj } = centG;
+  const N = nodes.length;
+  centScores = Array.from({length: N}, () => ({degree:0, betweenness:0, closeness:0, eigenvector:0}));
+
+  // degree
+  for (const [a,b] of edges) { centScores[a].degree++; centScores[b].degree++; }
+  const maxDeg = Math.max(...centScores.map(s=>s.degree));
+  centScores.forEach(s => s.degree /= maxDeg || 1);
+
+  // betweenness (Brandes approx)
+  const btw = new Array(N).fill(0);
+  for (let s = 0; s < N; s++) {
+    const stack = [], pred = Array.from({length:N},()=>[]);
+    const sigma = new Array(N).fill(0); sigma[s] = 1;
+    const dist = new Array(N).fill(-1); dist[s] = 0;
+    const q = [s];
+    while (q.length) {
+      const v = q.shift(); stack.push(v);
+      for (const w of adj[v]) {
+        if (dist[w] < 0) { q.push(w); dist[w] = dist[v] + 1; }
+        if (dist[w] === dist[v] + 1) { sigma[w] += sigma[v]; pred[w].push(v); }
+      }
+    }
+    const delta = new Array(N).fill(0);
+    while (stack.length) {
+      const w = stack.pop();
+      for (const v of pred[w]) delta[v] += (sigma[v]/sigma[w]) * (1 + delta[w]);
+      if (w !== s) btw[w] += delta[w];
+    }
+  }
+  const maxBtw = Math.max(...btw) || 1;
+  centScores.forEach((s, i) => s.betweenness = btw[i] / maxBtw);
+
+  // closeness
+  for (let i = 0; i < N; i++) {
+    const dists = bfsDistances(nodes, adj, i);
+    const reachable = dists.filter(d => d < Infinity && d > 0);
+    centScores[i].closeness = reachable.length > 0
+      ? reachable.length / reachable.reduce((a,b)=>a+b,0)
+      : 0;
+  }
+  const maxCl = Math.max(...centScores.map(s=>s.closeness)) || 1;
+  centScores.forEach(s => s.closeness /= maxCl);
+
+  // eigenvector (power iteration)
+  let ev = new Array(N).fill(1/N);
+  for (let iter = 0; iter < 40; iter++) {
+    const nev = new Array(N).fill(0);
+    for (const [a,b] of edges) { nev[a] += ev[b]; nev[b] += ev[a]; }
+    const norm = Math.sqrt(nev.reduce((s,v)=>s+v*v,0)) || 1;
+    ev = nev.map(v => v / norm);
+  }
+  const maxEv = Math.max(...ev) || 1;
+  centScores.forEach((s, i) => s.eigenvector = ev[i] / maxEv);
+}
+
+function renderCent() {
+  if (!centG) return;
+  centCtx.clearRect(0, 0, centW, centH);
+  const { nodes, edges } = centG;
+  for (const [a, b] of edges) drawEdge(centCtx, nodes[a], nodes[b], 'rgba(44,40,32,0.15)', 1, false);
+  const lo = [74, 74, 82], hi = [224, 122, 95], mid = [133, 183, 235];
+  for (let i = 0; i < nodes.length; i++) {
+    const score = centScores[i][centMeasure];
+    const col = score > 0.5 ? lerpColor(mid, hi, (score - 0.5) * 2) : lerpColor(lo, mid, score * 2);
+    const r = 5 + score * 10;
+    drawNode(centCtx, nodes[i], col, r);
+  }
+}
+
+// ─────────────────────────────────────────────
+// TAB 4 — WEAK TIES
+// ─────────────────────────────────────────────
+let wtStrength = 0.5, wtG = null, wtAnimId = null;
+let wtCtx, wtW, wtH, wtCanvas;
+let wtSpreading = false, wtStep = 0;
+
+function onWTStrength(v) {
+  wtStrength = parseFloat(v);
+  document.getElementById('wt-val').textContent = parseFloat(v).toFixed(2);
+}
+
+function initWT() {
+  cancelAnimationFrame(wtAnimId);
+  wtSpreading = false;
+  const setup = setupCanvas('c-wt', 420);
+  wtCtx = setup.ctx; wtW = setup.W; wtH = setup.H; wtCanvas = setup.c;
+
+  const clusterSize = 12;
+  const clusters = [
+    { color: '#e07a5f', cx: wtW * 0.22, cy: wtH * 0.5 },
+    { color: '#6fa3d0', cx: wtW * 0.55, cy: wtH * 0.25 },
+    { color: '#81b29a', cx: wtW * 0.75, cy: wtH * 0.68 },
+  ];
+
+  const nodes = [], edges = [], bridges = [];
+  let id = 0;
+
+  for (let c = 0; c < 3; c++) {
+    const { cx, cy, color } = clusters[c];
+    const start = id;
+    for (let i = 0; i < clusterSize; i++) {
+      const angle = (i / clusterSize) * TAU;
+      const r = 55 + Math.random() * 25;
+      nodes.push({ id: id++, x: cx + Math.cos(angle)*r, y: cy + Math.sin(angle)*r, dx:0,dy:0, cluster: c, color, state: 0 });
+    }
+    // intra-cluster edges
+    for (let i = start; i < id; i++)
+      for (let j = i+1; j < id; j++)
+        if (Math.random() < 0.45) edges.push([i, j, false]);
+  }
+
+  // bridges (weak ties) between clusters
+  const bridgePairs = [[0,1],[1,2],[0,2]];
+  for (const [ca, cb] of bridgePairs) {
+    const aNodes = nodes.filter(n=>n.cluster===ca);
+    const bNodes = nodes.filter(n=>n.cluster===cb);
+    const a = aNodes[Math.floor(Math.random()*aNodes.length)];
+    const b = bNodes[Math.floor(Math.random()*bNodes.length)];
+    edges.push([a.id, b.id, true]);
+    bridges.push([a.id, b.id]);
+  }
+
+  wtG = { nodes, edges, bridges, adj: null };
+  const adj = buildAdj(nodes.length, edges.map(e=>[e[0],e[1]]));
+  wtG.adj = adj;
+  document.getElementById('wt-info').textContent = 'Click a node to seed spread, or use the button. The dashed lines are weak ties — bridges between clusters.';
+  wtCanvas.onclick = (e) => {
+    const n = pickNode(e, wtCanvas, wtG.nodes);
+    if (n) { wtG.nodes.forEach(nd=>nd.state=0); n.state=1; wtSpreading=true; }
+  };
+  runWT();
+}
+
+function startWTSpread() {
+  if (!wtG) return;
+  wtG.nodes.forEach(n => n.state = 0);
+  const clA = wtG.nodes.filter(n => n.cluster === 0);
+  clA[Math.floor(Math.random()*clA.length)].state = 1;
+  wtSpreading = true;
+}
+
+function runWT() {
+  wtStep++;
+  if (wtSpreading && wtStep % 8 === 0) stepWT();
+  renderWT();
+  wtAnimId = requestAnimationFrame(runWT);
+}
+
+function stepWT() {
+  const { nodes, edges } = wtG;
+  const next = nodes.map(n => n.state);
+  for (const [a, b, isBridge] of edges) {
+    const prob = isBridge ? wtStrength * 0.4 : 0.5;
+    if (nodes[a].state === 1 && nodes[b].state === 0 && Math.random() < prob) next[b] = 1;
+    if (nodes[b].state === 1 && nodes[a].state === 0 && Math.random() < prob) next[a] = 1;
+  }
+  nodes.forEach((n,i) => n.state = next[i]);
+  const informed = nodes.filter(n=>n.state===1).length;
+  if (informed === nodes.length) wtSpreading = false;
+  document.getElementById('wt-info').textContent =
+    `${informed} of ${nodes.length} nodes reached (${Math.round(informed/nodes.length*100)}%). Bridge strength: ${wtStrength.toFixed(2)} — ${wtStrength < 0.2 ? 'information gets stuck in clusters.' : wtStrength < 0.6 ? 'information crosses slowly.' : 'bridges are strong — spread is fast.'}`;
+}
+
+function renderWT() {
+  if (!wtG) return;
+  wtCtx.clearRect(0, 0, wtW, wtH);
+  const { nodes, edges } = wtG;
+  for (const [a, b, isBridge] of edges) {
+    const col = isBridge ? 'rgba(44,40,32,0.3)' : 'rgba(44,40,32,0.15)';
+    drawEdge(wtCtx, nodes[a], nodes[b], col, isBridge ? 1.2 : 0.8, isBridge);
+  }
+  for (const n of nodes) {
+    const baseCol = n.color;
+    const col = n.state === 1 ? '#8C3A1E' : baseCol;
+    const r = n.state === 1 ? 8 : 6;
+    drawNode(wtCtx, n, col, r);
+    if (n.state === 1) {
+      wtCtx.beginPath(); wtCtx.arc(n.x, n.y, r+4, 0, TAU);
+      wtCtx.strokeStyle = 'rgba(44,40,32,0.2)'; wtCtx.lineWidth=1; wtCtx.stroke();
+    }
+  }
+}
+
+// ─────────────────────────────────────────────
+// TAB 5 — CASCADE THRESHOLDS
+// ─────────────────────────────────────────────
+let casThresh = 0.3, casVar = 0.1;
+let casG = null, casAnimId = null;
+let casCtx, casW, casH, casCanvas;
+let casSpreading = false, casStepCount = 0;
+
+function onCasThresh(v) {
+  casThresh = parseFloat(v);
+  document.getElementById('cas-thresh-val').textContent = Math.round(v*100)+'%';
+  if (casG && !casSpreading) { assignThresholds(); }
+}
+function onCasVar(v) {
+  casVar = parseFloat(v);
+  document.getElementById('cas-var-val').textContent = parseFloat(v).toFixed(2);
+  if (casG && !casSpreading) { assignThresholds(); }
+}
+
+
+function assignThresholds() {
+  if (!casG) return;
+  const N = casG.nodes.length;
+  // distribute thresholds so colours always span the full blue→red range
+  // use a beta-like distribution centred on casThresh, spread by casVar
+  casG.nodes.forEach(n => {
+    // wider spread: casVar acts as std dev scaled to 0.35 max
+    const spread = 0.15 + casVar * 2.5;
+    n.thresh = clamp(casThresh + (Math.random() - 0.5) * spread * 2, 0.05, 0.95);
+    n.adopted = false;
+    n.adoptedAt = -1;
+  });
+}
+
+function initCascade() {
+  cancelAnimationFrame(casAnimId);
+  casSpreading = false;
+  casStepCount = 0;
+  const setup = setupCanvas('c-cas', 420);
+  casCtx = setup.ctx; casW = setup.W; casH = setup.H; casCanvas = setup.c;
+  const N = 40;
+  casG = smallWorldGraph(N, casW, casH, 4, 0.15);
+  forceLayout(casG.nodes, casG.edges, casW, casH);
+  casG.adj = buildAdj(N, casG.edges);
+  casG.deg = new Array(N).fill(0);
+  for (const [a,b] of casG.edges) { casG.deg[a]++; casG.deg[b]++; }
+  assignThresholds();
+  document.getElementById('cas-stats').textContent = '';
+  casCanvas.onclick = (e) => {
+    const n = pickNode(e, casCanvas, casG.nodes);
+    if (n) { n.adopted = true; casSpreading = true; }
+  };
+  renderCascade();
+  runCascade();
+}
+
+// reseed: keep same network topology and thresholds, just reset adoption state
+function reseedCascade() {
+  if (!casG) return;
+  cancelAnimationFrame(casAnimId);
+  casG.nodes.forEach(n => { n.adopted = false; n.adoptedAt = -1; });
+  casSpreading = false;
+  casStepCount = 0;
+  document.getElementById('cas-stats').textContent = '';
+  renderCascade();
+  runCascade();
+}
+
+
+function seedCascade() {
+  if (!casG) return;
+  assignThresholds();
+  const idx = Math.floor(Math.random() * casG.nodes.length);
+  casG.nodes[idx].adopted = true;
+  casG.nodes[idx].adoptedAt = casStepCount;
+  casSpreading = true;
+  casStepCount = 0;
+}
+
+function runCascade() {
+  if (casSpreading && casStepCount % 4 === 0) stepCascade();
+  casStepCount++;
+  renderCascade();
+  updateCasStats();
+  casAnimId = requestAnimationFrame(runCascade);
+}
+
+function stepCascade() {
+  const { nodes, adj } = casG;
+  // snapshot first — all decisions based on state at start of this step
+  const willAdopt = new Array(nodes.length).fill(false);
+  let changed = false;
+  for (let i = 0; i < nodes.length; i++) {
+    if (nodes[i].adopted) continue;
+    const nb = adj[i];
+    if (nb.length === 0) continue;
+    const adoptedNb = nb.filter(j => nodes[j].adopted).length;
+    if (adoptedNb / nb.length >= nodes[i].thresh) {
+      willAdopt[i] = true;
+      changed = true;
+    }
+  }
+  // apply all at once
+  for (let i = 0; i < nodes.length; i++) {
+    if (willAdopt[i]) { nodes[i].adopted = true; nodes[i].adoptedAt = casStepCount; }
+  }
+  if (!changed) casSpreading = false;
+}
+
+function renderCascade() {
+  if (!casG) return;
+  casCtx.clearRect(0, 0, casW, casH);
+  const { nodes, edges } = casG;
+  for (const [a,b] of edges) drawEdge(casCtx, nodes[a], nodes[b], 'rgba(44,40,32,0.13)', 1, false);
+  for (const n of nodes) {
+    if (n.adopted) {
+      drawNode(casCtx, n, '#8C3A1E', 8);
+      if (n.adoptedAt >= 0) {
+        const age = casStepCount - n.adoptedAt;
+        if (age < 30) {
+          const alpha = (1 - age / 30) * 0.5;
+          const pr = Math.max(0, 8 + age * 0.8);
+          casCtx.beginPath(); casCtx.arc(n.x, n.y, pr, 0, TAU);
+          casCtx.strokeStyle = `rgba(140,58,30,${alpha})`; casCtx.lineWidth = 1.5; casCtx.stroke();
+        }
+      }
+    } else {
+      const t = clamp((n.thresh - 0.05) / 0.94, 0, 1);
+      // blue (low/easy) → yellow (medium) → red (high/resistant)
+      const col = t < 0.5
+        ? lerpColor([111,163,208],[232,200,74], t * 2)
+        : lerpColor([232,200,74],[224,122,95], (t - 0.5) * 2);
+      drawNode(casCtx, n, col, 6);
+      const nb = casG.adj[n.id];
+      if (nb && nb.length > 0) {
+        const adoptedNb = nb.filter(j => nodes[j] && nodes[j].adopted).length;
+        const pressure = adoptedNb / nb.length;
+        if (pressure > 0) {
+          const pr = Math.max(0, 6 + pressure * 8);
+          casCtx.beginPath(); casCtx.arc(n.x, n.y, pr, 0, TAU);
+          casCtx.strokeStyle = `rgba(140,58,30,${pressure * 0.4})`; casCtx.lineWidth = 1; casCtx.stroke();
+        }
+      }
+    }
+  }
+}
+
+function updateCasStats() {
+  if (!casG) return;
+  const adopted = casG.nodes.filter(n => n.adopted).length;
+  const N = casG.nodes.length;
+  document.getElementById('cas-stats').textContent =
+    adopted > 0 ? `${adopted} of ${N} adopted (${Math.round(adopted/N*100)}%)${!casSpreading && adopted < N ? ' — cascade stalled' : adopted === N ? ' — full cascade' : ''}` : '';
+}
+
+// ─────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────
+window.addEventListener('resize', () => {
+  if (activeTab === 'topology')  initTopo();
+  if (activeTab === 'diffusion') initDiff();
+  if (activeTab === 'centrality')initCent();
+  if (activeTab === 'weakties')  initWT();
+  if (activeTab === 'cascade')   initCascade();
+});
+
+initTopo();
+</script>
+</body>
+</html>
