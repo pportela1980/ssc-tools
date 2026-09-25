@@ -1,0 +1,7 @@
+/* Copy this folder, then replace these example-specific styles. */
+.template-sim{--shell-bg:#1a1a18;--shell-surface:#242422;--shell-border:#3a3a36;--shell-text:#F1EFE8;--shell-muted:#b4b2a9;--shell-soft:#6b6b66;--shell-accent:#D85A30;--shell-control-columns:1fr;--shell-body-font:Georgia,serif;--shell-display-font:Georgia,serif;--shell-mono-font:monospace;}
+.template-sim__brand{font:0.65rem var(--shell-mono-font);letter-spacing:0.12em;text-transform:uppercase;color:var(--shell-muted);}
+#simulation-canvas{height:320px;background:#111110;}
+.template-sim label{display:flex;justify-content:space-between;font:0.75rem var(--shell-mono-font);color:var(--shell-muted);}
+.template-sim input[type=range]{width:100%;margin-top:0.75rem;accent-color:var(--shell-accent);}
+.template-sim__paused{opacity:0.65;}
