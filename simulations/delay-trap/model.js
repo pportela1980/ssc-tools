@@ -1,26 +1,26 @@
-/* Compact delayed stock correction. Orders in flight are deliberately not netted out. */
+/* Illustrative shower: tap mixing is immediate; the water reaching you is delayed. */
 (function () {
   'use strict';
+  const cold = 15, hot = 55;
   function create(options) {
-    const pipeline = Array.from({ length: options.delay }, () => options.demand);
-    let stock = 40, time = 0, ordered = options.demand, arrival = options.demand, nextManual = null;
-    const history = [{ t: 0, stock, demand: options.demand, ordered }];
-    function setOrder(value) { nextManual = Math.max(0, Math.min(80, Number(value) || 0)); }
+    let tap = .5, temperature = 35, time = 0;
+    const pipeline = Array.from({ length: options.delay }, () => temperature);
+    const history = [{ t: 0, temperature, target: options.target }];
+    function setTap(percent) { tap = Math.max(0, Math.min(100, Number(percent) || 0)) / 100; }
     function step() {
-      arrival = pipeline.shift();
-      stock += arrival - options.demand;
-      if (options.mode === 'manual') { ordered = nextManual === null ? 0 : nextManual; nextManual = null; }
-      else {
-        const desired = Math.max(0, Math.min(80, options.demand + options.response * (40 - stock)));
-        const alpha = options.smoothing / 100;
-        ordered = Math.max(0, Math.min(80, ordered + alpha * (desired - ordered)));
+      const before = temperature, travelling = pipeline.slice();
+      temperature = pipeline.shift();
+      if (options.mode === 'automatic') {
+        // The controller sees current water, without accounting for earlier changes in the pipe.
+        tap = Math.max(0, Math.min(1, tap + .02 * options.response * (options.target - temperature) * (1 - options.patience / 100)));
       }
-      pipeline.push(ordered); time++;
-      history.push({ t: time, stock, demand: options.demand, ordered }); if (history.length > 240) history.shift();
-      return { arrival, demand: options.demand, ordered, stock };
+      const entering = cold + tap * (hot - cold);
+      pipeline.push(entering); time++;
+      history.push({ t: time, temperature, target: options.target }); if (history.length > 240) history.shift();
+      return { before, temperature, entering, travelling };
     }
-    function metrics() { return { t: time, stock, ordered, arrival, pipeline: pipeline.reduce((a, b) => a + b, 0), nextManual }; }
-    return { options, pipeline, history, setOrder, step, metrics };
+    function metrics() { return { t: time, temperature, tap: tap * 100, entering: cold + tap * (hot - cold) }; }
+    return { options, pipeline, history, setTap, step, metrics };
   }
-  window.DelayModel = { create };
+  window.DelayModel = { create, cold, hot };
 }());
