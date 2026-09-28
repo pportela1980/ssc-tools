@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="How can reasonable individual choices create an outcome nobody chose?">
+<title>Who Created This Pattern? — SSC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&amp;family=IBM+Plex+Mono:wght@400;500&amp;family=Playfair+Display:wght@600;700&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/css/simulation-shell.css"><link rel="stylesheet" href="../../assets/css/experiments.css">
+</head>
+<body class="sim-shell experiment">
+<header class="sim-shell__header">
+<div class="sim-shell__topbar"><span class="exp-brand">SSC · School of Systems &amp; Complexity</span><nav class="sim-shell__nav" aria-label="Experiment navigation"><a class="sim-shell__catalogue-link" href="/">← Back to experiments</a></nav></div>
+<p class="exp-label">02 — When structure shapes behaviour</p><h1 class="sim-shell__title">Who Created This Pattern?</h1><p class="sim-shell__question">How can reasonable individual choices create an outcome nobody chose?</p>
+</header>
+<main class="sim-shell__main">
+<section aria-label="Interactive experiment">
+<div class="exp-readouts"><p class="exp-readout">Satisfied <strong id="satisfied">—</strong></p><p class="exp-readout">Unlike neighbours <strong id="mixing">—</strong></p><p class="exp-readout">Round <strong id="iteration">—</strong></p><p class="exp-readout">Moves this round <strong id="moved">—</strong></p></div>
+<canvas id="field" class="exp-field exp-field--grid sim-shell__canvas" aria-label="Grid of two populations relocating according to local similarity preferences"></canvas>
+<div class="exp-legend"><span style="--key:#df9d70">Population A</span><span style="--key:#7daab2">Population B</span><span style="--key:#111510">Empty space</span></div>
+<div class="sim-shell__control-grid exp-controls"><div class="exp-control"><label for="threshold">Similarity preference<output for="threshold"></output></label><input id="threshold" type="range" min="0" max="100" step="5" value="35" data-unit="%"></div><div class="exp-control"><label for="radius">Neighbourhood radius<output for="radius"></output></label><input id="radius" type="range" min="1" max="4" step="1" value="1" data-unit=" cells"></div><div class="exp-control"><label for="mix">Population A share<output for="mix"></output></label><input id="mix" type="range" min="10" max="90" step="5" value="50" data-unit="%"></div><div class="exp-control"><label for="empty">Empty space<output for="empty"></output></label><input id="empty" type="range" min="5" max="50" step="5" value="20" data-unit="%"></div><div class="exp-control"><label for="speed">Speed<output for="speed"></output></label><input id="speed" type="range" min="1" max="15" step="1" value="4" data-unit=" rounds/s"></div></div>
+
+<div class="sim-shell__actions">
+<button class="sim-shell__button" type="button" data-shell-action="run">Play</button><button class="sim-shell__button" type="button" data-shell-action="pause">Pause</button><button class="sim-shell__button" type="button" data-shell-action="step">Step</button><button class="sim-shell__button" type="button" data-shell-action="reset">Reset</button><span class="exp-status" id="status" role="status" aria-live="polite">Paused</span>
+</div><p class="exp-note">Preference and radius apply to the current grid. Mix and empty space start a new grid. Reset repeats the initial arrangement.</p>
+</section>
+<section class="sim-shell__interpretation" aria-label="Interpretation"><div><h4>What to notice</h4><p>Start with a modest preference, then press Play. Large patches can emerge even when nobody demands complete separation. Try changing the radius or the balance between populations. Satisfaction measures local comfort; “unlike neighbours” counts contacts across categories, so its baseline also depends on the population mix.</p></div><div><h4>Why it matters</h4><p>Local choices reshape the neighbourhoods that shape the next choices. A global pattern needs no planner. This simplified model explores a mechanism; it does not explain every cause of real segregation.</p></div></section>
+</main>
+<footer class="sim-shell__footer"><p>School of Systems &amp; Complexity</p><p><a href="/">Back to experiments</a></p></footer>
+<script src="../../assets/js/simulation-shell.js"></script><script src="../../assets/js/experiments.js"></script><script src="model.js"></script><script src="simulation.js"></script>
+</body></html>
