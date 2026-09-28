@@ -1,0 +1,49 @@
+/* Compact instruments; extends the existing opt-in simulation shell. */
+.experiment {
+  color-scheme: dark;
+  --shell-bg: #191b19;
+  --shell-surface: #232722;
+  --shell-border: #3b433b;
+  --shell-text: #f4efe4;
+  --shell-muted: #c4c8be;
+  --shell-soft: #9ea99c;
+  --shell-accent: #df9d70;
+  --shell-body-font: 'DM Sans', sans-serif;
+  --shell-display-font: 'Playfair Display', Georgia, serif;
+  --shell-mono-font: 'IBM Plex Mono', monospace;
+}
+.experiment .sim-shell__main { max-width: 1180px; padding-top: 2rem; }
+.experiment .sim-shell__question { max-width: 850px; font-style: normal; }
+.experiment .sim-shell__catalogue-link { font-size: .72rem; color: var(--shell-muted); }
+.exp-brand, .exp-label, .exp-readout, .exp-legend, .exp-status, .exp-control, .exp-note {
+  font-family: var(--shell-mono-font); font-size: .72rem;
+}
+.exp-brand { color: var(--shell-muted); letter-spacing: .1em; text-transform: uppercase; }
+.exp-label { color: var(--shell-accent); text-transform: uppercase; letter-spacing: .12em; margin-bottom: .65rem; }
+.exp-readouts { display: flex; flex-wrap: wrap; gap: .5rem 2rem; margin-bottom: 1rem; }
+.exp-readout { color: var(--shell-muted); }
+.exp-readout strong { color: var(--shell-text); font-weight: 500; }
+.exp-field { background: #111510; width: 100%; height: 370px; display: block; }
+.exp-field--grid { height: auto; aspect-ratio: 1; max-width: 530px; margin: auto; }
+.exp-field--strip { height: 115px; margin-bottom: 1.5rem; }
+.exp-field--chart { height: 255px; }
+.exp-legend { color: var(--shell-muted); margin: .75rem 0 1.5rem; display: flex; flex-wrap: wrap; gap: .5rem 1.5rem; }
+.exp-legend span::before { content: ''; width: 9px; height: 9px; background: var(--key); display: inline-block; margin-right: .5rem; }
+.exp-controls { margin: 1.5rem 0; padding-top: 1.25rem; border-top: 1px solid var(--shell-border); }
+.exp-control { min-width: 0; color: var(--shell-muted); }
+.exp-control label { display: flex; justify-content: space-between; gap: .5rem; margin-bottom: .6rem; }
+.exp-control output { color: var(--shell-accent); white-space: nowrap; }
+.exp-control input[type=range] { width: 100%; accent-color: var(--shell-accent); cursor: pointer; }
+.exp-control select, .exp-control input[type=number] { background: var(--shell-surface); color: var(--shell-text); border: 1px solid var(--shell-border); padding: .5rem; width: 100%; font: inherit; }
+.exp-control input:focus-visible, .exp-control select:focus-visible { outline: 2px solid var(--shell-accent); outline-offset: 4px; }
+.exp-control--check label { justify-content: flex-start; align-items: center; min-height: 2.3rem; }
+.exp-control input[type=checkbox] { accent-color: var(--shell-accent); width: 1rem; height: 1rem; }
+.experiment .sim-shell__button { font-size: .75rem; min-height: 40px; text-transform: none; }
+.experiment .sim-shell__button:disabled { opacity: .4; cursor: default; background: transparent; border-color: var(--shell-border); color: var(--shell-muted); }
+.exp-status { color: var(--shell-muted); align-self: center; margin-left: auto; }
+.exp-note { color: var(--shell-soft); margin: .65rem 0 1.5rem; font-size: .65rem; }
+.experiment .sim-shell__interpretation { margin-top: 2rem; gap: 2rem; }
+.experiment .sim-shell__interpretation p { font-size: .88rem; }
+.exp-manual { display: flex; flex-wrap: wrap; gap: .75rem; align-items: end; margin: 1rem 0; }
+.exp-manual .exp-control { width: 180px; }
+@media(max-width:750px) { .exp-field { height: 290px; } .exp-field--grid { height: auto; } .exp-field--strip { height: 100px; } .exp-field--chart { height: 230px; } .exp-status { margin-left: 0; width: 100%; } }
