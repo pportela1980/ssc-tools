@@ -4,7 +4,7 @@
   function create(options, seed) {
     let state = seed || 42;
     const random = () => { state = (Math.imul(state, 1664525) + 1013904223) >>> 0; return state / 4294967296; };
-    const size = 36, grid = new Uint8Array(size * size), empty = [];
+    const size = 24, grid = new Uint8Array(size * size), empty = [], moves = [];
     let time = 0, moved = 0;
     const positions = Array.from(grid.keys());
     for (let i = positions.length - 1; i > 0; i--) { const j = Math.floor(random() * (i + 1)); [positions[i], positions[j]] = [positions[j], positions[i]]; }
@@ -28,17 +28,18 @@
       return { t: time, satisfied: count ? happy / count * 100 : 100, mixing: contacts ? mixing / contacts * 100 : 0, moved, count };
     }
     function step() {
-      moved = 0;
+      moved = 0; moves.length = 0;
       const agents = positions.filter(p => grid[p]);
       for (let i = agents.length - 1; i > 0; i--) { const j = Math.floor(random() * (i + 1)); [agents[i], agents[j]] = [agents[j], agents[i]]; }
       agents.forEach(p => {
         if (!empty.length || neighbours(p).share >= options.threshold / 100) return;
         const slot = Math.floor(random() * empty.length), target = empty[slot];
+        moves.push({ from: p, to: target, type: grid[p] });
         grid[target] = grid[p]; grid[p] = 0; empty[slot] = p; moved++;
       });
       time++; return moved > 0;
     }
-    return { size, grid, options, step, metrics };
+    return { size, grid, options, step, metrics, moves, isHappy: p => !grid[p] || neighbours(p).share >= options.threshold / 100 };
   }
   window.SegregationModel = { create };
 }());
