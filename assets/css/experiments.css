@@ -47,3 +47,34 @@
 .exp-manual { display: flex; flex-wrap: wrap; gap: .75rem; align-items: end; margin: 1rem 0; }
 .exp-manual .exp-control { width: 180px; }
 @media(max-width:750px) { .exp-field { height: 290px; } .exp-field--grid { height: auto; } .exp-field--strip { height: 100px; } .exp-field--chart { height: 230px; } .exp-status { margin-left: 0; width: 100%; } }
+
+/* Concrete scenes first; small histories and measures below the controls. */
+.experiment .sim-shell__question { padding-bottom: .5rem; }
+.exp-try { color: var(--shell-muted); font-size: .85rem; padding-bottom: 1.25rem; max-width: 850px; }
+.exp-try--controls { padding: .9rem 0 0; font-size: .78rem; }
+.exp-scene { margin: 0; }
+.exp-field--scene { height: 440px; background: #d8ddd0; }
+.exp-field--neighbourhood { max-width: 620px; height: 560px; margin: auto; }
+.exp-scene figcaption, .exp-support figcaption { color: var(--shell-muted); font-size: .75rem; margin: .7rem 0; }
+.exp-presets { display: flex; align-items: center; flex-wrap: wrap; gap: .5rem; margin-top: 1.3rem; }
+.exp-presets > span { font-size: .75rem; color: var(--shell-soft); margin-right: .25rem; }
+.exp-presets [aria-pressed=true] { color: var(--shell-text); border-color: var(--shell-accent); }
+.exp-controls { margin: 1rem 0; padding-top: 1rem; }
+.exp-control { font-family: var(--shell-body-font); font-size: .83rem; }
+.exp-control output { font-family: var(--shell-mono-font); font-size: .72rem; }
+.exp-control--check label { min-height: 2rem; }
+.exp-readouts { margin: 1.3rem 0 .7rem; gap: .5rem 1.5rem; }
+.exp-readout { font-family: var(--shell-body-font); font-size: .8rem; }
+.exp-readout strong { margin-left: .25rem; font-family: var(--shell-mono-font); }
+.exp-support { max-width: 640px; margin-top: 1rem; }
+.exp-field--support { height: 135px; }
+.exp-rule-off { opacity: .45; }
+@media(max-width:750px) {
+  .exp-field--scene { height: 340px; }
+  .exp-field--neighbourhood { height: 350px; }
+  .exp-field--support { height: 130px; }
+  .exp-controls { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 1rem; }
+  .exp-control label { flex-wrap: wrap; font-size: .78rem; }
+  .exp-control--check label { flex-wrap: nowrap; align-items: flex-start; }
+  .exp-control input[type=checkbox] { flex-shrink: 0; margin-top: .2rem; }
+}
