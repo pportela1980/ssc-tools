@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simulation title — SSC</title>
+<link rel="stylesheet" href="../../assets/css/simulation-shell.css">
+<link rel="stylesheet" href="simulation.css">
+</head>
+<body class="sim-shell template-sim">
+<header class="sim-shell__header">
+  <div class="sim-shell__topbar">
+    <span class="template-sim__brand">SSC · School of Systems &amp; Complexity</span>
+    <nav class="sim-shell__nav" aria-label="Simulation navigation">
+      <a class="sim-shell__catalogue-link" href="/">← All simulations</a>
+    </nav>
+  </div>
+  <h1 class="sim-shell__title">Simulation title</h1>
+  <p class="sim-shell__question">What changes when one part of this system moves?</p>
+</header>
+<main class="sim-shell__main">
+  <section class="sim-shell__visualization-panel" aria-label="Interactive simulation">
+    <div class="sim-shell__visualization-frame">
+      <canvas class="sim-shell__canvas" id="simulation-canvas" aria-label="Animated dot showing the simulation state"></canvas>
+    </div>
+    <div class="sim-shell__control-grid">
+      <div>
+        <label for="speed">Speed <output id="speed-value">1.0×</output></label>
+        <input id="speed" type="range" min="0.2" max="3" step="0.1" value="1">
+      </div>
+    </div>
+    <div class="sim-shell__actions">
+      <button class="sim-shell__button" type="button" data-shell-action="run">Run</button>
+      <button class="sim-shell__button" type="button" data-shell-action="pause">Pause</button>
+      <button class="sim-shell__button" type="button" data-shell-action="reset">Reset</button>
+    </div>
+  </section>
+  <section class="sim-shell__interpretation" aria-label="Interpretation">
+    <div><h4>What you are seeing</h4><p>Replace this example with a concise interpretation of the visualization.</p></div>
+    <div><h4>Try this</h4><p>Give readers one useful parameter change or comparison to explore.</p></div>
+  </section>
+</main>
+<footer class="sim-shell__footer">
+  <p>© School of Systems &amp; Complexity</p>
+  <p><a href="/">All simulations</a></p>
+</footer>
+<script src="../../assets/js/simulation-shell.js"></script>
+<script src="simulation.js"></script>
+</body>
+</html>

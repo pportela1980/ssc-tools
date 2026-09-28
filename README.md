@@ -28,3 +28,28 @@ The earlier pendulum variant is preserved at `/simulations/pendulum/legacy.html`
 4. Check the catalogue, each changed simulation, the guided reading embeds, and the legacy URLs after deployment. The site is also published at `https://complexitytools.netlify.app/`; verify that deployment separately.
 
 The `threshold` and `governance-patterns` repositories are separate projects and are not part of this simulation collection.
+
+## Shared simulation shell
+
+The site remains static HTML, CSS and browser JavaScript. There is no framework, package manager or build step. The shell is **opt-in**: Lorenz is the pilot; the other six published simulations still use their existing self-contained files.
+
+| Repeated pattern found in the simulations | Convention for new simulations |
+| --- | --- |
+| SSC branding, title and short framing text | Header with `sim-shell__title` and `sim-shell__question` or `sim-shell__framing` |
+| Canvas area and surrounding card or chart frame | `sim-shell__visualization-panel`, `sim-shell__visualization-frame`, `sim-shell__canvas` |
+| Sliders, parameter labels, scenario switches and action buttons | `sim-shell__control-grid`, `sim-shell__actions`, `sim-shell__button`; keep domain-specific controls local |
+| Reset and optional run/pause actions | `data-shell-action` buttons wired to page callbacks with `SimulationShell.init()` |
+| Tabs between simulation and explanation | Optional `data-shell-tab` / `data-shell-panel` bindings |
+| “What you are seeing”, science/guide panels and footers | `sim-shell__interpretation` and `sim-shell__footer` |
+| Different typefaces, palettes, charts and model-specific graphics | Keep in each simulation's CSS and JS; configure the shell through `--shell-*` CSS variables |
+
+These are recurring roles, not identical designs. The shell shares layout and interaction hooks; it does not impose one chart style, palette or mathematical model on every page.
+
+### Files and usage
+
+- `assets/css/simulation-shell.css` provides the responsive header, visualization, controls, action, interpretation and footer layout. Its selectors use `sim-shell__*` classes, so pages that have not adopted it are unaffected.
+- `assets/js/simulation-shell.js` provides `SimulationShell.init({ actions: { reset, run, pause } })`. Include only the actions a simulator needs. It binds optional tabs and returns `setRunning(boolean)` to update run/pause button states.
+- `simulations/_template/` is a copyable starter with a framing question, canvas, speed control, run/pause/reset, explanation and catalogue link. It is not part of the public catalogue. Copy it to `simulations/<new-name>/`, then replace the example drawing and explanation.
+- `simulations/lorenz/` is the first adopted simulator. `index.html` contains content and structure; `lorenz.css` contains its palette and unique visual rules; `lorenz.js` contains the Lorenz model, rendering, scenarios and parameter logic. Shared files load first, then local files.
+
+Use relative asset paths such as `../../assets/css/simulation-shell.css` and `../../assets/js/simulation-shell.js` from a simulation directory. Keep the public page at `/simulations/<name>/`; add its catalogue link only when the new simulator is ready. Existing redirect URLs and the guided reading links must keep working.
