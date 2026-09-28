@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="When does cooperation emerge — and when does the commons collapse?">
+<title>The Commons — SSC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&amp;family=IBM+Plex+Mono:wght@400;500&amp;family=Playfair+Display:wght@600;700&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/css/simulation-shell.css"><link rel="stylesheet" href="../../assets/css/experiments.css">
+</head>
+<body class="sim-shell experiment">
+<header class="sim-shell__header">
+<div class="sim-shell__topbar"><span class="exp-brand">SSC · School of Systems &amp; Complexity</span><nav class="sim-shell__nav" aria-label="Experiment navigation"><a class="sim-shell__catalogue-link" href="/">← Back to experiments</a></nav></div>
+<p class="exp-label">03 — When order emerges</p><h1 class="sim-shell__title">The Commons</h1><p class="sim-shell__question">When does cooperation emerge — and when does the commons collapse?</p>
+</header>
+<main class="sim-shell__main">
+<section aria-label="Interactive experiment">
+<div class="exp-readouts"><p class="exp-readout">Resource <strong id="resource">—</strong></p><p class="exp-readout">Harvest / round <strong id="harvest">—</strong></p><p class="exp-readout">Regrowth / round <strong id="growth">—</strong></p><p class="exp-readout">Recent pattern <strong id="regime">—</strong></p></div>
+<canvas id="field" class="exp-field exp-field--chart sim-shell__canvas" aria-label="Resource level over the last 240 rounds"></canvas><p class="exp-label" style="margin-top:1.5rem">Harvest by individual agent · units per round</p><canvas id="agents" class="exp-field exp-field--strip" aria-label="Individual harvesting bars, with different responses to scarcity"></canvas>
+<div class="exp-legend"><span style="--key:#b5caa5">Shared resource</span><span style="--key:#df9d70">Individual harvest</span></div>
+<div class="sim-shell__control-grid exp-controls"><div class="exp-control"><label for="regeneration">Regeneration<output for="regeneration"></output></label><input id="regeneration" type="range" min="1" max="30" step="1" value="20" data-unit="% / round"></div><div class="exp-control"><label for="capacity">Carrying capacity<output for="capacity"></output></label><input id="capacity" type="range" min="200" max="1200" step="50" value="600" data-unit=" units"></div><div class="exp-control"><label for="agents-count">Agents<output for="agents-count"></output></label><input id="agents-count" type="range" min="20" max="40" step="1" value="30" data-unit=""></div><div class="exp-control"><label for="pressure">Harvest pressure<output for="pressure"></output></label><input id="pressure" type="range" min="0.2" max="4" step="0.1" value="0.5" data-unit="×"></div><div class="exp-control"><label for="visibility">Resource visibility<output for="visibility"></output></label><input id="visibility" type="range" min="0" max="100" step="10" value="80" data-unit="%"></div><div class="exp-control exp-control--check"><label for="communication"><input id="communication" type="checkbox" checked>Communication</label></div><div class="exp-control exp-control--check"><label for="monitoring"><input id="monitoring" type="checkbox" >Monitoring / sanctions</label></div><div class="exp-control"><label for="speed">Speed<output for="speed"></output></label><input id="speed" type="range" min="1" max="20" step="1" value="6" data-unit=" rounds/s"></div></div>
+
+<div class="sim-shell__actions">
+<button class="sim-shell__button" type="button" data-shell-action="run">Play</button><button class="sim-shell__button" type="button" data-shell-action="pause">Pause</button><button class="sim-shell__button" type="button" data-shell-action="step">Step</button><button class="sim-shell__button" type="button" data-shell-action="reset">Reset</button><span class="exp-status" id="status" role="status" aria-live="polite">Paused</span>
+</div><p class="exp-note">Communication shares observations; monitoring caps harvest at estimated regrowth. Capacity and agent count restart. Other rules change live.</p>
+</section>
+<section class="sim-shell__interpretation" aria-label="Interpretation"><div><h4>What to notice</h4><p>Compare resource visibility with communication. Each agent has a different appetite and willingness to restrain harvesting. Watch whether restraint arrives before the resource is exhausted. Monitoring uses an imperfect estimate of regrowth, so a cap can still be too generous. Change pressure mid-run to test recovery.</p></div><div><h4>Why it matters</h4><p>Cooperation depends on feedback, incentives and renewal, not goodwill alone. Regrowth slows near depletion. Different rules can produce recovery, fluctuating use or collapse; none guarantees success. Complete depletion needs a reset to recover. These are exploratory behavioural rules, not a forecast of any particular commons.</p></div></section>
+</main>
+<footer class="sim-shell__footer"><p>School of Systems &amp; Complexity</p><p><a href="/">Back to experiments</a></p></footer>
+<script src="../../assets/js/simulation-shell.js"></script><script src="../../assets/js/experiments.js"></script><script src="model.js"></script><script src="simulation.js"></script>
+</body></html>
