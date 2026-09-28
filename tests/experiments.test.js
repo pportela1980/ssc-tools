@@ -6,6 +6,8 @@ if (true) {
  const options = {threshold:35,radius:1,mix:50,empty:20};
  const model = M.create(options,42), start=model.metrics();
  const counts=()=>Array.from(model.grid).reduce((n,v)=>{n[v]++;return n;},[0,0,0]); const before=counts();
+ model.step();assert(model.moves.length>0);assert.equal(model.moves.length,model.metrics().moved);for(const move of model.moves){assert(move.from>=0&&move.to<model.grid.length);assert(move.type===1||move.type===2);}
+ const visibleHappy=Array.from(model.grid,(_,i)=>model.grid[i]&&model.isHappy(i)).filter(Boolean).length;assert(Math.abs(visibleHappy/model.metrics().count*100-model.metrics().satisfied)<1e-9);
  for(let i=0;i<150;i++) { if(!model.step()) break; }
  assert.deepEqual(counts(),before); assert(model.metrics().mixing < start.mixing-10); assert(model.metrics().satisfied>95);
  const relaxed=M.create({...options,threshold:0},42); assert.equal(relaxed.step(),false); assert.equal(relaxed.metrics().satisfied,100);
@@ -24,13 +26,14 @@ if(true) {
  console.log('PASS commons: mass balance, capacity bounds, heterogeneous agents, collapse despite communication, sustained resource, rule effects', {default:defaultRun.metrics(),collapse:collapse.metrics(),stable:stable.metrics(),monitored:monitored.metrics()});
 }
 if(true) {
- const M=load('delay-trap','DelayModel');const options={demand:10,response:.4,delay:6,smoothing:50,mode:'automatic'};
- const equilibrium=M.create({...options});for(let i=0;i<50;i++)equilibrium.step();assert.equal(equilibrium.metrics().stock,40);
- function perturb(delay,response=.4,smoothing=50){const m=M.create({...options,delay,response,smoothing});m.options.demand=12;for(let i=0;i<140;i++){const before=m.metrics().stock;const flow=m.step();assert(Math.abs(before+flow.arrival-flow.demand-flow.stock)<1e-9);assert(flow.ordered>=0&&flow.ordered<=80);}return m;}
- const quick=perturb(1),slow=perturb(6);const span=m=>{const h=m.history.slice(-50).map(x=>x.stock);return Math.max(...h)-Math.min(...h);};assert(span(quick)<1);assert(span(slow)>20);
- const gentle=perturb(6,.08,20);assert(span(gentle)<span(slow));
- const manual=M.create({...options,mode:'manual'});manual.setOrder(33);manual.step();assert.equal(manual.pipeline[5],33);manual.step();assert.equal(manual.pipeline[5],0);for(let i=0;i<4;i++)manual.step();assert.equal(manual.metrics().arrival,10);manual.step();assert.equal(manual.metrics().arrival,33);
- console.log('PASS delay trap: equilibrium, stock conservation, exact delivery lag, manual orders consumed once; delayed strong responses oscillate', {quick:span(quick),slow:span(slow),gentle:span(gentle)});
+ const M=load('delay-trap','DelayModel'),options={target:37,response:.8,delay:6,patience:10,mode:'automatic'};
+ const equilibrium=M.create({...options,target:35});for(let i=0;i<60;i++)equilibrium.step();assert.equal(equilibrium.metrics().temperature,35);
+ function run(overrides){const m=M.create({...options,...overrides});for(let i=0;i<180;i++){const result=m.step();assert.equal(result.temperature,result.travelling[0]);assert(result.temperature>=15&&result.temperature<=55);assert(m.metrics().tap>=0&&m.metrics().tap<=100);assert.equal(m.pipeline.length,m.options.delay);}return m;}
+ const span=m=>{const tail=m.history.slice(-60).map(x=>x.temperature);return Math.max(...tail)-Math.min(...tail);};
+ const quick=run({delay:1}),reactive=run({}),patient=run({response:.3,patience:85});assert(span(quick)<.1);assert(span(reactive)>20);assert(span(patient)<.1);assert(Math.abs(patient.metrics().temperature-37)<.1);
+ const manual=M.create({...options,mode:'manual'});manual.setTap(100);for(let i=0;i<6;i++){manual.step();assert.equal(manual.metrics().temperature,35);}manual.step();assert.equal(manual.metrics().temperature,55);manual.step();assert.equal(manual.metrics().temperature,55);manual.setTap(0);for(let i=0;i<6;i++)manual.step();assert.equal(manual.metrics().temperature,55);manual.step();assert.equal(manual.metrics().temperature,15);
+ const coldTarget=run({delay:1,target:31}),hotTarget=run({delay:1,target:41});assert(Math.abs(coldTarget.metrics().temperature-31)<.1);assert(Math.abs(hotTarget.metrics().temperature-41)<.1);
+ console.log('PASS shower delay: equilibrium, bounded mixing, exact transport delay, persistent manual tap, target response, short pipe settles, delayed strong corrections oscillate, patience settles',{quick:span(quick),reactive:span(reactive),patient:span(patient)});
 }
 if(true) {
  const M=load('flocking','FlockingModel'),options={separation:1.4,alignment:1.2,cohesion:.8,radius:80,agents:80,speed:1};
