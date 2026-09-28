@@ -46,16 +46,45 @@
       input.addEventListener('input', update); update();
     });
   }
+  function syncControls() {
+    document.querySelectorAll('input[type=range]').forEach(input => {
+      const output = document.querySelector('output[for="' + input.id + '"]');
+      if (output) output.value = input.value + (input.dataset.unit || '');
+    });
+  }
+  function presets(app, scenarios, after) {
+    const buttons = Array.from(document.querySelectorAll('[data-preset]'));
+    buttons.forEach(button => button.addEventListener('click', () => {
+      const scenario = scenarios[button.dataset.preset];
+      Object.entries(scenario).forEach(([id, value]) => {
+        const input = document.getElementById(id);
+        if (input.type === 'checkbox') input.checked = value; else input.value = value;
+      });
+      syncControls(); if (after) after(); app.reset();
+      buttons.forEach(other => other.setAttribute('aria-pressed', String(other === button)));
+    }));
+    document.querySelectorAll('.exp-controls input, .exp-controls select').forEach(input => input.addEventListener('input', () => buttons.forEach(button => button.setAttribute('aria-pressed', 'false'))));
+  }
   function mount(options) {
-    let frame = null, running = false, last = null, accumulator = 0;
+    let frame = null, idleFrame = null, running = false, last = null, accumulator = 0;
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function animate() {
+      if (!options.transition || reducedMotion || running || document.hidden) return;
+      if (idleFrame !== null) cancelAnimationFrame(idleFrame);
+      const until = performance.now() + options.transition();
+      function paint(time) { options.draw(); idleFrame = time < until ? requestAnimationFrame(paint) : null; }
+      idleFrame = requestAnimationFrame(paint);
+    }
     const status = document.getElementById('status');
     function pause(message) {
       running = false; if (frame !== null) cancelAnimationFrame(frame); frame = null; last = null; accumulator = 0;
+      if (idleFrame !== null) cancelAnimationFrame(idleFrame); idleFrame = null;
       shell.setRunning(false); status.textContent = message || 'Paused';
     }
     function advance() {
       const keepGoing = options.step(); options.draw();
       if (keepGoing === false) pause(options.finished || 'Settled');
+      animate();
     }
     function tick(time) {
       if (!running) return;
@@ -64,9 +93,10 @@
       const interval = 1000 / options.rate();
       let count = 0;
       while (accumulator >= interval && running && count++ < 12) { accumulator -= interval; advance(); }
+      options.draw();
       if (running) frame = requestAnimationFrame(tick);
     }
-    function run() { if (running) return; running = true; last = null; shell.setRunning(true); status.textContent = 'Running'; frame = requestAnimationFrame(tick); }
+    function run() { if (running) return; if (idleFrame !== null) cancelAnimationFrame(idleFrame); idleFrame = null; running = true; last = null; shell.setRunning(true); status.textContent = 'Running'; frame = requestAnimationFrame(tick); }
     function reset() { pause(); options.reset(); options.draw(); }
     const shell = SimulationShell.init({ actions: { run, pause: () => pause(), reset, step: advance } });
     shell.setRunning(false); controls(); reset();
@@ -74,5 +104,5 @@
     document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
     return { pause, reset, draw: options.draw };
   }
-  window.Experiment = { colors, canvas, clear, chart, mount };
+  window.Experiment = { colors, canvas, clear, chart, mount, presets, syncControls };
 }());
