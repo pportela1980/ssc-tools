@@ -1,13 +1,6 @@
 <!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Interactive experiments for exploring how complex systems behave.">
-<title>Experiments in Complexity — School of Systems &amp; Complexity</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="Start with simple rules. Discover how relationships create patterns, and how interventions become part of the system. Interactive experiments from SSC."><title>Experiments in Complexity — School of Systems &amp; Complexity</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500&amp;family=Playfair+Display:wght@600;700&amp;display=swap" rel="stylesheet">
 <style>
 :root {
   color-scheme:dark;
@@ -18,13 +11,15 @@
   --muted:#c4c8be;
   --soft:#9ea99c;
   --accent:#df9d70;
-  --green:#b5caa5
+  --green:#b5caa5;
+  --blue:#7daab2
 }
 * {
   box-sizing:border-box
 }
 html {
-  scroll-behavior:smooth
+  scroll-behavior:smooth;
+  scroll-padding-top:28px
 }
 body {
   margin:0;
@@ -36,27 +31,39 @@ body {
 a {
   color:inherit
 }
-a:focus-visible {
+a:focus-visible,summary:focus-visible {
   outline:2px solid var(--accent);
-  outline-offset:4px
+  outline-offset:6px
+}
+.skip-link {
+  position:absolute;
+  top:-100px;
+  left:20px;
+  padding:12px;
+  background:var(--text);
+  color:var(--bg);
+  z-index:2
+}
+.skip-link:focus {
+  top:12px
 }
 .wrap {
   max-width:1180px;
   margin:auto;
   padding:0 32px
 }
-.eyebrow,.nav,.section-label,.count,.tool-tag,.tool-cta,footer {
+.eyebrow,.nav,.section-label,.tool-cta,footer,.all-tools summary {
   font-family:'IBM Plex Mono',monospace
 }
-.eyebrow,.section-label,.tool-tag {
+.eyebrow,.section-label {
   text-transform:uppercase;
-  letter-spacing:.12em;
-  font-size:.72rem
+  letter-spacing:.14em;
+  font-size:.7rem
 }
-h1,h2,h3,h4,p {
+h1,h2,h3,p {
   margin-top:0
 }
-h1,h2,h3,h4 {
+h1,h2,h3 {
   font-family:'Playfair Display',Georgia,serif
 }
 .topbar {
@@ -70,7 +77,7 @@ h1,h2,h3,h4 {
   gap:24px
 }
 .brand {
-  font-size:.77rem;
+  font-size:.74rem;
   font-weight:700;
   letter-spacing:.08em;
   text-transform:uppercase;
@@ -81,211 +88,284 @@ h1,h2,h3,h4 {
 }
 .nav {
   display:flex;
-  gap:26px;
-  font-size:.75rem
+  flex-wrap:wrap;
+  gap:24px;
+  font-size:.7rem
 }
 .nav a {
-  color:var(--muted);
-  text-decoration:none
+  text-decoration:none;
+  color:var(--muted)
 }
 .nav a:hover,footer a:hover {
   color:var(--text)
 }
 .hero {
-  padding-top:86px;
-  padding-bottom:78px;
-  display:grid;
-  grid-template-columns:minmax(0,1fr) 340px;
-  gap:60px;
-  align-items:end
+  padding-top:80px;
+  padding-bottom:95px;
+  max-width:1000px;
+  margin-left:0
 }
 .eyebrow {
   color:var(--accent);
-  margin:0 0 22px
+  margin-bottom:24px
 }
 h1 {
-  font-size:clamp(3.4rem,7vw,6.2rem);
-  letter-spacing:-.055em;
-  line-height:1.02;
-  margin-bottom:24px
+  font-size:clamp(2.8rem,5.1vw,4.5rem);
+  font-weight:600;
+  line-height:1.12;
+  letter-spacing:-.035em;
+  max-width:950px;
+  margin-bottom:30px
 }
 h1 em {
   color:var(--accent);
   font-style:normal
 }
-.hero-copy {
+.hero-prompts {
   color:var(--muted);
-  font-size:1.13rem;
-  max-width:660px;
-  margin-bottom:0
-}
-.hero-aside {
-  border-left:2px solid var(--accent);
-  padding-left:22px;
-  color:var(--muted);
-  font-size:.9rem
-}
-.hero-aside strong {
-  display:block;
-  color:var(--text);
-  font-size:.78rem;
-  text-transform:uppercase;
-  letter-spacing:.1em;
-  margin-bottom:9px
-}
-main {
-  padding-bottom:90px
-}
-.reading {
-  background:#293027;
-  border:1px solid #52604e;
-  display:grid;
-  grid-template-columns:1fr auto;
-  gap:32px;
-  align-items:end;
-  padding:32px 38px;
-  margin-bottom:76px
-}
-.reading .eyebrow {
-  color:var(--green);
-  margin-bottom:12px
-}
-.reading h2 {
-  font-size:clamp(1.7rem,3vw,2.3rem);
-  margin-bottom:8px
-}
-.reading p:not(.eyebrow) {
-  color:var(--muted);
-  max-width:700px;
-  margin-bottom:0
-}
-.button {
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  min-height:44px;
-  padding:10px 18px;
-  background:var(--accent);
-  color:#211a14;
-  font-weight:700;
-  text-decoration:none;
-  white-space:nowrap
-}
-.button:hover {
-  background:#f2b58c
-}
-.catalog-head {
-  display:flex;
-  justify-content:space-between;
-  gap:24px;
-  align-items:end;
-  border-bottom:1px solid var(--border);
-  padding-bottom:22px;
-  margin-bottom:44px
-}
-.catalog-head h2 {
-  font-size:clamp(2rem,4vw,3rem);
-  margin:0
-}
-.catalog-head p {
-  max-width:450px;
-  color:var(--muted);
-  margin:0
-}
-.tool-section {
-  margin-bottom:58px
-}
-.section-heading {
-  display:flex;
-  align-items:end;
-  justify-content:space-between;
-  gap:20px;
+  font-size:1rem;
+  line-height:1.8;
   margin-bottom:20px
 }
-.section-heading h3 {
-  font-size:1.65rem;
-  margin:0
+.hero-prompts span {
+  display:block
 }
-.section-label {
+.hero-copy {
+  font-size:1.05rem;
+  max-width:570px;
+  margin-bottom:24px
+}
+.hero-aside {
+  font-family:'Playfair Display',Georgia,serif;
+  font-size:1rem;
   color:var(--soft);
-  margin:0 0 4px
+  margin-bottom:28px
 }
-.count {
-  color:var(--soft);
-  font-size:.7rem
-}
-.tools-grid {
-  display:grid;
-  grid-template-columns:repeat(3,minmax(0,1fr));
-  gap:14px
-}
-.tool-card {
-  min-height:270px;
-  display:flex;
-  flex-direction:column;
-  background:var(--panel);
-  border:1px solid var(--border);
-  padding:25px;
-  transition:border-color .2s,transform .2s
-}
-.tool-card:hover {
-  border-color:var(--accent);
-  transform:translateY(-3px)
-}
-.tool-tag {
-  color:var(--green);
-  margin-bottom:21px
-}
-.tool-card h4 {
-  font-size:1.45rem;
-  line-height:1.2;
-  margin:0 0 12px
-}
-.tool-card p {
-  color:var(--muted);
-  font-size:.92rem;
-  margin-bottom:23px
-}
-.card-actions {
-  margin-top:auto;
-  display:flex;
-  align-items:center;
-  gap:12px
-}
-.tool-cta {
-  font-size:.78rem;
+.story-link {
+  display:inline-block;
   color:var(--accent);
   text-decoration:none;
-  font-weight:500
+  border-bottom:1px solid var(--border);
+  padding-bottom:8px;
+  font-size:.88rem
 }
-.tool-cta:hover {
-  text-decoration:underline
+.story-link:hover {
+  border-color:var(--accent)
 }
-.about {
+.chapter {
+  position:relative;
   border-top:1px solid var(--border);
-  padding-top:34px;
+  padding:75px 0 85px;
   display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:50px
+  grid-template-columns:minmax(0,340px) minmax(0,1fr);
+  gap:65px
 }
-.about h3 {
-  font-size:1.3rem;
-  margin-bottom:10px
+.chapter-copy {
+  position:relative;
+  padding-left:27px;
+  border-left:1px solid var(--border);
+  align-self:start
 }
-.about p {
+.section-label {
+  color:var(--accent);
+  margin-bottom:25px
+}
+.chapter-copy::before {
+  content:'';
+  position:absolute;
+  left:-3px;
+  top:5px;
+  width:5px;
+  height:5px;
+  background:var(--accent)
+}
+.chapter h2 {
+  font-size:clamp(2rem,3.1vw,2.7rem);
+  font-weight:600;
+  line-height:1.16;
+  letter-spacing:-.025em;
+  margin-bottom:22px
+}
+.family-line {
   color:var(--muted);
-  max-width:490px;
-  margin:0;
-  font-size:.91rem
+  font-size:.96rem;
+  max-width:315px;
+  margin-bottom:0
 }
-.about a {
+.tools-grid {
+  display:block
+}
+.tool-card {
+  display:grid;
+  grid-template-columns:100px minmax(0,1fr) 20px;
+  align-items:center;
+  gap:24px;
+  padding:23px 0;
+  border-top:1px solid var(--border);
+  text-decoration:none;
+  margin-left:28px
+}
+.tool-card:first-child {
+  border-top:0;
+  padding-top:0;
+  margin-left:0;
+  padding-bottom:32px
+}
+.tool-card h3 {
+  font-family:'DM Sans',sans-serif;
+  font-size:.82rem;
+  font-weight:500;
+  color:var(--soft);
+  margin-bottom:7px
+}
+.tool-card p {
+  font-size:1.02rem;
+  line-height:1.5;
+  margin-bottom:0
+}
+.tool-card--lead {
+  grid-template-columns:120px minmax(0,1fr) 20px
+}
+.tool-card--lead p {
+  font-family:'Playfair Display',Georgia,serif;
+  font-size:1.5rem;
+  line-height:1.35
+}
+.tool-cue {
+  width:100%;
+  height:auto;
+  color:var(--green);
+  max-height:90px
+}
+.cue-accent {
+  stroke:var(--accent)
+}
+.cue-blue {
+  stroke:var(--blue)
+}
+.cue-soft {
+  stroke:var(--soft);
+  opacity:.5
+}
+.tool-cta {
+  color:var(--accent);
+  font-size:1rem
+}
+.tool-card:hover .tool-copy p {
   color:var(--accent)
+}
+.tool-card:hover .tool-cue {
+  color:var(--text)
+}
+#emergence .chapter-copy::before {
+  background:var(--green)
+}
+#emergence .section-label {
+  color:var(--green)
+}
+.cue-flock path {
+  animation:flock-drift 5s ease-in-out infinite
+}
+.cue-fish {
+  animation:fish-drift 7s ease-in-out infinite
+}
+@keyframes flock-drift {
+  0%,100% {
+    transform:translate(-2px,1px)
+  }
+  50% {
+    transform:translate(4px,-1px)
+  }
+}
+@keyframes fish-drift {
+  0%,100% {
+    transform:translate(-2px,0)
+  }
+  50% {
+    transform:translate(2px,1px)
+  }
+}
+.reading {
+  padding-bottom:80px
+}
+.reading h2 {
+  font-size:clamp(2.3rem,4.2vw,3.4rem);
+  max-width:380px
+}
+.journey {
+  align-self:center;
+  padding:30px 0 30px 25px;
+  border-left:1px solid var(--border)
+}
+.journey h3 {
+  font-size:1.7rem;
+  font-weight:600;
+  margin-bottom:15px
+}
+.journey p {
+  max-width:440px;
+  color:var(--muted);
+  font-size:.98rem;
+  margin-bottom:25px
+}
+.button {
+  display:inline-block;
+  color:var(--accent);
+  text-decoration:none;
+  border-bottom:1px solid var(--accent);
+  padding:0 0 8px;
+  font-size:.95rem
+}
+.button:hover {
+  color:var(--text);
+  border-color:var(--text)
+}
+.all-tools {
+  border-top:1px solid var(--border);
+  margin-bottom:75px;
+  padding-top:25px;
+  scroll-margin-top:35px
+}
+.all-tools summary {
+  font-size:.82rem;
+  color:var(--muted);
+  cursor:pointer;
+  padding:10px 0;
+  min-height:44px
+}
+.all-tools summary:hover {
+  color:var(--accent)
+}
+.all-tools ul {
+  list-style:none;
+  margin:20px 0 0;
+  padding:0;
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  column-gap:50px
+}
+.all-tools a {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:20px;
+  text-decoration:none;
+  border-bottom:1px solid var(--border);
+  padding:13px 0;
+  font-size:.9rem;
+  min-height:48px
+}
+.all-tools a:hover {
+  color:var(--accent)
+}
+.all-tools a span {
+  color:var(--soft)
 }
 footer {
   border-top:1px solid var(--border);
-  padding:25px 0;
+  padding:26px 0;
   color:var(--soft);
-  font-size:.72rem
+  font-size:.68rem
 }
 .footer-inner {
   display:flex;
@@ -296,131 +376,128 @@ footer a {
   text-decoration:none
 }
 @media(max-width:900px) {
+  .chapter {
+    gap:35px;
+    grid-template-columns:minmax(0,280px) minmax(0,1fr)
+  }
+  .tool-card,.tool-card--lead {
+    grid-template-columns:75px minmax(0,1fr) 16px;
+    gap:16px;
+    margin-left:0
+  }
+  .tool-card--lead p {
+    font-size:1.3rem
+  }
   .hero {
-  grid-template-columns:1fr;
-  gap:30px;
-  padding-top:65px;
-  padding-bottom:65px
+    padding-top:65px
+  }
 }
-.hero-aside {
-  max-width:600px
-}
-.tools-grid {
-  grid-template-columns:repeat(2,minmax(0,1fr))
-}
-}
-@media(max-width:620px) {
+@media(max-width:700px) {
   .wrap {
-  padding:0 20px
-}
-.topbar-inner {
-  align-items:flex-start;
-  flex-direction:column;
-  padding-top:18px;
-  padding-bottom:18px;
-  gap:12px
-}
-.nav {
-  gap:18px
-}
-.hero {
-  padding-top:52px;
-  padding-bottom:52px
-}
-.reading {
-  grid-template-columns:1fr;
-  padding:25px;
-  margin-bottom:58px
-}
-.reading .button {
-  justify-self:start
-}
-.catalog-head {
-  display:block
-}
-.catalog-head p {
-  margin-top:12px
-}
-.section-heading {
-  display:block
-}
-.count {
-  display:block;
-  margin-top:4px
-}
-.tools-grid,.about {
-  grid-template-columns:1fr
-}
-.tool-card {
-  min-height:230px
-}
-.footer-inner {
-  flex-direction:column
-}
+    padding:0 20px
+  }
+  .topbar-inner {
+    align-items:flex-start;
+    flex-direction:column;
+    padding-top:20px;
+    padding-bottom:20px;
+    gap:14px
+  }
+  .nav {
+    gap:20px
+  }
+  .hero {
+    padding-top:48px;
+    padding-bottom:65px
+  }
+  h1 {
+    font-size:clamp(2.55rem,8vw,3.6rem)
+  }
+  .chapter {
+    grid-template-columns:1fr;
+    gap:35px;
+    padding:50px 0 60px
+  }
+  .chapter-copy {
+    padding-left:23px
+  }
+  .chapter h2 {
+    max-width:420px
+  }
+  .family-line {
+    max-width:450px
+  }
+  .section-label {
+    margin-bottom:18px
+  }
+  .tool-card,.tool-card--lead {
+    grid-template-columns:75px minmax(0,1fr) 14px;
+    gap:16px
+  }
+  .tool-card--lead p {
+    font-size:1.4rem
+  }
+  .tool-card p {
+    font-size:.98rem
+  }
+  .journey {
+    padding:0 0 0 23px;
+    border-left:0
+  }
+  .reading h2 {
+    font-size:2.7rem
+  }
+  .all-tools ul {
+    grid-template-columns:1fr
+  }
+  .footer-inner {
+    flex-direction:column;
+    gap:8px
+  }
 }
 @media(prefers-reduced-motion:reduce) {
   html {
-  scroll-behavior:auto
+    scroll-behavior:auto
+  }
+  .cue-flock path,.cue-fish {
+    animation:none
+  }
 }
-.tool-card {
-  transition:none
-}
-.tool-card:hover {
-  transform:none
-}
-}
-/* Compact catalogue entries, using the existing SSC visual language. */
-.hero { padding-top: 65px; padding-bottom: 65px; }
-h1 { font-size: clamp(3rem,6vw,5rem); }
-.hero-copy { font-size: 1.05rem; }
-.hero-prompts { color: var(--text); line-height: 1.8; margin: 1.15rem 0; }
-.hero-aside { font-family: 'Playfair Display',Georgia,serif; font-size: 1.2rem; }
-.catalog-head { margin-bottom: 38px; }
-.catalog-head h2 { font-size: 2rem; }
-.section-heading h3 { font-size: clamp(1.4rem,3vw,1.9rem); }
-.family-line { color: var(--muted); font-size: .9rem; margin: .45rem 0 0; }
-.tools-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 0 40px; }
-.tool-card { min-height: 0; background: transparent; border: 0; border-top: 1px solid var(--border); padding: 20px 0; transition: none; }
-.tool-card:hover { transform: none; border-color: var(--border); }
-.tool-card h4 { font-size: 1.3rem; margin-bottom: 8px; }
-.tool-card h4 a { text-decoration: none; }
-.tool-card h4 a:hover { color: var(--accent); }
-.tool-card p { margin-bottom: 12px; }
-.reading { background: transparent; border: 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 25px 0; margin: 0 0 40px; }
-.reading h2 { font-size: 1.5rem; }
-.reading .button { background: transparent; color: var(--accent); padding: 10px 0; }
-@media(max-width:620px) { .tools-grid { grid-template-columns: 1fr; } .hero { padding-top: 45px; padding-bottom: 45px; } }
-</style>
-</head>
-<body>
-<div class="topbar"><div class="wrap topbar-inner"><a class="brand" href="https://systemsandcomplexity.school/" aria-label="School of Systems and Complexity home"><span>SSC</span> · School of Systems &amp; Complexity</a><nav class="nav" aria-label="Page navigation"><a href="#instruments">Experiments</a><a href="#about">About</a></nav></div></div>
-<header class="wrap hero"><div><p class="eyebrow">Interactive experiments</p><h1>Complexity.<br><em>Try it yourself.</em></h1><p class="hero-copy">Complexity is easier to understand when you can break it yourself.</p><p class="hero-prompts">Change a parameter. Remove a node.<br>Add a delay. Change a rule.</p><p class="hero-copy">Watch the system do something you did not expect.</p></div><p class="hero-aside">Not models of the world,<br>but models for exploring it.</p></header>
+</style></head><body>
+<a class="skip-link" href="#instruments">Skip to the experiments</a>
+<div class="topbar"><div class="wrap topbar-inner"><a class="brand" href="https://systemsandcomplexity.school/" aria-label="School of Systems and Complexity home"><span>SSC</span> · School of Systems &amp; Complexity</a><nav class="nav" aria-label="Page navigation"><a href="#instruments">Follow the story</a><a href="#all-experiments">Browse all experiments</a></nav></div></div>
+<div class="wrap"><header class="hero"><p class="eyebrow">Interactive experiments</p><h1>Complexity is easier to understand when you can <em>break it yourself.</em></h1><p class="hero-prompts"><span>Change a parameter. Remove a node.</span><span>Add a delay. Change a rule.</span></p><p class="hero-copy">Watch the system do something you did not expect.</p><p class="hero-aside">Not models of the world, but models for exploring it.</p><a class="story-link" href="#instruments">Start with something simple ↓</a></header></div>
 <main class="wrap">
-<div class="catalog-head" id="instruments"><h2>Explore the experiments</h2><p>Interactive experiments for exploring how complex systems behave.</p></div>
-<section class="tool-section" aria-labelledby="prediction-title">
-<div class="section-heading"><div><p class="section-label">01</p><h3 id="prediction-title">When prediction breaks</h3><p class="family-line">Deterministic does not necessarily mean predictable.</p></div></div>
-<div class="tools-grid"><article class="tool-card"><h4><a href="/simulations/pendulum/">The Pendulum</a></h4><p>What changes when you add a second pendulum?</p><div class="card-actions"><a class="tool-cta" href="/simulations/pendulum/" aria-label="Explore The Pendulum">Explore →</a></div></article>
-<article class="tool-card"><h4><a href="/simulations/lorenz/">Attractors and Chaos</a></h4><p>When does a stable system become unpredictable?</p><div class="card-actions"><a class="tool-cta" href="/simulations/lorenz/" aria-label="Explore Attractors and Chaos">Explore →</a></div></article>
-<article class="tool-card"><h4><a href="/simulations/three-body/">Three-Body Problem</a></h4><p>How far can you predict three interacting bodies?</p><div class="card-actions"><a class="tool-cta" href="/simulations/three-body/" aria-label="Explore Three-Body Problem">Explore →</a></div></article>
-<article class="tool-card"><h4><a href="/simulations/social-bifurcations/">When Societies Bifurcate</a></h4><p>Can a small change produce a different kind of behaviour?</p><div class="card-actions"><a class="tool-cta" href="/simulations/social-bifurcations/" aria-label="Explore When Societies Bifurcate">Explore →</a></div></article></div>
-</section>
-<section class="tool-section" aria-labelledby="structure-title">
-<div class="section-heading"><div><p class="section-label">02</p><h3 id="structure-title">When structure shapes behaviour</h3><p class="family-line">Change the relationships and you may change the outcome.</p></div></div>
-<div class="tools-grid"><article class="tool-card"><h4><a href="/simulations/networks/">How Networks Work</a></h4><p>Who is connected to whom—and what can spread?</p><div class="card-actions"><a class="tool-cta" href="/simulations/networks/" aria-label="Explore How Networks Work">Explore →</a></div></article>
-<article class="tool-card"><h4><a href="/simulations/segregation/">Who Created This Pattern?</a></h4><p>How can local preferences create global segregation?</p><div class="card-actions"><a class="tool-cta" href="/simulations/segregation/" aria-label="Explore Who Created This Pattern?">Explore →</a></div></article></div>
-</section>
-<section class="tool-section" aria-labelledby="emergence-title">
-<div class="section-heading"><div><p class="section-label">03</p><h3 id="emergence-title">When order emerges</h3><p class="family-line">Global patterns can appear without central control.</p></div></div>
-<div class="tools-grid"><article class="tool-card"><h4><a href="/simulations/flocking/">Nobody Is in Charge</a></h4><p>Can a group coordinate without a plan?</p><div class="card-actions"><a class="tool-cta" href="/simulations/flocking/" aria-label="Explore Nobody Is in Charge">Explore →</a></div></article>
-<article class="tool-card"><h4><a href="/simulations/commons/">The Commons</a></h4><p>When does cooperation emerge—and when does the resource run out?</p><div class="card-actions"><a class="tool-cta" href="/simulations/commons/" aria-label="Explore The Commons">Explore →</a></div></article></div>
-</section>
-<section class="tool-section" aria-labelledby="intervention-title">
-<div class="section-heading"><div><p class="section-label">04</p><h3 id="intervention-title">When interventions fight back</h3><p class="family-line">An intervention becomes part of the system it is trying to change.</p></div></div>
-<div class="tools-grid"><article class="tool-card"><h4><a href="/simulations/delay-trap/">The Delay Trap</a></h4><p>Can sensible corrections make a system less stable?</p><div class="card-actions"><a class="tool-cta" href="/simulations/delay-trap/" aria-label="Explore The Delay Trap">Explore →</a></div></article>
-<article class="tool-card"><h4><a href="/simulations/aravane-oscillator/">Conflict System Dynamics</a></h4><p>What does an intervention change beyond visible conflict?</p><div class="card-actions"><a class="tool-cta" href="/simulations/aravane-oscillator/" aria-label="Explore Conflict System Dynamics">Explore →</a></div></article>
-<article class="tool-card"><h4><a href="/simulations/polarisation/">Polarisation Dynamics</a></h4><p>How does the system respond when you intervene?</p><div class="card-actions"><a class="tool-cta" href="/simulations/polarisation/" aria-label="Explore Polarisation Dynamics">Explore →</a></div></article></div>
-</section>
-<section class="reading" aria-labelledby="reading-title"><div><p class="eyebrow">A guided route</p><h2 id="reading-title">You Are in the System</h2><p>Read, experiment, and ask where you stand.</p></div><a class="button" href="/you-are-in-the-system-v2.html">Begin reading →</a></section>
-<section class="about" id="about" aria-label="About the collection"><div><h3>Change one thing</h3><p>Play, change a rule, and compare. What surprised you?</p></div><div><h3>About SSC</h3><p>A collection from the School of Systems &amp; Complexity. <a href="https://systemsandcomplexity.school/">Visit the school ↗</a></p></div></section></main>
-<footer><div class="wrap footer-inner"><span>© School of Systems &amp; Complexity</span><a href="https://systemsandcomplexity.school/">School of Systems &amp; Complexity ↗</a></div></footer>
-</body></html>
+<section class="tool-section chapter" id="instruments" aria-labelledby="instruments-title"><div class="chapter-copy"><p class="section-label">01</p><h2 id="instruments-title">Start with something simple.</h2><p class="family-line">Simple rules do not necessarily produce predictable futures.</p></div><div class="tools-grid"><a class="tool-card tool-card--lead" href="/simulations/pendulum/"><svg class="tool-cue" viewBox="0 0 120 80" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true" focusable="false"><path class="cue-soft" d="M24 12L58 35 81 65M24 12L59 34 97 51"/><path d="M24 12L58 35 81 65"/><circle cx="24" cy="12" r="2"/><circle cx="58" cy="35" r="4"/><circle class="cue-accent" cx="81" cy="65" r="5"/><circle class="cue-soft" cx="97" cy="51" r="4"/></svg><div class="tool-copy"><h3>The Pendulum</h3><p>How long before two almost-identical worlds become different?</p></div><span class="tool-cta" aria-hidden="true">↗</span></a>
+<a class="tool-card" href="/simulations/three-body/"><svg class="tool-cue" viewBox="0 0 120 80" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true" focusable="false"><ellipse class="cue-soft" cx="58" cy="40" rx="44" ry="21" transform="rotate(-18 58 40)"/><path d="M13 58Q54 17 102 38"/><circle class="cue-accent" cx="25" cy="48" r="5"/><circle cx="72" cy="21" r="4"/><circle class="cue-blue" cx="99" cy="43" r="5"/></svg><div class="tool-copy"><h3>Three-Body Problem</h3><p>Can exact rules still produce an unpredictable future?</p></div><span class="tool-cta" aria-hidden="true">↗</span></a>
+<a class="tool-card" href="/simulations/lorenz/"><svg class="tool-cue" viewBox="0 0 120 80" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true" focusable="false"><path d="M60 38C29 1 9 16 19 41S61 57 59 34C55 13 85 4 103 23S87 70 62 45C37 18 21 23 26 42S54 57 58 35C62 10 93 17 97 34S82 63 62 41"/></svg><div class="tool-copy"><h3>Attractors and Chaos</h3><p>Can the future be unpredictable and still have structure?</p></div><span class="tool-cta" aria-hidden="true">↗</span></a>
+<a class="tool-card" href="/simulations/social-bifurcations/"><svg class="tool-cue" viewBox="0 0 120 80" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true" focusable="false"><path d="M10 40H42L70 24 108 12M42 40L70 56 108 70M70 24L108 34M70 56L108 48"/><circle cx="42" cy="40" r="2.5"/><circle class="cue-accent" cx="70" cy="24" r="2.5"/></svg><div class="tool-copy"><h3>When Societies Bifurcate</h3><p>When does a small change create a different kind of behaviour?</p></div><span class="tool-cta" aria-hidden="true">↗</span></a></div></section>
+<section class="tool-section chapter" id="structure" aria-labelledby="structure-title"><div class="chapter-copy"><p class="section-label">02</p><h2 id="structure-title">But unpredictability is only the beginning.</h2><p class="family-line">What happens depends not only on who is there, but on how they are connected.</p></div><div class="tools-grid"><a class="tool-card tool-card--lead" href="/simulations/networks/"><svg class="tool-cue" viewBox="0 0 120 80" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true" focusable="false"><path class="cue-soft" d="M18 24L49 15 78 32 106 17M18 24L35 64 78 32 91 66M49 15L35 64M78 32L106 17M78 32L91 66"/><circle class="" cx="18" cy="24" r="4"/><circle class="" cx="49" cy="15" r="4"/><circle class="cue-accent" cx="78" cy="32" r="4"/><circle class="" cx="106" cy="17" r="4"/><circle class="" cx="35" cy="64" r="4"/><circle class="" cx="91" cy="66" r="4"/></svg><div class="tool-copy"><h3>How Networks Work</h3><p>What changes when the same people are connected differently?</p></div><span class="tool-cta" aria-hidden="true">↗</span></a>
+<a class="tool-card" href="/simulations/segregation/"><svg class="tool-cue" viewBox="0 0 120 80" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true" focusable="false"><path class="cue-accent" d="M12 21l9-8 9 8v12h-18z" /><path class="cue-accent" d="M38 21l9-8 9 8v12h-18z" /><path class="cue-blue" d="M64 21l9-8 9 8v12h-18z" /><path class="cue-blue" d="M90 21l9-8 9 8v12h-18z" /><path class="cue-accent" d="M12 45l9-8 9 8v12h-18z" /><path class="cue-accent" d="M38 45l9-8 9 8v12h-18z" style="opacity:.3"/><path class="cue-blue" d="M64 45l9-8 9 8v12h-18z" /><path class="cue-blue" d="M90 45l9-8 9 8v12h-18z" /><path class="cue-accent" d="M12 69l9-8 9 8v12h-18z" /><path class="cue-accent" d="M38 69l9-8 9 8v12h-18z" /><path class="cue-blue" d="M64 69l9-8 9 8v12h-18z" /><path class="cue-blue" d="M90 69l9-8 9 8v12h-18z" /></svg><div class="tool-copy"><h3>Who Created This Pattern?</h3><p>How can mild local preferences create a divided neighbourhood?</p></div><span class="tool-cta" aria-hidden="true">↗</span></a></div></section>
+<section class="tool-section chapter" id="emergence" aria-labelledby="emergence-title"><div class="chapter-copy"><p class="section-label">03</p><h2 id="emergence-title">And nobody has to be in charge.</h2><p class="family-line">Collective patterns can emerge from local interaction.</p></div><div class="tools-grid"><a class="tool-card tool-card--lead" href="/simulations/flocking/"><svg class="tool-cue" viewBox="0 0 120 80" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true" focusable="false"><g class="cue-flock"><path style="animation-delay:0s" d="M8 21l8 4-8 4m6-4h-13"/><path style="animation-delay:-0.3s" d="M31 15l8 4-8 4m6-4h-13"/><path style="animation-delay:-0.6s" d="M57 22l8 4-8 4m6-4h-13"/><path style="animation-delay:-0.8999999999999999s" d="M82 14l8 4-8 4m6-4h-13"/><path style="animation-delay:-1.2s" d="M23 47l8 4-8 4m6-4h-13"/><path style="animation-delay:-1.5s" d="M47 44l8 4-8 4m6-4h-13"/><path style="animation-delay:-1.7999999999999998s" d="M75 49l8 4-8 4m6-4h-13"/><path style="animation-delay:-2.1s" d="M100 36l8 4-8 4m6-4h-13"/></g></svg><div class="tool-copy"><h3>Nobody Is in Charge</h3><p>Can a group coordinate when nobody knows the plan?</p></div><span class="tool-cta" aria-hidden="true">↗</span></a>
+<a class="tool-card" href="/simulations/commons/"><svg class="tool-cue" viewBox="0 0 120 80" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true" focusable="false"><ellipse class="cue-blue" cx="60" cy="40" rx="46" ry="26"/><path class="cue-soft" d="M26 15q8 10 16 0M80 61q8 10 16 0"/><g class="cue-fish"><path d="M34 33q4-5 8 0q-4 5-8 0l-3 3v-6z"/><path d="M61 26q4-5 8 0q-4 5-8 0l-3 3v-6z"/><path d="M76 42q4-5 8 0q-4 5-8 0l-3 3v-6z"/><path d="M46 51q4-5 8 0q-4 5-8 0l-3 3v-6z"/><path d="M27 47q4-5 8 0q-4 5-8 0l-3 3v-6z"/></g></svg><div class="tool-copy"><h3>The Commons</h3><p>When does a shared resource remain healthy — and when does it collapse?</p></div><span class="tool-cta" aria-hidden="true">↗</span></a></div></section>
+<section class="tool-section chapter" id="intervention" aria-labelledby="intervention-title"><div class="chapter-copy"><p class="section-label">04</p><h2 id="intervention-title">So we intervene.</h2><p class="family-line">And the intervention becomes part of the system.</p></div><div class="tools-grid"><a class="tool-card tool-card--lead" href="/simulations/delay-trap/"><svg class="tool-cue" viewBox="0 0 120 80" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true" focusable="false"><path class="cue-soft" d="M22 58H44V18H91V30"/><circle class="cue-accent" cx="22" cy="58" r="9"/><path d="M22 58v-5M82 32h18M85 39v23m6-23v29m6-29v23"/><circle class="cue-blue" cx="57" cy="18" r="2"/><circle class="cue-accent" cx="77" cy="18" r="2"/></svg><div class="tool-copy"><h3>The Delay Trap</h3><p>Why can correcting harder make a system less stable?</p></div><span class="tool-cta" aria-hidden="true">↗</span></a>
+<a class="tool-card" href="/simulations/aravane-oscillator/"><svg class="tool-cue" viewBox="0 0 120 80" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true" focusable="false"><path class="cue-soft" d="M22 42C25 1 90 6 96 39S45 82 22 42Z"/><path d="M33 42C37 18 81 18 86 39S49 67 33 42Z"/><path class="cue-accent" d="M66 67V53m0 0-4 5m4-5 4 5"/></svg><div class="tool-copy"><h3>Conflict System Dynamics</h3><p>Why does the timing of an intervention change its effect?</p></div><span class="tool-cta" aria-hidden="true">↗</span></a>
+<a class="tool-card" href="/simulations/polarisation/"><svg class="tool-cue" viewBox="0 0 120 80" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true" focusable="false"><path class="cue-soft" d="M24 26L88 51M28 58L91 22"/><circle class="cue-blue" cx="18" cy="26" r="5"/><circle class="cue-blue" cx="34" cy="33" r="5"/><circle class="cue-blue" cx="23" cy="54" r="5"/><circle class="cue-accent" cx="95" cy="23" r="5"/><circle class="cue-accent" cx="82" cy="48" r="5"/><circle class="cue-accent" cx="103" cy="55" r="5"/></svg><div class="tool-copy"><h3>Polarisation Dynamics</h3><p>Can the same intervention help at one moment and harm at another?</p></div><span class="tool-cta" aria-hidden="true">↗</span></a></div></section>
+<section class="chapter reading" id="journey" aria-labelledby="reading-title"><div class="chapter-copy"><p class="section-label">05</p><h2 id="reading-title">You were never outside the system.</h2></div><div class="journey"><h3>You Are in the System</h3><p>A guided sequence of experiments about prediction, structure, intervention and participation.</p><a class="button" href="/you-are-in-the-system-v2.html">Take the guided journey →</a></div></section>
+<details class="all-tools" id="all-experiments"><summary>Browse all experiments</summary><ul><li><a href="/simulations/lorenz/">Attractors and Chaos<span aria-hidden="true">↗</span></a></li>
+<li><a href="/simulations/aravane-oscillator/">Conflict System Dynamics<span aria-hidden="true">↗</span></a></li>
+<li><a href="/simulations/networks/">How Networks Work<span aria-hidden="true">↗</span></a></li>
+<li><a href="/simulations/flocking/">Nobody Is in Charge<span aria-hidden="true">↗</span></a></li>
+<li><a href="/simulations/polarisation/">Polarisation Dynamics<span aria-hidden="true">↗</span></a></li>
+<li><a href="/simulations/commons/">The Commons<span aria-hidden="true">↗</span></a></li>
+<li><a href="/simulations/delay-trap/">The Delay Trap<span aria-hidden="true">↗</span></a></li>
+<li><a href="/simulations/pendulum/">The Pendulum<span aria-hidden="true">↗</span></a></li>
+<li><a href="/simulations/three-body/">Three-Body Problem<span aria-hidden="true">↗</span></a></li>
+<li><a href="/simulations/social-bifurcations/">When Societies Bifurcate<span aria-hidden="true">↗</span></a></li>
+<li><a href="/simulations/segregation/">Who Created This Pattern?<span aria-hidden="true">↗</span></a></li></ul></details>
+</main><footer id="about"><div class="wrap footer-inner"><span>© School of Systems &amp; Complexity</span><a href="https://systemsandcomplexity.school/">Visit the school ↗</a></div></footer>
+<script>
+// Repeat visitors can jump straight to the list, including from a saved fragment URL.
+(function () {
+  const catalogue = document.getElementById('all-experiments');
+  function openCatalogue() { if (location.hash === '#all-experiments') catalogue.open = true; }
+  document.querySelectorAll('a[href="#all-experiments"]').forEach(link => link.addEventListener('click', () => { catalogue.open = true; }));
+  window.addEventListener('hashchange', openCatalogue); openCatalogue();
+}());
+</script></body></html>
