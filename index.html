@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Interactive instruments for exploring dynamics, networks and social systems from the School of Systems & Complexity.">
-<title>Instruments for Complexity — School of Systems & Complexity</title>
+<meta name="description" content="Interactive experiments for exploring how complex systems behave.">
+<title>Experiments in Complexity — School of Systems &amp; Complexity</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
@@ -369,60 +369,58 @@ footer a {
   transform:none
 }
 }
+/* Compact catalogue entries, using the existing SSC visual language. */
+.hero { padding-top: 65px; padding-bottom: 65px; }
+h1 { font-size: clamp(3rem,6vw,5rem); }
+.hero-copy { font-size: 1.05rem; }
+.hero-prompts { color: var(--text); line-height: 1.8; margin: 1.15rem 0; }
+.hero-aside { font-family: 'Playfair Display',Georgia,serif; font-size: 1.2rem; }
+.catalog-head { margin-bottom: 38px; }
+.catalog-head h2 { font-size: 2rem; }
+.section-heading h3 { font-size: clamp(1.4rem,3vw,1.9rem); }
+.family-line { color: var(--muted); font-size: .9rem; margin: .45rem 0 0; }
+.tools-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 0 40px; }
+.tool-card { min-height: 0; background: transparent; border: 0; border-top: 1px solid var(--border); padding: 20px 0; transition: none; }
+.tool-card:hover { transform: none; border-color: var(--border); }
+.tool-card h4 { font-size: 1.3rem; margin-bottom: 8px; }
+.tool-card h4 a { text-decoration: none; }
+.tool-card h4 a:hover { color: var(--accent); }
+.tool-card p { margin-bottom: 12px; }
+.reading { background: transparent; border: 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 25px 0; margin: 0 0 40px; }
+.reading h2 { font-size: 1.5rem; }
+.reading .button { background: transparent; color: var(--accent); padding: 10px 0; }
+@media(max-width:620px) { .tools-grid { grid-template-columns: 1fr; } .hero { padding-top: 45px; padding-bottom: 45px; } }
 </style>
 </head>
 <body>
-<div class="topbar"><div class="wrap topbar-inner"><a class="brand" href="https://systemsandcomplexity.school/" aria-label="School of Systems and Complexity home"><span>SSC</span> · School of Systems &amp; Complexity</a><nav class="nav" aria-label="Page navigation"><a href="#instruments">Instruments</a><a href="#about">About</a></nav></div></div>
-<header class="wrap hero"><div><p class="eyebrow">An open collection of interactive tools</p><h1>Instruments<br>for <em>Complexity</em></h1><p class="hero-copy">Explore how systems move, connect and change. These browser-based instruments help make assumptions visible and open better conversations about complex situations.</p></div><div class="hero-aside"><strong>For practitioners and facilitators</strong>Use a simulation to test an intuition, compare scenarios or start a discussion. The tools are aids to thinking, not predictions.</div></header>
-<main class="wrap"><section class="reading" aria-labelledby="reading-title"><div><p class="eyebrow">Start here · Guided reading</p><h2 id="reading-title">You Are in the System</h2><p>Seven encounters with complexity science, with simulations woven into one argument about the practitioner’s place inside the system.</p></div><a class="button" href="/you-are-in-the-system-v2.html">Begin reading →</a></section>
-<div class="catalog-head" id="instruments"><h2>Explore the instruments</h2><p>Choose a theme, open a tool and experiment in your browser. Each instrument can be used on its own.</p></div>
-<section class="tool-section" aria-labelledby="section-1">
-      <div class="section-heading"><div><p class="section-label">Physical systems and nonlinear change</p><h3 id="section-1">Dynamics &amp; chaos</h3></div><span class="count">3 instruments</span></div>
-      <div class="tools-grid"><article class="tool-card">
-      <span class="tool-tag">Physical dynamics</span>
-      <h4>The Pendulum</h4>
-      <p>Compare a single and double pendulum to see how predictable motion gives way to chaos.</p>
-      <div class="card-actions"><a class="tool-cta" href="/simulations/pendulum/">Open instrument →</a></div>
-    </article><article class="tool-card">
-      <span class="tool-tag">Attractors</span>
-      <h4>Attractors and Chaos</h4>
-      <p>Change the parameters of the Lorenz system and explore its trajectories.</p>
-      <div class="card-actions"><a class="tool-cta" href="/simulations/lorenz/">Open instrument →</a></div>
-    </article><article class="tool-card">
-      <span class="tool-tag">Unpredictability</span>
-      <h4>Three-Body Problem</h4>
-      <p>Follow three interacting bodies and see why simple laws can produce unpredictable paths.</p>
-      <div class="card-actions"><a class="tool-cta" href="/simulations/three-body/">Open instrument →</a></div>
-    </article></div>
-    </section>
-<section class="tool-section" aria-labelledby="section-2">
-      <div class="section-heading"><div><p class="section-label">Opinions, interventions and feedback</p><h3 id="section-2">Social systems &amp; conflict</h3></div><span class="count">3 instruments</span></div>
-      <div class="tools-grid"><article class="tool-card">
-      <span class="tool-tag">Opinion dynamics</span>
-      <h4>Polarisation Dynamics</h4>
-      <p>Explore opinion landscapes, echo chambers and interventions in a changing social system.</p>
-      <div class="card-actions"><a class="tool-cta" href="/simulations/polarisation/">Open instrument →</a></div>
-    </article><article class="tool-card">
-      <span class="tool-tag">System dynamics</span>
-      <h4>Conflict System Dynamics</h4>
-      <p>Explore how an intervention can reduce visible conflict while changing dependency and local capacity.</p>
-      <div class="card-actions"><a class="tool-cta" href="/simulations/aravane-oscillator/">Open instrument →</a></div>
-    </article><article class="tool-card">
-      <span class="tool-tag">Bifurcations</span>
-      <h4>When Societies Bifurcate</h4>
-      <p>Use the logistic map to examine how social reinforcement can change patterns of conflict.</p>
-      <div class="card-actions"><a class="tool-cta" href="/simulations/social-bifurcations/">Open instrument →</a></div>
-    </article></div>
-    </section>
-<section class="tool-section" aria-labelledby="section-3">
-      <div class="section-heading"><div><p class="section-label">Structure, diffusion and cascades</p><h3 id="section-3">Networks</h3></div><span class="count">1 instrument</span></div>
-      <div class="tools-grid"><article class="tool-card">
-      <span class="tool-tag">Network science</span>
-      <h4>Network Science Simulator</h4>
-      <p>Investigate topology, centrality and weak ties to see how structure shapes outcomes.</p>
-      <div class="card-actions"><a class="tool-cta" href="/simulations/networks/">Open instrument →</a></div>
-    </article></div>
-    </section>
-<section class="about" id="about" aria-label="About the collection"><div><h3>How to use these tools</h3><p>Open an instrument, change one parameter at a time and compare what happens. Use the results to ask better questions; the simulations are simplified views of the world.</p></div><div><h3>About SSC</h3><p>The School of Systems &amp; Complexity works with practitioners in governance, peacebuilding and organisational change. <a href="https://systemsandcomplexity.school/">Learn more ↗</a></p></div></section></main>
+<div class="topbar"><div class="wrap topbar-inner"><a class="brand" href="https://systemsandcomplexity.school/" aria-label="School of Systems and Complexity home"><span>SSC</span> · School of Systems &amp; Complexity</a><nav class="nav" aria-label="Page navigation"><a href="#instruments">Experiments</a><a href="#about">About</a></nav></div></div>
+<header class="wrap hero"><div><p class="eyebrow">Interactive experiments</p><h1>Complexity.<br><em>Try it yourself.</em></h1><p class="hero-copy">Complexity is easier to understand when you can break it yourself.</p><p class="hero-prompts">Change a parameter. Remove a node.<br>Add a delay. Change a rule.</p><p class="hero-copy">Watch the system do something you did not expect.</p></div><p class="hero-aside">Not models of the world,<br>but models for exploring it.</p></header>
+<main class="wrap">
+<div class="catalog-head" id="instruments"><h2>Explore the experiments</h2><p>Interactive experiments for exploring how complex systems behave.</p></div>
+<section class="tool-section" aria-labelledby="prediction-title">
+<div class="section-heading"><div><p class="section-label">01</p><h3 id="prediction-title">When prediction breaks</h3><p class="family-line">Deterministic does not necessarily mean predictable.</p></div></div>
+<div class="tools-grid"><article class="tool-card"><h4><a href="/simulations/pendulum/">The Pendulum</a></h4><p>What changes when you add a second pendulum?</p><div class="card-actions"><a class="tool-cta" href="/simulations/pendulum/" aria-label="Explore The Pendulum">Explore →</a></div></article>
+<article class="tool-card"><h4><a href="/simulations/lorenz/">Attractors and Chaos</a></h4><p>When does a stable system become unpredictable?</p><div class="card-actions"><a class="tool-cta" href="/simulations/lorenz/" aria-label="Explore Attractors and Chaos">Explore →</a></div></article>
+<article class="tool-card"><h4><a href="/simulations/three-body/">Three-Body Problem</a></h4><p>How far can you predict three interacting bodies?</p><div class="card-actions"><a class="tool-cta" href="/simulations/three-body/" aria-label="Explore Three-Body Problem">Explore →</a></div></article>
+<article class="tool-card"><h4><a href="/simulations/social-bifurcations/">When Societies Bifurcate</a></h4><p>Can a small change produce a different kind of behaviour?</p><div class="card-actions"><a class="tool-cta" href="/simulations/social-bifurcations/" aria-label="Explore When Societies Bifurcate">Explore →</a></div></article></div>
+</section>
+<section class="tool-section" aria-labelledby="structure-title">
+<div class="section-heading"><div><p class="section-label">02</p><h3 id="structure-title">When structure shapes behaviour</h3><p class="family-line">Change the relationships and you may change the outcome.</p></div></div>
+<div class="tools-grid"><article class="tool-card"><h4><a href="/simulations/networks/">How Networks Work</a></h4><p>Who is connected to whom—and what can spread?</p><div class="card-actions"><a class="tool-cta" href="/simulations/networks/" aria-label="Explore How Networks Work">Explore →</a></div></article>
+<article class="tool-card"><h4><a href="/simulations/segregation/">Who Created This Pattern?</a></h4><p>How can local preferences create global segregation?</p><div class="card-actions"><a class="tool-cta" href="/simulations/segregation/" aria-label="Explore Who Created This Pattern?">Explore →</a></div></article></div>
+</section>
+<section class="tool-section" aria-labelledby="emergence-title">
+<div class="section-heading"><div><p class="section-label">03</p><h3 id="emergence-title">When order emerges</h3><p class="family-line">Global patterns can appear without central control.</p></div></div>
+<div class="tools-grid"><article class="tool-card"><h4><a href="/simulations/flocking/">Nobody Is in Charge</a></h4><p>Can a group coordinate without a plan?</p><div class="card-actions"><a class="tool-cta" href="/simulations/flocking/" aria-label="Explore Nobody Is in Charge">Explore →</a></div></article>
+<article class="tool-card"><h4><a href="/simulations/commons/">The Commons</a></h4><p>When does cooperation emerge—and when does the resource run out?</p><div class="card-actions"><a class="tool-cta" href="/simulations/commons/" aria-label="Explore The Commons">Explore →</a></div></article></div>
+</section>
+<section class="tool-section" aria-labelledby="intervention-title">
+<div class="section-heading"><div><p class="section-label">04</p><h3 id="intervention-title">When interventions fight back</h3><p class="family-line">An intervention becomes part of the system it is trying to change.</p></div></div>
+<div class="tools-grid"><article class="tool-card"><h4><a href="/simulations/delay-trap/">The Delay Trap</a></h4><p>Can sensible corrections make a system less stable?</p><div class="card-actions"><a class="tool-cta" href="/simulations/delay-trap/" aria-label="Explore The Delay Trap">Explore →</a></div></article>
+<article class="tool-card"><h4><a href="/simulations/aravane-oscillator/">Conflict System Dynamics</a></h4><p>What does an intervention change beyond visible conflict?</p><div class="card-actions"><a class="tool-cta" href="/simulations/aravane-oscillator/" aria-label="Explore Conflict System Dynamics">Explore →</a></div></article>
+<article class="tool-card"><h4><a href="/simulations/polarisation/">Polarisation Dynamics</a></h4><p>How does the system respond when you intervene?</p><div class="card-actions"><a class="tool-cta" href="/simulations/polarisation/" aria-label="Explore Polarisation Dynamics">Explore →</a></div></article></div>
+</section>
+<section class="reading" aria-labelledby="reading-title"><div><p class="eyebrow">A guided route</p><h2 id="reading-title">You Are in the System</h2><p>Read, experiment, and ask where you stand.</p></div><a class="button" href="/you-are-in-the-system-v2.html">Begin reading →</a></section>
+<section class="about" id="about" aria-label="About the collection"><div><h3>Change one thing</h3><p>Play, change a rule, and compare. What surprised you?</p></div><div><h3>About SSC</h3><p>A collection from the School of Systems &amp; Complexity. <a href="https://systemsandcomplexity.school/">Visit the school ↗</a></p></div></section></main>
 <footer><div class="wrap footer-inner"><span>© School of Systems &amp; Complexity</span><a href="https://systemsandcomplexity.school/">School of Systems &amp; Complexity ↗</a></div></footer>
 </body></html>
