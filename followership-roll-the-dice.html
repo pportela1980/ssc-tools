@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Roll the Dice — Followership</title>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;1,400&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EDE8DF;
+  --surface:#F5F0E8;
+  --ink:#1A1A18;
+  --muted:#6B6357;
+  --green:#2C5530;
+  --rust:#8B2E1A;
+  --line:rgba(44,85,48,.18);
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink)}
+body{
+  font-family:Inter,system-ui,sans-serif;
+  background-image:
+    linear-gradient(rgba(44,85,48,.035) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(44,85,48,.035) 1px,transparent 1px);
+  background-size:34px 34px;
+  padding:18px;
+}
+.app{
+  width:min(760px,100%);
+  min-height:calc(100vh - 36px);
+  margin:0 auto;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+.eyebrow{
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.18em;
+  color:var(--green);
+  font-weight:600;
+  margin-bottom:10px;
+}
+h1{
+  font-family:"EB Garamond",serif;
+  font-style:italic;
+  font-weight:400;
+  font-size:clamp(48px,12vw,82px);
+  line-height:.88;
+  color:var(--rust);
+  margin:0 0 16px;
+}
+.sub{
+  color:var(--muted);
+  font-size:14px;
+  line-height:1.5;
+  max-width:590px;
+  margin-bottom:30px;
+}
+.card{
+  background:var(--surface);
+  border:1px solid var(--line);
+  min-height:360px;
+  padding:28px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  box-shadow:0 12px 40px rgba(44,85,48,.06);
+}
+.question{
+  font-family:"EB Garamond",serif;
+  font-size:clamp(34px,8vw,58px);
+  line-height:1.06;
+  text-align:center;
+}
+button{
+  margin-top:18px;
+  width:100%;
+  border:0;
+  background:var(--green);
+  color:white;
+  padding:18px 20px;
+  font-size:16px;
+  font-weight:600;
+  border-radius:3px;
+  cursor:pointer;
+}
+button:active{transform:translateY(1px)}
+.die{
+  font-size:24px;
+  display:inline-block;
+  margin-right:8px;
+}
+footer{
+  margin-top:18px;
+  color:var(--muted);
+  font-size:11px;
+  text-align:center;
+}
+@media(max-width:560px){
+  body{padding:12px}
+  .app{min-height:calc(100vh - 24px)}
+  .card{min-height:390px;padding:22px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="eyebrow">Leadership × Followership</div>
+  <h1>Roll the dice.</h1>
+  <div class="sub">Carrega no botão. Fica com a pergunta que sair. Usa-a para pensar ou conversar.</div>
+
+  <div class="card">
+    <div class="question" id="question">Carrega no botão para lançar a roleta.</div>
+  </div>
+
+  <button id="roll"><span class="die">⚄</span>Nova pergunta</button>
+  <footer>School of Systems and Complexity · INEGI · 2026</footer>
+</div>
+
+<script>
+const questions = [
+"Quando foi a última vez que lideraste sem ter autoridade formal?",
+"Quando foi a última vez que alguém te liderou sem ser o teu chefe?",
+"Em que situações te é mais fácil liderar do que seguir?",
+"Quem é o melhor follower com quem já trabalhaste? O que fazia de diferente?",
+"Que tipo de follower aparece em ti quando estás sob pressão?",
+"Que comportamentos fazem com que deixes de querer seguir alguém?",
+"O que distingue apoio de submissão?",
+"O que distingue challenge de oposição permanente?",
+"Pode alguém ser excelente tecnicamente e mau follower?",
+"Pode haver demasiada liderança numa equipa?",
+"Quando é que seguir bem exige mais coragem do que liderar?",
+"O que deve acontecer depois de desafiares uma decisão e perderes o argumento?",
+"Que responsabilidade tem o follower pela qualidade da liderança que recebe?",
+"Que informação tens hoje que pode fazer diferença numa conversa importante?",
+"Onde precisas de fazer uma pergunta em vez de dar uma resposta?",
+"Que 'não' pequeno precisas de praticar esta semana?",
+"Que limite teu precisa de ficar mais visível para a equipa?",
+"Onde estás a usar linguagem demasiado mitigadora?",
+"Que decisão de outra pessoa precisas de executar melhor?",
+"Onde estás à espera de autorização quando já tens informação suficiente para agir?",
+"Quem precisa mais do teu apoio do que da tua opinião?",
+"Que conversa real no INEGI mudaria se praticasses melhor followership?",
+"Onde precisas de apoiar mais?",
+"Onde precisas de desafiar mais?",
+"Onde precisas de tomar iniciativa?",
+"Onde precisas simplesmente de executar bem?",
+"Que prática queres experimentar durante as próximas seis semanas?",
+"Quando é que obedecer deixa de ser profissional e passa a ser irresponsável?",
+"Quem tem obrigação de levantar a mão quando vê um risco que não controla?",
+"O que fazes quando tens dados preocupantes mas o grupo quer avançar?",
+"Quando é que 'não é a minha área' deixa de ser uma resposta aceitável?",
+"Que tipo de cultura faz desaparecer más notícias técnicas?",
+"Se todos cumprirem a sua parte, o sistema pode mesmo assim falhar?",
+"Quando o schedule entra em conflito com a segurança, quem deve desafiar quem?",
+"Se liderança é uma relação, onde está a liderança quando ninguém tem a imagem completa?",
+"Que pressuposto da tua equipa merecia ser testado novamente?",
+"Que papel precisas de deixar de ocupar para outra pessoa poder liderar?",
+"Que pessoa na tua equipa tem influência muito maior do que o organigrama sugere?",
+"O que é mais difícil para ti: dizer 'sim', dizer 'não', ou dizer 'não sei'?",
+"Que conversa ficaria melhor se falasses uma vez e parasses?"
+];
+
+let remaining = [];
+function refill(){
+  remaining = questions.map((_,i)=>i);
+  for(let i=remaining.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [remaining[i],remaining[j]]=[remaining[j],remaining[i]];
+  }
+}
+function roll(){
+  if(!remaining.length) refill();
+  const idx = remaining.pop();
+  document.getElementById("question").textContent = questions[idx];
+}
+document.getElementById("roll").addEventListener("click", roll);
+refill();
+</script>
+</body>
+</html>
