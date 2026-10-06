@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Perguntas Geradoras — Leadership & Followership</title>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EDE8DF; --surface:#F5F0E8; --ink:#1A1A18; --muted:#6B6357;
+  --green:#2C5530; --rust:#8B2E1A; --line:rgba(44,85,48,.18);
+  --accent:#D7E3D3;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink)}
+body{
+  font-family:Inter,system-ui,sans-serif;
+  background-image:
+    linear-gradient(rgba(44,85,48,.035) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(44,85,48,.035) 1px,transparent 1px);
+  background-size:34px 34px;
+  padding:20px;
+}
+.app{width:min(720px,100%);margin:0 auto;min-height:calc(100vh - 40px);display:flex;flex-direction:column}
+.eyebrow{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--green);font-weight:600;margin-bottom:8px}
+h1{font-family:"EB Garamond",serif;font-size:clamp(44px,12vw,76px);line-height:.9;font-weight:400;font-style:italic;color:var(--rust);margin:0 0 12px}
+.sub{color:var(--muted);font-size:14px;line-height:1.5;max-width:620px}
+.panel{margin-top:28px;background:var(--surface);border:1px solid var(--line);min-height:370px;padding:26px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 12px 40px rgba(44,85,48,.06)}
+.meta{display:flex;justify-content:space-between;gap:12px;align-items:center}
+.tag{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--green);border:1px solid var(--line);padding:7px 9px;border-radius:999px}
+.count{font-family:"EB Garamond",serif;color:var(--muted);font-style:italic}
+.question{font-family:"EB Garamond",serif;font-size:clamp(34px,8vw,54px);line-height:1.08;margin:38px 0 30px}
+.prompt{font-size:13px;color:var(--muted);line-height:1.45;border-top:1px solid var(--line);padding-top:14px}
+.actions{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+button{appearance:none;border:1px solid var(--green);background:var(--green);color:white;padding:14px 18px;border-radius:3px;font-weight:600;font-size:14px;cursor:pointer}
+button.secondary{background:transparent;color:var(--green)}
+.filters{display:flex;gap:8px;overflow:auto;margin-top:18px;padding-bottom:4px}
+.filters button{padding:9px 12px;border-radius:999px;background:transparent;color:var(--green);border:1px solid var(--line);font-size:11px;white-space:nowrap}
+.filters button.on{background:var(--accent);border-color:var(--green)}
+footer{margin-top:auto;padding-top:26px;font-size:11px;color:var(--muted)}
+@media(max-width:560px){body{padding:14px}.panel{padding:20px;min-height:420px}.question{margin-top:28px}.actions button{flex:1 1 100%}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="eyebrow">Leadership × Followership · conversation starter</div>
+  <h1>Perguntas geradoras</h1>
+  <div class="sub">Não há resposta certa. Escolhe uma pergunta, pensa sozinho durante um minuto ou usa-a para abrir uma conversa a pares.</div>
+  <div class="filters" id="filters">
+    <button class="on" data-filter="all">Todas</button>
+    <button data-filter="reconhecer">Reconhecer</button>
+    <button data-filter="compreender">Compreender</button>
+    <button data-filter="praticar">Praticar</button>
+    <button data-filter="aplicar">Aplicar</button>
+    <button data-filter="etica">Ética</button>
+  </div>
+  <div class="panel">
+    <div class="meta"><span class="tag" id="tag">Reconhecer</span><span class="count" id="count"></span></div>
+    <div class="question" id="question"></div>
+    <div class="prompt" id="hint"></div>
+  </div>
+  <div class="actions">
+    <button id="new">Nova pergunta</button>
+    <button class="secondary" id="pair">Modo a pares</button>
+  </div>
+  <footer>School of Systems and Complexity · INEGI · 2026</footer>
+</div>
+<script>
+const Q = [
+["reconhecer","Quando foi a última vez que lideraste sem ter autoridade formal?","Procura um episódio concreto, não uma opinião geral."],
+["reconhecer","Quando foi a última vez que alguém te liderou sem ser o teu chefe?","O que fez essa pessoa para ser seguida?"],
+["reconhecer","Em que situações te é mais fácil liderar do que seguir?","O que muda em ti quando deixas de ter controlo?"],
+["reconhecer","Quem é o melhor follower com quem já trabalhaste?","Que comportamentos concretos o tornavam bom?"],
+["reconhecer","Que tipo de follower aparece em ti quando estás sob pressão?","Mais passivo, conformista, crítico, pragmático ou eficaz?"],
+["reconhecer","Que comportamentos fazem com que deixes de querer seguir alguém?","Distingue personalidade de comportamento observável."],
+["compreender","O que distingue apoio de submissão?","Onde colocarias a fronteira?"],
+["compreender","O que distingue challenge de oposição permanente?","Quando é que desafiar ajuda o sistema?"],
+["compreender","Pode alguém ser excelente tecnicamente e mau follower?","Que comportamento tornaria isso visível?"],
+["compreender","Pode haver demasiada liderança numa equipa?","O que acontece quando toda a gente tenta definir direção?"],
+["compreender","Quando é que seguir bem exige mais coragem do que liderar?","Pensa numa situação em que concordar seria mais fácil."],
+["compreender","O que deve acontecer depois de desafiares uma decisão e perderes o argumento?","Quando é que o compromisso com a decisão passa a ser followership?"],
+["compreender","Que responsabilidade tem o follower pela qualidade da liderança que recebe?","Sem transformar isto em culpa: pensa em influência."],
+["praticar","Que informação tens hoje que pode fazer diferença numa conversa importante?","O que ainda não foi dito?"],
+["praticar","Onde precisas de fazer uma pergunta em vez de dar uma resposta?","Que pergunta abriria mais possibilidades?"],
+["praticar","Que 'não' pequeno precisas de praticar esta semana?","Escolhe algo seguro e concreto."],
+["praticar","Que limite teu precisa de ficar mais visível para a equipa?","Tempo, capacidade, prioridade, risco ou qualidade?"],
+["praticar","Onde estás a usar linguagem demasiado mitigadora?","Como soaria a mesma mensagem de forma clara e assertiva?"],
+["praticar","Que decisão de outra pessoa precisas de executar melhor?","Mesmo que não tenha sido a tua opção preferida."],
+["praticar","Onde estás à espera de autorização quando já tens informação suficiente para agir?","Qual seria um primeiro passo reversível?"],
+["praticar","Quem precisa mais do teu apoio do que da tua opinião?","O que significa apoiar sem tomar conta?"],
+["aplicar","Que conversa real no INEGI mudaria se praticasses melhor followership?","Escolhe uma pessoa, projeto ou decisão concreta."],
+["aplicar","Onde precisas de apoiar mais?","O que faria esse apoio ser visível?"],
+["aplicar","Onde precisas de desafiar mais?","Que risco existe em continuares calado?"],
+["aplicar","Onde precisas de tomar iniciativa?","Qual é a menor ação útil que podes tomar já?"],
+["aplicar","Onde precisas simplesmente de executar bem?","Nem toda a agência precisa de ser oposição."],
+["aplicar","Que prática queres experimentar durante as próximas seis semanas?","Define algo observável e pequeno."],
+["etica","Quando é que obedecer deixa de ser profissional e passa a ser irresponsável?","Que sinais te fariam parar?"],
+["etica","Quem tem obrigação de levantar a mão quando vê um risco que não controla?","Autoridade formal e responsabilidade ética são a mesma coisa?"],
+["etica","O que fazes quando tens dados preocupantes mas o grupo quer avançar?","Pensa em linguagem, canal e escalada."],
+["etica","Quando é que 'não é a minha área' deixa de ser uma resposta aceitável?","Pensa em sistemas sociotécnicos e responsabilidade distribuída."],
+["etica","Que tipo de cultura faz desaparecer más notícias técnicas?","Como reconhecerias essa cultura antes do acidente?"],
+["etica","Se todos cumprirem a sua parte, o sistema pode mesmo assim falhar?","O que isso implica para liderança, followership e interfaces?"],
+["etica","Quando o schedule entra em conflito com a segurança, quem deve desafiar quem?","O que torna esse challenge possível na prática?"],
+["compreender","Se liderança é uma relação, onde está a liderança quando ninguém tem a imagem completa?","Pensa em coordenação distribuída."],
+["praticar","Que pressuposto da tua equipa merecia ser testado novamente?","O que mudou desde que esse pressuposto foi criado?"],
+["aplicar","Que papel precisas de deixar de ocupar para outra pessoa poder liderar?","Às vezes seguir bem é abrir espaço."],
+["reconhecer","Que pessoa na tua equipa tem influência muito maior do que o organigrama sugere?","De onde vem essa influência?"],
+["compreender","O que é mais difícil para ti: dizer 'sim', dizer 'não', ou dizer 'não sei'?","O que isso revela sobre o teu padrão de followership?"],
+["praticar","Que conversa ficaria melhor se falasses uma vez e parasses?","Menos explicação, mais clareza."]
+];
+let filter="all", pair=false, bag=[], idx=0;
+function filtered(){return Q.filter(q=>filter==="all"||q[0]===filter)}
+function resetBag(){bag=filtered().map((_,i)=>i);for(let i=bag.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[bag[i],bag[j]]=[bag[j],bag[i]]}idx=0}
+function show(){const arr=filtered();if(!arr.length)return;if(idx>=bag.length)resetBag();const q=arr[bag[idx++]];document.getElementById("tag").textContent=q[0][0].toUpperCase()+q[0].slice(1);document.getElementById("question").textContent=q[1];document.getElementById("hint").textContent=pair?"A pares: 2 minutos cada. Escuta sem interromper; depois troca.":q[2];document.getElementById("count").textContent=idx+"/"+bag.length}
+document.getElementById("new").onclick=show;
+document.getElementById("pair").onclick=()=>{pair=!pair;document.getElementById("pair").textContent=pair?"Modo individual":"Modo a pares";show()};
+document.querySelectorAll("#filters button").forEach(b=>b.onclick=()=>{document.querySelectorAll("#filters button").forEach(x=>x.classList.remove("on"));b.classList.add("on");filter=b.dataset.filter;resetBag();show()});
+resetBag();show();
+</script>
+</body>
+</html>
